@@ -47,7 +47,7 @@ impl ChatServer {
                     if let Some(session_address) = self.sessions.get(session_id) {
                         println!("server: notice [ {} ] to {} in {}", &message, &session_id, page_id);
                         println!("server -> session");
-                        session_address.do_send(NoticeRequest(message.clone()));
+                        session_address.do_send(NoticeRequest { kind: "test".to_string(), message: message.clone() });
                     }
                 }
             }

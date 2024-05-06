@@ -1,0 +1,33 @@
+.node {
+  background-color: yellow;
+  border: solid gray 1px;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 0;
+  font-size: 12px;
+}
+
+.name {
+  padding: 3px 5px;
+}
+
+.properties {
+  display: flex;
+  flex-direction: column;
+  border-top: solid gray 1px;
+  border-bottom: solid gray 1px;
+  padding: 3px 5px;
+}
+
+.property {
+}
+
+.methods {
+  display: flex;
+  flex-direction: column;
+  padding: 3px 5px;
+}
+
+.method {
+}

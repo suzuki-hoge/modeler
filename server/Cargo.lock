@@ -987,7 +987,10 @@ dependencies = [
  "actix",
  "actix-web",
  "actix-web-actors",
+ "bytestring",
  "rand",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

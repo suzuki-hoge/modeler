@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::time::{Duration, Instant};
 
 use actix::{
@@ -5,6 +6,9 @@ use actix::{
     Message as ActixMessage, Running, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext};
+use bytestring::ByteString;
+use serde::{Deserialize, Serialize};
+use serde_json::{from_str as from_json_str, to_string as to_json_string};
 
 use crate::server::{BroadcastRequest, ChatServer, ConnectRequest, DisconnectRequest, PageId};
 
@@ -16,7 +20,40 @@ pub type SessionId = usize;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct NoticeRequest(pub String);
+pub struct NoticeRequest {
+    pub kind: String,
+    pub message: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ClientJson {
+    pub kind: String,
+    pub message: String,
+}
+
+impl From<ClientJson> for ByteString {
+    fn from(value: ClientJson) -> Self {
+        to_json_string(&value).unwrap().into()
+    }
+}
+
+impl From<ByteString> for ClientJson {
+    fn from(value: ByteString) -> Self {
+        from_json_str(value.trim()).unwrap()
+    }
+}
+
+impl From<NoticeRequest> for ClientJson {
+    fn from(value: NoticeRequest) -> Self {
+        Self { kind: value.kind, message: value.message }
+    }
+}
+
+impl Display for ClientJson {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", to_json_string(self).unwrap())
+    }
+}
 
 #[derive(Debug)]
 pub struct WsChatSession {
@@ -75,9 +112,12 @@ impl Actor for WsChatSession {
 impl Handler<NoticeRequest> for WsChatSession {
     type Result = ();
 
-    fn handle(&mut self, message: NoticeRequest, context: &mut Self::Context) {
-        println!("session: notice request accepted, send [ {} ] to {}", &message.0, &self.id);
-        context.text(message.0);
+    fn handle(&mut self, request: NoticeRequest, context: &mut Self::Context) {
+        let client_json = ClientJson::from(request);
+
+        println!("session: notice request accepted, send [ {} ] to {}", &client_json, &self.id);
+
+        context.text(client_json);
     }
 }
 
@@ -92,13 +132,13 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for WsChatSession {
                 WsMessage::Pong(_) => {
                     self.last_heartbeat = Instant::now();
                 }
-                WsMessage::Text(text) => {
-                    let message = text.trim().to_string();
-                    println!("session: receive text [ {} ]", &message);
+                WsMessage::Text(byte) => {
+                    let client_json = ClientJson::from(byte);
+                    println!("session: receive text [ {} ]", &client_json);
                     println!("session -> server");
                     self.server_address.do_send(BroadcastRequest {
                         requester: self.id,
-                        message,
+                        message: client_json.message,
                         page_id: self.page_id.clone(),
                     })
                 }

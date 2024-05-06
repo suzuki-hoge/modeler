@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "format": "prettier --write \"./src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"./src/**/*.{ts,tsx,css,scss}\"",
     "lint": "eslint --fix --ext .ts,.tsx \"./src\""
   },
   "dependencies": {
     "next": "14.2.3",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-use-websocket": "^4.8.1",
+    "reactflow": "^11.11.3"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -22,6 +24,7 @@
     "eslint-config-next": "14.2.3",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5",
+    "sass": "^1.76.0",
     "typescript": "^5"
   }
 }
