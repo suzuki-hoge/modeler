@@ -9,9 +9,10 @@ use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext
 use bytestring::ByteString;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_str as from_json_str, to_string as to_json_string};
+use uuid::Uuid;
 
 use crate::server::{BroadcastRequest, ChatServer, ConnectRequest, DisconnectRequest, PageId};
-use uuid::Uuid;
+use crate::session::NoticeKind::{Broadcast, Connected, Disconnected};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 
@@ -20,14 +21,34 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 pub type SessionId = String;
 
 pub fn create_session_id() -> SessionId {
-    Uuid::new_v4().to_string()
+    Uuid::new_v4().to_string().split('-').next().unwrap().to_string()
 }
 
-#[derive(ActixMessage)]
+#[derive(ActixMessage, Clone)]
 #[rtype(result = "()")]
 pub struct NoticeRequest {
-    pub kind: String,
+    pub kind: NoticeKind,
     pub message: String,
+}
+
+#[derive(ActixMessage, Clone)]
+#[rtype(result = "()")]
+pub enum NoticeKind {
+    Connected,
+    Disconnected,
+    Broadcast,
+}
+
+impl NoticeRequest {
+    pub fn connected(session_id: &SessionId) -> Self {
+        Self { kind: Connected, message: session_id.clone() }
+    }
+    pub fn disconnected(session_id: &SessionId) -> Self {
+        Self { kind: Disconnected, message: session_id.clone() }
+    }
+    pub fn broadcast<S: Into<String>>(s: S) -> Self {
+        Self { kind: Broadcast, message: s.into() }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -50,7 +71,15 @@ impl From<ByteString> for ClientJson {
 
 impl From<NoticeRequest> for ClientJson {
     fn from(value: NoticeRequest) -> Self {
-        Self { kind: value.kind, message: value.message }
+        Self {
+            kind: match value.kind {
+                Connected => "connected",
+                Disconnected => "disconnected",
+                Broadcast => "broadcast",
+            }
+            .to_string(),
+            message: value.message,
+        }
     }
 }
 
@@ -143,11 +172,15 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for WsChatSession {
                     let client_json = ClientJson::from(byte);
                     println!("session: receive text by {} in {} [ {} ]", &self.session_id, &self.page_id, &client_json);
                     println!("session -> server");
-                    self.server_address.do_send(BroadcastRequest {
-                        session_id: self.session_id.clone(),
-                        message: client_json.message,
-                        page_id: self.page_id.clone(),
-                    })
+                    match client_json.kind.as_str() {
+                        "connected" | "disconnected" => panic!("unexpected"),
+                        "broadcast" => self.server_address.do_send(BroadcastRequest {
+                            session_id: self.session_id.clone(),
+                            message: client_json.message,
+                            page_id: self.page_id.clone(),
+                        }),
+                        _ => {}
+                    }
                 }
                 WsMessage::Binary(_) => {
                     println!("session: binary message is not supported")
