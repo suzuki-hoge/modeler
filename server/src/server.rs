@@ -1,54 +1,55 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+
+use actix::{Actor, Context, Handler, Message as ActixMessage, Recipient};
 
 use crate::session::{NoticeRequest, SessionId};
-use actix::{Actor, Context, Handler, Message as ActixMessage, Recipient};
-use rand::{rngs::ThreadRng, Rng};
 
 pub type PageId = String;
 
 #[derive(ActixMessage)]
-#[rtype(SessionId)]
+#[rtype(result = "()")]
 pub struct ConnectRequest {
+    pub session_id: SessionId,
+    pub page_id: PageId,
     pub session_address: Recipient<NoticeRequest>,
 }
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct DisconnectRequest {
-    pub requester: SessionId,
+    pub session_id: SessionId,
+    pub page_id: PageId,
 }
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct BroadcastRequest {
-    pub requester: SessionId,
-    pub message: String,
+    pub session_id: SessionId,
     pub page_id: PageId,
+    pub message: String,
 }
 
+type Sessions = HashMap<SessionId, Recipient<NoticeRequest>>;
+
 pub struct ChatServer {
-    sessions: HashMap<SessionId, Recipient<NoticeRequest>>,
-    pages: HashMap<PageId, HashSet<SessionId>>,
-    rng: ThreadRng,
+    pages: HashMap<PageId, Sessions>,
 }
 
 impl ChatServer {
     pub fn new() -> ChatServer {
-        ChatServer { sessions: HashMap::new(), pages: HashMap::new(), rng: rand::thread_rng() }
+        ChatServer { pages: HashMap::new() }
     }
 }
 
 impl ChatServer {
-    fn notice_to_session<S: Into<String>>(&self, page_id: &PageId, message: S, skip_session_id: Option<SessionId>) {
+    fn notice_to_session<S: Into<String>>(&self, page_id: &PageId, message: S, skip_session_id: Option<&SessionId>) {
         let message = message.into();
-        if let Some(session_ids) = self.pages.get(page_id) {
-            for session_id in session_ids {
-                if skip_session_id.is_some() && *session_id != skip_session_id.unwrap() {
-                    if let Some(session_address) = self.sessions.get(session_id) {
-                        println!("server: notice [ {} ] to {} in {}", &message, &session_id, page_id);
-                        println!("server -> session");
-                        session_address.do_send(NoticeRequest { kind: "test".to_string(), message: message.clone() });
-                    }
+        if let Some(sessions) = self.pages.get(page_id) {
+            for (session_id, session_address) in sessions {
+                if Some(session_id) != skip_session_id {
+                    println!("server: notice by {} in {} [ {} ]", &session_id, page_id, &message);
+                    println!("server -> session");
+                    session_address.do_send(NoticeRequest { kind: "test".to_string(), message: message.clone() });
                 }
             }
         }
@@ -60,17 +61,15 @@ impl Actor for ChatServer {
 }
 
 impl Handler<ConnectRequest> for ChatServer {
-    type Result = usize;
+    type Result = ();
 
     fn handle(&mut self, request: ConnectRequest, _: &mut Context<Self>) -> Self::Result {
-        let new_session_id = self.rng.gen::<SessionId>();
-        self.sessions.insert(new_session_id, request.session_address);
+        println!("server: connect request accepted by {} in {}", &request.session_id, &request.page_id);
 
-        println!("server: connect request accepted [ {} ]", &new_session_id);
+        self.notice_to_session(&request.page_id, format!("{} connected", &request.session_id), None);
 
-        self.pages.entry("main".to_owned()).or_default().insert(new_session_id);
-
-        new_session_id
+        let sessions: &mut Sessions = self.pages.entry(request.page_id).or_default();
+        sessions.insert(request.session_id, request.session_address);
     }
 }
 
@@ -78,21 +77,11 @@ impl Handler<DisconnectRequest> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
-        println!("server: disconnect request accepted [ {} ]", &request.requester);
+        println!("server: disconnect request accepted by {} in {}", &request.session_id, &request.page_id);
 
-        self.sessions.remove(&request.requester);
+        self.pages.remove(&request.page_id);
 
-        let mut disconnected_page_ids = vec![];
-
-        for (page_id, sessions) in &mut self.pages {
-            if sessions.remove(&request.requester) {
-                disconnected_page_ids.push(page_id.clone());
-            }
-        }
-
-        for page_id in disconnected_page_ids {
-            self.notice_to_session(&page_id, format!("{} disconnected from {}", request.requester, &page_id), None);
-        }
+        self.notice_to_session(&request.page_id, format!("{} disconnected", request.session_id), None);
     }
 }
 
@@ -100,8 +89,11 @@ impl Handler<BroadcastRequest> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, request: BroadcastRequest, _: &mut Context<Self>) {
-        println!("server: broadcast request accepted [ {} ]", &request.message);
+        println!(
+            "server: broadcast request accepted by {} in {} [ {} ]",
+            &request.session_id, &request.page_id, &request.message
+        );
 
-        self.notice_to_session(&request.page_id, request.message, Some(request.requester));
+        self.notice_to_session(&request.page_id, request.message, Some(&request.session_id));
     }
 }

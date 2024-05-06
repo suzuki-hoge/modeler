@@ -11,12 +11,17 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str as from_json_str, to_string as to_json_string};
 
 use crate::server::{BroadcastRequest, ChatServer, ConnectRequest, DisconnectRequest, PageId};
+use uuid::Uuid;
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub type SessionId = usize;
+pub type SessionId = String;
+
+pub fn create_session_id() -> SessionId {
+    Uuid::new_v4().to_string()
+}
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -57,10 +62,10 @@ impl Display for ClientJson {
 
 #[derive(Debug)]
 pub struct WsChatSession {
-    pub id: SessionId,
-    pub last_heartbeat: Instant,
+    pub session_id: SessionId,
     pub page_id: PageId,
     pub server_address: Addr<ChatServer>,
+    pub last_heartbeat: Instant,
 }
 
 impl WsChatSession {
@@ -69,7 +74,10 @@ impl WsChatSession {
             if Instant::now().duration_since(actor.last_heartbeat) > CLIENT_TIMEOUT {
                 println!("session: client heartbeat failed, disconnecting");
 
-                actor.server_address.do_send(DisconnectRequest { requester: actor.id });
+                actor.server_address.do_send(DisconnectRequest {
+                    session_id: actor.session_id.clone(),
+                    page_id: actor.page_id.clone(),
+                });
 
                 context.stop();
 
@@ -90,21 +98,20 @@ impl Actor for WsChatSession {
 
         let session_address = context.address();
         self.server_address
-            .send(ConnectRequest { session_address: session_address.recipient() })
-            .into_actor(self)
-            .then(|new_session_id, actor, context| {
-                match new_session_id {
-                    Ok(new_session_id) => actor.id = new_session_id,
-                    _ => context.stop(),
-                }
-                ready(())
+            .send(ConnectRequest {
+                session_id: self.session_id.clone(),
+                page_id: self.page_id.clone(),
+                session_address: session_address.recipient(),
             })
+            .into_actor(self)
+            .then(|_, _, _| ready(()))
             .wait(context);
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
         println!("session: stop");
-        self.server_address.do_send(DisconnectRequest { requester: self.id });
+        self.server_address
+            .do_send(DisconnectRequest { session_id: self.session_id.clone(), page_id: self.page_id.clone() });
         Running::Stop
     }
 }
@@ -115,7 +122,7 @@ impl Handler<NoticeRequest> for WsChatSession {
     fn handle(&mut self, request: NoticeRequest, context: &mut Self::Context) {
         let client_json = ClientJson::from(request);
 
-        println!("session: notice request accepted, send [ {} ] to {}", &client_json, &self.id);
+        println!("session: notice request accepted by {} in {} [ {} ]", &self.session_id, &self.page_id, &client_json);
 
         context.text(client_json);
     }
@@ -134,10 +141,10 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for WsChatSession {
                 }
                 WsMessage::Text(byte) => {
                     let client_json = ClientJson::from(byte);
-                    println!("session: receive text [ {} ]", &client_json);
+                    println!("session: receive text by {} in {} [ {} ]", &self.session_id, &self.page_id, &client_json);
                     println!("session -> server");
                     self.server_address.do_send(BroadcastRequest {
-                        requester: self.id,
+                        session_id: self.session_id.clone(),
                         message: client_json.message,
                         page_id: self.page_id.clone(),
                     })

@@ -8,9 +8,9 @@ interface Message {
   message: string
 }
 
-export default function Page() {
-  const { sendJsonMessage, lastJsonMessage } = useWebSocket<Message>('ws://127.0.0.1:8080/ws/')
+export default function Page({ params }: { params: { pageId: string } }) {
   const [message, setMessage] = useState('')
+  const { sendJsonMessage, lastJsonMessage } = useWebSocket<Message>(`ws://127.0.0.1:8080/ws/${params.pageId}`)
 
   const click = () => {
     if (message.trim() !== '') {
@@ -21,9 +21,10 @@ export default function Page() {
 
   return (
     <div>
-      <div>Last received message: {lastJsonMessage && lastJsonMessage.message}</div>
+      <p>your page id: {params.pageId}</p>
       <input type='text' value={message} onChange={(e) => setMessage(e.target.value)} />
       <button onClick={click}>Send Message</button>
+      <div>Last received message: {lastJsonMessage && lastJsonMessage.message}</div>
     </div>
   )
 }
