@@ -5,6 +5,7 @@ use actix::{Actor, Context, Handler, Message as ActixMessage, Recipient};
 use crate::session::{NoticeRequest, SessionId};
 
 pub type PageId = String;
+pub type ObjectId = String;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -27,6 +28,22 @@ pub struct BroadcastRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub message: String,
+}
+
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+pub struct LockRequest {
+    pub session_id: SessionId,
+    pub page_id: PageId,
+    pub object_id: ObjectId,
+}
+
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+pub struct UnlockRequest {
+    pub session_id: SessionId,
+    pub page_id: PageId,
+    pub object_id: ObjectId,
 }
 
 type Sessions = HashMap<SessionId, Recipient<NoticeRequest>>;
@@ -61,7 +78,7 @@ impl Handler<ConnectRequest> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, request: ConnectRequest, _: &mut Context<Self>) -> Self::Result {
-        println!("server: connect request accepted by {} in {}", &request.session_id, &request.page_id);
+        pr("connect", format!("by {} in {} [ {} ]", &request.session_id, &request.page_id, &request.page_id));
 
         let sessions: &mut Sessions = self.pages.entry(request.page_id.clone()).or_default();
         sessions.insert(request.session_id.clone(), request.session_address);
@@ -78,7 +95,7 @@ impl Handler<DisconnectRequest> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
-        println!("server: disconnect request accepted by {} in {}", &request.session_id, &request.page_id);
+        pr("disconnect", format!("by {} in {} [ {} ]", &request.session_id, &request.page_id, &request.page_id));
 
         let sessions: &mut Sessions = self.pages.entry(request.page_id.clone()).or_default();
         sessions.remove(&request.session_id);
@@ -91,11 +108,32 @@ impl Handler<BroadcastRequest> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, request: BroadcastRequest, _: &mut Context<Self>) {
-        println!(
-            "server: broadcast request accepted by {} in {} [ {} ]",
-            &request.session_id, &request.page_id, &request.message
-        );
+        pr("broadcast", format!("by {} in {} [ {} ]", &request.session_id, &request.page_id, &request.message));
 
         self.notice_to_session(&request.page_id, NoticeRequest::broadcast(&request.message), Some(&request.session_id));
     }
+}
+
+impl Handler<LockRequest> for ChatServer {
+    type Result = ();
+
+    fn handle(&mut self, request: LockRequest, _: &mut Context<Self>) {
+        pr("lock", format!("by {} in {} [ {} ]", &request.session_id, &request.page_id, &request.object_id));
+
+        self.notice_to_session(&request.page_id, NoticeRequest::lock(request.object_id), Some(&request.session_id));
+    }
+}
+
+impl Handler<UnlockRequest> for ChatServer {
+    type Result = ();
+
+    fn handle(&mut self, request: UnlockRequest, _: &mut Context<Self>) {
+        pr("unlock", format!("by {} in {} [ {} ]", &request.session_id, &request.page_id, &request.object_id));
+
+        self.notice_to_session(&request.page_id, NoticeRequest::unlock(request.object_id), Some(&request.session_id));
+    }
+}
+
+fn pr(kind: &str, s: String) {
+    println!("server: {} request accepted {}", kind, s);
 }

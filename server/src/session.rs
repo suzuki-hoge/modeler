@@ -11,8 +11,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_str as from_json_str, to_string as to_json_string};
 use uuid::Uuid;
 
-use crate::server::{BroadcastRequest, ChatServer, ConnectRequest, DisconnectRequest, PageId};
-use crate::session::NoticeKind::{Broadcast, Connected, Disconnected};
+use crate::server::{
+    BroadcastRequest, ChatServer, ConnectRequest, DisconnectRequest, LockRequest, ObjectId, PageId, UnlockRequest,
+};
+use crate::session::NoticeKind::{Broadcast, Connected, Disconnected, Lock, Unlock};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 
@@ -37,17 +39,29 @@ pub enum NoticeKind {
     Connected,
     Disconnected,
     Broadcast,
+    Lock,
+    Unlock,
 }
 
 impl NoticeRequest {
     pub fn connected(session_id: &SessionId) -> Self {
         Self { kind: Connected, message: session_id.clone() }
     }
+
     pub fn disconnected(session_id: &SessionId) -> Self {
         Self { kind: Disconnected, message: session_id.clone() }
     }
+
     pub fn broadcast<S: Into<String>>(s: S) -> Self {
         Self { kind: Broadcast, message: s.into() }
+    }
+
+    pub fn lock(object_id: ObjectId) -> Self {
+        Self { kind: Lock, message: object_id }
+    }
+
+    pub fn unlock(object_id: ObjectId) -> Self {
+        Self { kind: Unlock, message: object_id }
     }
 }
 
@@ -76,6 +90,8 @@ impl From<NoticeRequest> for ClientJson {
                 Connected => "connected",
                 Disconnected => "disconnected",
                 Broadcast => "broadcast",
+                Lock => "lock",
+                Unlock => "unlock",
             }
             .to_string(),
             message: value.message,
@@ -176,8 +192,18 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for WsChatSession {
                         "connected" | "disconnected" => panic!("unexpected"),
                         "broadcast" => self.server_address.do_send(BroadcastRequest {
                             session_id: self.session_id.clone(),
-                            message: client_json.message,
                             page_id: self.page_id.clone(),
+                            message: client_json.message,
+                        }),
+                        "lock" => self.server_address.do_send(LockRequest {
+                            session_id: self.session_id.clone(),
+                            page_id: self.page_id.clone(),
+                            object_id: "foo".to_string(),
+                        }),
+                        "unlock" => self.server_address.do_send(UnlockRequest {
+                            session_id: self.session_id.clone(),
+                            page_id: self.page_id.clone(),
+                            object_id: "foo".to_string(),
                         }),
                         _ => {}
                     }

@@ -25,18 +25,26 @@ const Session: FC<Props> = (props: Props) => {
       setMessages((messages) => messages.concat(`${lastJsonMessage.message} ( ${lastJsonMessage.kind} )`).slice(-9))
   }, [lastJsonMessage])
 
-  const disconnect = () => {
+  const lock = () => {
     if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send disconnected')
-      getWebSocket()?.close()
+      console.log('send lock')
+      sendJsonMessage({ kind: 'lock', message: '1234' })
     } else {
       console.log('already disconnected')
     }
   }
-  const foo = () => {
+  const unlock = () => {
     if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send broadcast')
-      sendJsonMessage({ kind: 'broadcast', message: 'foo' })
+      console.log('send unlock')
+      sendJsonMessage({ kind: 'unlock', message: '1234' })
+    } else {
+      console.log('already disconnected')
+    }
+  }
+  const disconnect = () => {
+    if (getWebSocket()?.readyState === ReadyState.OPEN) {
+      console.log('send disconnected')
+      getWebSocket()?.close()
     } else {
       console.log('already disconnected')
     }
@@ -50,8 +58,9 @@ const Session: FC<Props> = (props: Props) => {
         ))}
       </div>
       <div className={styles.buttons}>
+        <button onClick={lock}>lock</button>
+        <button onClick={unlock}>unlock</button>
         <button onClick={disconnect}>disconnect</button>
-        <button onClick={foo}>foo</button>
       </div>
     </div>
   )
