@@ -1,42 +1,18 @@
-use actix::{Actor, Addr};
-use std::time::Instant;
-
-use crate::server::ChatServer;
-use crate::session::{create_session_id, WsChatSession};
-use actix_web::web::Path;
+use crate::actor::{start_server, start_session};
 use actix_web::{
-    web::{resource, Data, Payload},
-    App, Error, HttpRequest, HttpResponse, HttpServer,
+    web::{resource, Data},
+    App, HttpServer,
 };
-use actix_web_actors::ws::start;
 
-mod server;
-mod session;
-
-async fn chat_route(
-    request: HttpRequest,
-    payload: Payload,
-    page_id: Path<String>,
-    server_address: Data<Addr<ChatServer>>,
-) -> Result<HttpResponse, Error> {
-    start(
-        WsChatSession {
-            session_id: create_session_id(),
-            page_id: page_id.into_inner(),
-            server_address: server_address.get_ref().clone(),
-            last_heartbeat: Instant::now(),
-        },
-        &request,
-        payload,
-    )
-}
+mod actor;
+mod data;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let server_address = ChatServer::new().start();
+    let server = start_server();
 
     HttpServer::new(move || {
-        App::new().app_data(Data::new(server_address.clone())).service(resource("/ws/{page_id}").to(chat_route))
+        App::new().app_data(Data::new(server.clone())).service(resource("/ws/{page_id}/{user}").to(start_session))
     })
     .workers(2)
     .bind(("127.0.0.1", 8080))?
