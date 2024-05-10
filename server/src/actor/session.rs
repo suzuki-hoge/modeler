@@ -9,6 +9,8 @@ use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext
 use serde_json::{from_str as from_json_str, Value};
 use uuid::Uuid;
 
+use crate::actor::message::change::add_edge::AddEdgeRequest;
+use crate::actor::message::change::add_node::AddNodeRequest;
 use crate::actor::message::connect::ConnectRequest;
 use crate::actor::message::disconnect::DisconnectRequest;
 use crate::actor::message::lock::LockRequest;
@@ -97,6 +99,18 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                         },
                         Some("unlock") => {
                             match UnlockRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
+                                Ok(request) => self.server_address.do_send(request),
+                                Err(e) => println!("{}", e),
+                            }
+                        }
+                        Some("add-node") => {
+                            match AddNodeRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
+                                Ok(request) => self.server_address.do_send(request),
+                                Err(e) => println!("{}", e),
+                            }
+                        }
+                        Some("add-edge") => {
+                            match AddEdgeRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
                                 Ok(request) => self.server_address.do_send(request),
                                 Err(e) => println!("{}", e),
                             }

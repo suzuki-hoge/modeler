@@ -34,8 +34,8 @@ impl Handler<UnlockRequest> for Server {
 
 #[derive(Serialize)]
 pub struct UnlockResponse {
-    object_id: ObjectId,
     r#type: String,
+    object_id: ObjectId,
 }
 
 impl UnlockResponse {
