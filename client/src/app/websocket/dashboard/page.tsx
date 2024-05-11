@@ -1,89 +1,27 @@
 'use client'
 
-import z from 'zod'
-
-import useWebSocket, { ReadyState } from 'react-use-websocket'
+import useWebSocket from 'react-use-websocket'
 import { type FC, useEffect, useState } from 'react'
 
 import styles from './page.module.scss'
-
-const connectResponse = z.object({
-  type: z.string(),
-  session_id: z.string(),
-  user: z.string(),
-})
-
-type ConnectResponse = z.infer<typeof connectResponse>
-
-function isConnectResponse(value: unknown): value is ConnectResponse {
-  const json = connectResponse.safeParse(value)
-  return json.success && json.data.type === 'connect'
-}
-
-const disconnectResponse = z.object({
-  type: z.string(),
-  session_id: z.string(),
-  user: z.string(),
-})
-
-type DisconnectResponse = z.infer<typeof disconnectResponse>
-
-function isDisconnectResponse(value: unknown): value is DisconnectResponse {
-  const json = disconnectResponse.safeParse(value)
-  return json.success && json.data.type === 'disconnect'
-}
-
-const lockResponse = z.object({
-  type: z.string(),
-  object_id: z.string(),
-})
-
-type LockResponse = z.infer<typeof lockResponse>
-
-function isLockResponse(value: unknown): value is LockResponse {
-  const json = lockResponse.safeParse(value)
-  return json.success && json.data.type === 'lock'
-}
-
-const unlockResponse = z.object({
-  type: z.string(),
-  object_id: z.string(),
-})
-
-type UnlockResponse = z.infer<typeof unlockResponse>
-
-function isUnlockResponse(value: unknown): value is UnlockResponse {
-  const json = unlockResponse.safeParse(value)
-  return json.success && json.data.type === 'unlock'
-}
-
-const addNodeResponse = z.object({
-  type: z.string(),
-  object_id: z.string(),
-  x: z.number(),
-  y: z.number(),
-})
-
-type AddNodeResponse = z.infer<typeof addNodeResponse>
-
-function isAddNodeResponse(value: unknown): value is AddNodeResponse {
-  const json = addNodeResponse.safeParse(value)
-  return json.success && json.data.type === 'add-node'
-}
-
-const addEdgeResponse = z.object({
-  type: z.string(),
-  object_id: z.string(),
-  src: z.string(),
-  dst: z.string(),
-})
-
-type AddEdgeResponse = z.infer<typeof addEdgeResponse>
-
-function isAddEdgeResponse(value: unknown): value is AddEdgeResponse {
-  const json = addEdgeResponse.safeParse(value)
-  return json.success && json.data.type === 'add-edge'
-}
+import { ConnectResponse, handleConnectResponse } from '@/app/websocket/dashboard/(message)/connect'
+import {
+  DisconnectResponse,
+  handleDisconnectResponse,
+  sendDisconnectRequest,
+} from '@/app/websocket/dashboard/(message)/disconnect'
+import { handleLockResponse, LockResponse, sendLockRequest } from '@/app/websocket/dashboard/(message)/lock'
+import { handleUnlockResponse, sendUnlockRequest, UnlockResponse } from '@/app/websocket/dashboard/(message)/unlock'
+import {
+  AddNodeResponse,
+  handleAddNodeResponse,
+  sendAddNodeRequest,
+} from '@/app/websocket/dashboard/(message)/add-node'
+import {
+  AddEdgeResponse,
+  handleAddEdgeResponse,
+  sendAddEdgeRequest,
+} from '@/app/websocket/dashboard/(message)/add-edge'
 
 interface Props {
   pageId: string
@@ -100,79 +38,14 @@ const Session: FC<Props> = (props: Props) => {
 
   useEffect(() => {
     if (lastJsonMessage) {
-      if (isConnectResponse(lastJsonMessage)) {
-        setMessages((messages) => messages.concat(`${lastJsonMessage.type}: ${lastJsonMessage.user}`).slice(-9))
-      }
-      if (isDisconnectResponse(lastJsonMessage)) {
-        setMessages((messages) => messages.concat(`${lastJsonMessage.type}: ${lastJsonMessage.user}`).slice(-9))
-      }
-      if (isLockResponse(lastJsonMessage)) {
-        setMessages((messages) => messages.concat(`${lastJsonMessage.type}: ${lastJsonMessage.object_id}`).slice(-9))
-      }
-      if (isUnlockResponse(lastJsonMessage)) {
-        setMessages((messages) => messages.concat(`${lastJsonMessage.type}: ${lastJsonMessage.object_id}`).slice(-9))
-      }
-      if (isAddNodeResponse(lastJsonMessage)) {
-        setMessages((messages) =>
-          messages
-            .concat(
-              `${lastJsonMessage.type}: ${lastJsonMessage.object_id} ( ${lastJsonMessage.x}, ${lastJsonMessage.y} )`,
-            )
-            .slice(-9),
-        )
-      }
-      if (isAddEdgeResponse(lastJsonMessage)) {
-        setMessages((messages) =>
-          messages
-            .concat(
-              `${lastJsonMessage.type}: ${lastJsonMessage.object_id} ( ${lastJsonMessage.src} -> ${lastJsonMessage.dst} )`,
-            )
-            .slice(-9),
-        )
-      }
+      handleConnectResponse(lastJsonMessage, setMessages)
+      handleDisconnectResponse(lastJsonMessage, setMessages)
+      handleLockResponse(lastJsonMessage, setMessages)
+      handleUnlockResponse(lastJsonMessage, setMessages)
+      handleAddNodeResponse(lastJsonMessage, setMessages)
+      handleAddEdgeResponse(lastJsonMessage, setMessages)
     }
   }, [lastJsonMessage])
-
-  const lock = () => {
-    if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send lock')
-      sendJsonMessage({ type: 'lock', object_id: '1234' })
-    } else {
-      console.log('already disconnected')
-    }
-  }
-  const unlock = () => {
-    if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send unlock')
-      sendJsonMessage({ type: 'unlock', object_id: '1234' })
-    } else {
-      console.log('already disconnected')
-    }
-  }
-  const addNode = () => {
-    if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send add-node')
-      sendJsonMessage({ type: 'add-node', x: 12, y: 34 })
-    } else {
-      console.log('already disconnected')
-    }
-  }
-  const addEdge = () => {
-    if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send add-edge')
-      sendJsonMessage({ type: 'add-edge', src: 'ab', dst: 'cd' })
-    } else {
-      console.log('already disconnected')
-    }
-  }
-  const disconnect = () => {
-    if (getWebSocket()?.readyState === ReadyState.OPEN) {
-      console.log('send disconnected')
-      getWebSocket()?.close()
-    } else {
-      console.log('already disconnected')
-    }
-  }
 
   return (
     <div className={styles.session}>
@@ -182,11 +55,11 @@ const Session: FC<Props> = (props: Props) => {
         ))}
       </div>
       <div className={styles.buttons}>
-        <button onClick={lock}>lock</button>
-        <button onClick={unlock}>unlock</button>
-        <button onClick={addNode}>addNode</button>
-        <button onClick={addEdge}>addEdge</button>
-        <button onClick={disconnect}>disconnect</button>
+        <button onClick={() => sendLockRequest(sendJsonMessage, getWebSocket)}>lock</button>
+        <button onClick={() => sendUnlockRequest(sendJsonMessage, getWebSocket)}>unlock</button>
+        <button onClick={() => sendAddNodeRequest(sendJsonMessage, getWebSocket)}>addNode</button>
+        <button onClick={() => sendAddEdgeRequest(sendJsonMessage, getWebSocket)}>addEdge</button>
+        <button onClick={() => sendDisconnectRequest(sendJsonMessage, getWebSocket)}>disconnect</button>
       </div>
     </div>
   )
