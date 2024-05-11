@@ -21,15 +21,15 @@ import ReactFlow, {
   useReactFlow,
 } from 'reactflow'
 
-import DevTools from '@/app/page/[pageId]/(dev-tool)/Devtools'
-import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/(message)/add-edge'
-import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/page/[pageId]/(message)/add-node'
-import { handleConnectResponse } from '@/app/page/[pageId]/(message)/connect'
-import { handleDisconnectResponse } from '@/app/page/[pageId]/(message)/disconnect'
-import { handleLockResponse } from '@/app/page/[pageId]/(message)/lock'
-import { handleUnlockResponse } from '@/app/page/[pageId]/(message)/unlock'
-import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/(object)/edge'
-import { initialNodes } from '@/app/page/[pageId]/(object)/node'
+import DevTools from '@/app/page/[pageId]/dev-tool/Devtools'
+import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/message/add-edge'
+import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/page/[pageId]/message/add-node'
+import { handleConnectResponse } from '@/app/page/[pageId]/message/connect'
+import { handleDisconnectResponse } from '@/app/page/[pageId]/message/disconnect'
+import { handleLockResponse } from '@/app/page/[pageId]/message/lock'
+import { handleUnlockResponse } from '@/app/page/[pageId]/message/unlock'
+import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/object/edge'
+import { initialNodes } from '@/app/page/[pageId]/object/node'
 
 const user = faker.person.firstName()
 
