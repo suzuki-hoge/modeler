@@ -1,3 +1,64 @@
-.red {
-  color: red;
+.component {
+  display: inline-block;
+  background-color: lightyellow;
+  border: 2px solid gray;
+  border-radius: 5px;
+  padding: 0.5rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 0.5rem;
+
+  .icon {
+    display: inline-block;
+    border: 1px solid gray;
+    border-radius: 50%;
+    font-size: 1rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    text-align: center;
+    line-height: 1.8rem;
+  }
+
+  .name {
+    font-weight: bold;
+  }
+}
+
+.properties {
+  display: flex;
+  flex-direction: column;
+}
+
+.methods {
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+
+  div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 0.3rem;
+  }
+
+  div:nth-child(2) {
+    margin-left: 1rem;
+  }
+
+  .icon {
+    visibility: hidden;
+  }
+}
+
+.line:hover .icon {
+  visibility: visible;
 }

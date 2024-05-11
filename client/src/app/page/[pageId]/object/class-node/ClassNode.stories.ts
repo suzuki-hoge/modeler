@@ -11,6 +11,24 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Primary: Story = {
-  args: {},
+export const Item: Story = {
+  args: {
+    data: {
+      icon: 'DC',
+      name: 'Item<T>',
+      properties: ['- t: T', '- caching: Bool'],
+      methods: ['+ get(): T', '- set(t: T)'],
+    },
+  },
+}
+
+export const ItemRepository: Story = {
+  args: {
+    data: {
+      icon: 'R',
+      name: 'ItemRepository',
+      properties: [],
+      methods: [],
+    },
+  },
 }
