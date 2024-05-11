@@ -1,8 +1,8 @@
 import { useState, type Dispatch, type SetStateAction, type ReactNode, HTMLAttributes } from 'react'
 import { Panel } from 'reactflow'
 
-import NodeInspector from './NodeInspector'
 import ChangeLogger from './ChangeLogger'
+import NodeInspector from './NodeInspector'
 import ViewportLogger from './ViewportLogger'
 
 export default function DevTools() {

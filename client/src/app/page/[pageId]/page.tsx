@@ -1,6 +1,9 @@
 'use client'
+import 'reactflow/dist/style.css'
 
-import React, { useCallback, useState } from 'react'
+import { faker } from '@faker-js/faker'
+import React, { useCallback, useEffect, useState } from 'react'
+import useWebSocket from 'react-use-websocket'
 import ReactFlow, {
   addEdge,
   applyEdgeChanges,
@@ -8,11 +11,8 @@ import ReactFlow, {
   Background,
   ConnectionLineType,
   Controls,
-  DefaultEdgeOptions,
-  Edge,
   MiniMap,
   Node,
-  NodeTypes,
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
@@ -21,40 +21,54 @@ import ReactFlow, {
   useReactFlow,
 } from 'reactflow'
 
-import 'reactflow/dist/style.css'
-import DevTools from '@/app/(dev)/Devtools'
-import ClassNode from '@/app/poc/ClassNode'
+import DevTools from '@/app/page/[pageId]/(dev-tool)/Devtools'
+import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/(message)/add-edge'
+import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/page/[pageId]/(message)/add-node'
+import { handleConnectResponse } from '@/app/page/[pageId]/(message)/connect'
+import { handleDisconnectResponse } from '@/app/page/[pageId]/(message)/disconnect'
+import { handleLockResponse } from '@/app/page/[pageId]/(message)/lock'
+import { handleUnlockResponse } from '@/app/page/[pageId]/(message)/unlock'
+import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/(object)/edge'
+import { initialNodes } from '@/app/page/[pageId]/(object)/node'
 
-const initialNodes: Node[] = [
-  { id: '1', type: 'default', position: { x: 0, y: 0 }, data: { label: '1', icon: 'D' } },
-  { id: '2', type: 'default', position: { x: -75, y: 100 }, data: { label: '2' } },
-  { id: '3', type: 'default', position: { x: 75, y: 150 }, data: { label: '3', icon: 'R' } },
-]
-const initialEdges: Edge[] = [
-  { id: 'e1-2', source: '1', target: '2', type: 'smoothstep' },
-  { id: 'e1-3', source: '1', target: '3', type: 'smoothstep' },
-]
+const user = faker.person.firstName()
 
-const nodeTypes: NodeTypes = { class: ClassNode }
-const defaultEdgeOptions: DefaultEdgeOptions = { type: 'smoothstep' }
+function Flow({ pageId }: { pageId: string }) {
+  const reactFlowInstance = useReactFlow()
 
-function Flow() {
+  // socket
+
+  const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket<Response>(
+    `ws://127.0.0.1:8080/ws/${pageId}/${user}`,
+  )
+
+  useEffect(() => {
+    if (lastJsonMessage) {
+      handleConnectResponse(lastJsonMessage)
+      handleDisconnectResponse(lastJsonMessage)
+      handleLockResponse(lastJsonMessage)
+      handleUnlockResponse(lastJsonMessage)
+      handleAddNodeResponse(reactFlowInstance, lastJsonMessage)
+      handleAddEdgeResponse(reactFlowInstance, lastJsonMessage)
+    }
+  }, [reactFlowInstance, lastJsonMessage])
+
+  // state
+
   const [dragging, setDragging] = useState(false)
+
+  // object
 
   const [nodes, setNodes] = useState(initialNodes)
   const [edges, setEdges] = useState(initialEdges)
+
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => {
       if (changes[0].type === 'position' && changes[0].dragging && !dragging) {
-        console.log('dragging start')
         setDragging(true)
       }
       if (changes[0].type === 'position' && !changes[0].dragging && dragging) {
-        console.log('dragging end')
         setDragging(false)
-      }
-      if (changes[0].type === 'add') {
-        console.log('node add')
       }
       if (changes[0].type === 'remove') {
         console.log('node remove')
@@ -74,20 +88,23 @@ function Flow() {
   )
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      console.log('edge add')
+      sendAddEdgeRequest(sendJsonMessage, getWebSocket, connection)
       setEdges((edges) => addEdge(connection, edges))
     },
-    [setEdges],
+    [sendJsonMessage, getWebSocket, setEdges],
   )
-  const reactFlowInstance = useReactFlow()
+
+  // tmp
+
   const add = useCallback(() => {
     const node: Node = {
-      id: '4',
+      id: crypto.randomUUID(),
       position: { x: -125, y: 200 },
       data: { label: '4' },
     }
     reactFlowInstance.addNodes(node)
-  }, [reactFlowInstance])
+    sendAddNodeRequest(sendJsonMessage, getWebSocket, node)
+  }, [reactFlowInstance, sendJsonMessage, getWebSocket])
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -101,7 +118,7 @@ function Flow() {
         onConnect={onConnect}
         fitView
         attributionPosition='top-right'
-        nodeTypes={nodeTypes}
+        // nodeTypes={nodeTypes}
         className='overview'
         panOnDrag={false}
         selectionOnDrag={true}
@@ -125,10 +142,10 @@ function Flow() {
   )
 }
 
-export default function Page() {
+export default function Page({ params }: { params: { pageId: string } }) {
   return (
     <ReactFlowProvider>
-      <Flow />
+      <Flow pageId={params.pageId} />
     </ReactFlowProvider>
   )
 }

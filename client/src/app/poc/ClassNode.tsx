@@ -1,19 +1,14 @@
+import React from 'react'
+import { Handle, Position } from 'reactflow'
+
 import styles from './class.module.scss'
-import { Handle, Position, useStore } from 'reactflow'
-import React, { memo } from 'react'
 
-export const ClassNode = memo(function InnerClassNode({ id }: { id: string }) {
-  const icon: string = useStore((s) => {
-    const node = s.nodeInternals.get(id)!!
-
-    return node.data.icon
-  })
-
+export default function ClassNode({ data }: { data: { icon: string } }) {
   return (
     <>
       <div className={styles.node}>
         <div className={styles.name}>
-          <span>{icon}</span>
+          <span>{data.icon}</span>
           Item
         </div>
 
@@ -30,6 +25,4 @@ export const ClassNode = memo(function InnerClassNode({ id }: { id: string }) {
       <Handle type='source' position={Position.Bottom} />
     </>
   )
-})
-
-export default ClassNode
+}

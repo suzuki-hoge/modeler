@@ -14,8 +14,9 @@ use crate::data::ObjectId;
 pub struct AddNodeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
-    pub x: u64,
-    pub y: u64,
+    pub object_id: ObjectId,
+    pub x: i64,
+    pub y: i64,
 }
 
 impl AddNodeRequest {
@@ -23,8 +24,9 @@ impl AddNodeRequest {
         Ok(Self {
             session_id,
             page_id,
-            x: map.get("x").unwrap().as_u64().unwrap(),
-            y: map.get("y").unwrap().as_u64().unwrap(),
+            object_id: map.get("object_id").unwrap().as_str().unwrap().to_string(),
+            x: map.get("x").unwrap().as_i64().unwrap(),
+            y: map.get("y").unwrap().as_i64().unwrap(),
         })
     }
 }
@@ -35,9 +37,7 @@ impl Handler<AddNodeRequest> for Server {
     fn handle(&mut self, request: AddNodeRequest, _: &mut Context<Self>) {
         println!("accept add-node request");
 
-        let object_id = "new-node-1".to_string();
-
-        let response = AddNodeResponse::new(object_id, request.x, request.y);
+        let response = AddNodeResponse::new(request.object_id, request.x, request.y);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
@@ -46,12 +46,12 @@ impl Handler<AddNodeRequest> for Server {
 pub struct AddNodeResponse {
     r#type: String,
     object_id: ObjectId,
-    pub x: u64,
-    pub y: u64,
+    pub x: i64,
+    pub y: i64,
 }
 
 impl AddNodeResponse {
-    fn new(object_id: ObjectId, x: u64, y: u64) -> Self {
+    fn new(object_id: ObjectId, x: i64, y: i64) -> Self {
         Self { r#type: String::from("add-node"), object_id, x, y }
     }
 }

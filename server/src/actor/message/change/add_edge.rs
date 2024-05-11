@@ -14,6 +14,7 @@ use crate::data::ObjectId;
 pub struct AddEdgeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
+    pub object_id: ObjectId,
     pub src: ObjectId,
     pub dst: ObjectId,
 }
@@ -23,6 +24,7 @@ impl AddEdgeRequest {
         Ok(Self {
             session_id,
             page_id,
+            object_id: map.get("object_id").unwrap().as_str().unwrap().to_string(),
             src: map.get("src").unwrap().as_str().unwrap().to_string(),
             dst: map.get("dst").unwrap().as_str().unwrap().to_string(),
         })
@@ -35,9 +37,7 @@ impl Handler<AddEdgeRequest> for Server {
     fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
         println!("accept add-edge request");
 
-        let object_id = "new-edge-1".to_string();
-
-        let response = AddEdgeResponse::new(object_id, request.src, request.dst);
+        let response = AddEdgeResponse::new(request.object_id, request.src, request.dst);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }

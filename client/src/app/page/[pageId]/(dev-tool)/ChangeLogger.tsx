@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Panel } from 'reactflow'
 import { NodeChange, OnNodesChange, useStore, useStoreApi } from 'reactflow'
 
 type ChangeLoggerProps = {
