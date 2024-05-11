@@ -7,19 +7,19 @@ import useWebSocket from 'react-use-websocket'
 import ReactFlow, {
   addEdge,
   applyEdgeChanges,
-  applyNodeChanges,
   Background,
   ConnectionLineType,
   Controls,
   MiniMap,
   Node,
+  NodeTypes,
   OnConnect,
   OnEdgesChange,
-  OnNodesChange,
   Panel,
   ReactFlowProvider,
   useReactFlow,
 } from 'reactflow'
+import { shallow } from 'zustand/shallow'
 
 import DevTools from '@/app/page/[pageId]/dev-tool/Devtools'
 import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/message/add-edge'
@@ -28,10 +28,13 @@ import { handleConnectResponse } from '@/app/page/[pageId]/message/connect'
 import { handleDisconnectResponse } from '@/app/page/[pageId]/message/disconnect'
 import { handleLockResponse } from '@/app/page/[pageId]/message/lock'
 import { handleUnlockResponse } from '@/app/page/[pageId]/message/unlock'
+import { ClassNode } from '@/app/page/[pageId]/object/class-node/ClassNode'
 import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/object/edge'
-import { initialNodes } from '@/app/page/[pageId]/object/node'
+import { selector, useStore } from '@/app/page/[pageId]/object/store'
 
 const user = faker.person.firstName()
+
+const nodeTypes: NodeTypes = { class: ClassNode }
 
 function Flow({ pageId }: { pageId: string }) {
   const reactFlowInstance = useReactFlow()
@@ -53,30 +56,11 @@ function Flow({ pageId }: { pageId: string }) {
     }
   }, [reactFlowInstance, lastJsonMessage])
 
-  // state
-
-  const [dragging, setDragging] = useState(false)
-
   // object
 
-  const [nodes, setNodes] = useState(initialNodes)
+  const { nodes, onNodesChange, dragging } = useStore(selector, shallow)
   const [edges, setEdges] = useState(initialEdges)
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => {
-      if (changes[0].type === 'position' && changes[0].dragging && !dragging) {
-        setDragging(true)
-      }
-      if (changes[0].type === 'position' && !changes[0].dragging && dragging) {
-        setDragging(false)
-      }
-      if (changes[0].type === 'remove') {
-        console.log('node remove')
-      }
-      setNodes((nodes) => applyNodeChanges(changes, nodes))
-    },
-    [setNodes, dragging],
-  )
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => {
       if (changes[0].type === 'remove') {
@@ -116,10 +100,9 @@ function Flow({ pageId }: { pageId: string }) {
         defaultEdgeOptions={defaultEdgeOptions}
         connectionLineType={ConnectionLineType.SmoothStep}
         onConnect={onConnect}
-        fitView
+        nodeTypes={nodeTypes}
         attributionPosition='top-right'
-        // nodeTypes={nodeTypes}
-        className='overview'
+        fitView={true}
         panOnDrag={false}
         selectionOnDrag={true}
         zoomOnScroll={false}
