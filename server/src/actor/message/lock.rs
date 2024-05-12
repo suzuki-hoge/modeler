@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
 use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
-use serde_json::{to_string as to_json_string, Value};
+use serde_json::to_string as to_json_string;
 
+use crate::actor::message::{parse_string, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::{PageId, SessionId};
@@ -18,8 +17,8 @@ pub struct LockRequest {
 }
 
 impl LockRequest {
-    pub fn parse(session_id: SessionId, page_id: PageId, map: HashMap<String, Value>) -> Result<Self, String> {
-        Ok(Self { session_id, page_id, object_id: map.get("object_id").unwrap().as_str().unwrap().to_string() })
+    pub fn parse(session_id: SessionId, page_id: PageId, map: Json) -> Result<LockRequest, String> {
+        Ok(Self { session_id, page_id, object_id: parse_string(&map, "object_id")? })
     }
 }
 

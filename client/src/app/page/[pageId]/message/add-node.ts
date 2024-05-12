@@ -5,6 +5,8 @@ import z from 'zod'
 
 // types
 
+const type = 'add-node'
+
 const addNodeRequest = z.object({
   type: z.string(),
   object_id: z.string(),
@@ -24,8 +26,8 @@ export function sendAddNodeRequest(
   node: Node<{ label: string }>,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log('send add-node')
-    send({ type: 'add-node', object_id: node.id, x: node.position.x, y: node.position.y })
+    console.log(`send ${type}`)
+    send({ type: type, object_id: node.id, x: node.position.x, y: node.position.y })
   } else {
     console.log('already disconnected')
   }
@@ -35,7 +37,7 @@ export function sendAddNodeRequest(
 
 export function handleAddNodeResponse(reactFlowInstance: ReactFlowInstance, response: unknown) {
   if (isAddNodeResponse(response)) {
-    console.log('handle add-node', response)
+    console.log(`handle ${type}`, response)
     const node: Node = {
       id: response.object_id,
       position: { x: response.x, y: response.y },
@@ -47,5 +49,5 @@ export function handleAddNodeResponse(reactFlowInstance: ReactFlowInstance, resp
 
 export function isAddNodeResponse(value: unknown): value is AddNodeResponse {
   const json = addNodeResponse.safeParse(value)
-  return json.success && json.data.type === 'add-node'
+  return json.success && json.data.type === type
 }

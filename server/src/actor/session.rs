@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use actix::{
@@ -6,7 +5,7 @@ use actix::{
     Message as ActixMessage, Running, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext};
-use serde_json::{from_str as from_json_str, Value};
+use serde_json::from_str as from_json_str;
 use uuid::Uuid;
 
 use crate::actor::message::change::add_edge::AddEdgeRequest;
@@ -16,6 +15,7 @@ use crate::actor::message::connect::ConnectRequest;
 use crate::actor::message::disconnect::DisconnectRequest;
 use crate::actor::message::lock::LockRequest;
 use crate::actor::message::unlock::UnlockRequest;
+use crate::actor::message::Json;
 use crate::actor::server::Server;
 use crate::actor::{PageId, SessionId};
 
@@ -92,7 +92,7 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                     self.last_heartbeat = Instant::now();
                 }
                 WsMessage::Text(byte) => {
-                    let map: HashMap<String, Value> = from_json_str(byte.trim()).unwrap();
+                    let map: Json = from_json_str(byte.trim()).unwrap();
                     match map.get("type").and_then(|v| v.as_str()) {
                         Some("lock") => match LockRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
                             Ok(request) => self.server_address.do_send(request),

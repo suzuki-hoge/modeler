@@ -4,6 +4,8 @@ import z from 'zod'
 
 // types
 
+const type = 'lock'
+
 const lockRequest = z.object({
   type: z.string(),
   object_id: z.string(),
@@ -21,8 +23,8 @@ export function sendLockRequest(
   objectId: string,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log('send lock')
-    send({ type: 'lock', object_id: objectId })
+    console.log(`send ${type}`)
+    send({ type: type, object_id: objectId })
   } else {
     console.log('already disconnected')
   }
@@ -32,11 +34,11 @@ export function sendLockRequest(
 
 export function handleLockResponse(response: unknown) {
   if (isLockResponse(response)) {
-    console.log('handle lock')
+    console.log(`handle ${type}`, response)
   }
 }
 
 export function isLockResponse(value: unknown): value is LockResponse {
   const json = lockResponse.safeParse(value)
-  return json.success && json.data.type === 'lock'
+  return json.success && json.data.type === type
 }

@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
 use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
-use serde_json::{to_string as to_json_string, Value};
+use serde_json::to_string as to_json_string;
 
+use crate::actor::message::{parse_i64, parse_string, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::{PageId, SessionId};
@@ -20,13 +19,13 @@ pub struct AddNodeRequest {
 }
 
 impl AddNodeRequest {
-    pub fn parse(session_id: SessionId, page_id: PageId, map: HashMap<String, Value>) -> Result<Self, String> {
+    pub fn parse(session_id: SessionId, page_id: PageId, map: Json) -> Result<AddNodeRequest, String> {
         Ok(Self {
             session_id,
             page_id,
-            object_id: map.get("object_id").unwrap().as_str().unwrap().to_string(),
-            x: map.get("x").unwrap().as_i64().unwrap(),
-            y: map.get("y").unwrap().as_i64().unwrap(),
+            object_id: parse_string(&map, "object_id")?,
+            x: parse_i64(&map, "x")?,
+            y: parse_i64(&map, "y")?,
         })
     }
 }

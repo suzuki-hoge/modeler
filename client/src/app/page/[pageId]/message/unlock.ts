@@ -4,6 +4,8 @@ import z from 'zod'
 
 // types
 
+const type = 'unlock'
+
 const unlockRequest = z.object({
   type: z.string(),
   object_id: z.string(),
@@ -21,8 +23,8 @@ export function sendUnlockRequest(
   objectId: string,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log('send unlock')
-    send({ type: 'unlock', object_id: objectId })
+    console.log(`send ${type}`)
+    send({ type: type, object_id: objectId })
   } else {
     console.log('already disconnected')
   }
@@ -32,11 +34,11 @@ export function sendUnlockRequest(
 
 export function handleUnlockResponse(response: unknown) {
   if (isUnlockResponse(response)) {
-    console.log('handle unlock')
+    console.log(`handle ${type}`, response)
   }
 }
 
 export function isUnlockResponse(value: unknown): value is UnlockResponse {
   const json = unlockResponse.safeParse(value)
-  return json.success && json.data.type === 'unlock'
+  return json.success && json.data.type === type
 }
