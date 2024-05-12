@@ -19,13 +19,13 @@ pub struct AddNodeRequest {
 }
 
 impl AddNodeRequest {
-    pub fn parse(session_id: SessionId, page_id: PageId, map: Json) -> Result<AddNodeRequest, String> {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<AddNodeRequest, String> {
         Ok(Self {
-            session_id,
-            page_id,
-            object_id: parse_string(&map, "object_id")?,
-            x: parse_i64(&map, "x")?,
-            y: parse_i64(&map, "y")?,
+            session_id: session_id.clone(),
+            page_id: page_id.clone(),
+            object_id: parse_string(&json, "object_id")?,
+            x: parse_i64(&json, "x")?,
+            y: parse_i64(&json, "y")?,
         })
     }
 }
@@ -45,8 +45,8 @@ impl Handler<AddNodeRequest> for Server {
 pub struct AddNodeResponse {
     r#type: String,
     object_id: ObjectId,
-    pub x: i64,
-    pub y: i64,
+    x: i64,
+    y: i64,
 }
 
 impl AddNodeResponse {

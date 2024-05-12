@@ -1,3 +1,10 @@
 pub mod add_edge;
+pub mod add_method;
 pub mod add_node;
+pub mod add_property;
 pub mod delete_method;
+pub mod delete_property;
+pub mod update_icon;
+pub mod update_method;
+pub mod update_name;
+pub mod update_property;

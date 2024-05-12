@@ -19,13 +19,13 @@ pub struct AddEdgeRequest {
 }
 
 impl AddEdgeRequest {
-    pub fn parse(session_id: SessionId, page_id: PageId, map: Json) -> Result<AddEdgeRequest, String> {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<AddEdgeRequest, String> {
         Ok(Self {
-            session_id,
-            page_id,
-            object_id: parse_string(&map, "object_id")?,
-            src: parse_string(&map, "src")?,
-            dst: parse_string(&map, "dst")?,
+            session_id: session_id.clone(),
+            page_id: page_id.clone(),
+            object_id: parse_string(&json, "object_id")?,
+            src: parse_string(&json, "src")?,
+            dst: parse_string(&json, "dst")?,
         })
     }
 }
@@ -45,8 +45,8 @@ impl Handler<AddEdgeRequest> for Server {
 pub struct AddEdgeResponse {
     r#type: String,
     object_id: ObjectId,
-    pub src: ObjectId,
-    pub dst: ObjectId,
+    src: ObjectId,
+    dst: ObjectId,
 }
 
 impl AddEdgeResponse {

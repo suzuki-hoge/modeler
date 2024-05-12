@@ -10,50 +10,53 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct DeleteMethodRequest {
+pub struct UpdateMethodRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
+    pub method: String,
     pub n: usize,
 }
 
-impl DeleteMethodRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<DeleteMethodRequest, String> {
+impl UpdateMethodRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateMethodRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "object_id")?,
+            method: parse_string(&json, "method")?,
             n: parse_usize(&json, "n")?,
         })
     }
 }
 
-impl Handler<DeleteMethodRequest> for Server {
+impl Handler<UpdateMethodRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: DeleteMethodRequest, _: &mut Context<Self>) {
-        println!("accept delete-method request");
+    fn handle(&mut self, request: UpdateMethodRequest, _: &mut Context<Self>) {
+        println!("accept update-method request");
 
-        let response = DeleteMethodResponse::new(request.object_id, request.n);
+        let response = UpdateMethodResponse::new(request.object_id, request.method, request.n);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
 
 #[derive(Serialize)]
-pub struct DeleteMethodResponse {
+pub struct UpdateMethodResponse {
     r#type: String,
     object_id: ObjectId,
+    method: String,
     n: usize,
 }
 
-impl DeleteMethodResponse {
-    fn new(object_id: ObjectId, n: usize) -> Self {
-        Self { r#type: String::from("delete-method"), object_id, n }
+impl UpdateMethodResponse {
+    fn new(object_id: ObjectId, method: String, n: usize) -> Self {
+        Self { r#type: String::from("update-method"), object_id, method, n }
     }
 }
 
-impl From<DeleteMethodResponse> for Response {
-    fn from(value: DeleteMethodResponse) -> Self {
+impl From<UpdateMethodResponse> for Response {
+    fn from(value: UpdateMethodResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

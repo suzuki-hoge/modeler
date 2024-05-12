@@ -9,8 +9,15 @@ use serde_json::from_str as from_json_str;
 use uuid::Uuid;
 
 use crate::actor::message::change::add_edge::AddEdgeRequest;
+use crate::actor::message::change::add_method::AddMethodRequest;
 use crate::actor::message::change::add_node::AddNodeRequest;
+use crate::actor::message::change::add_property::AddPropertyRequest;
 use crate::actor::message::change::delete_method::DeleteMethodRequest;
+use crate::actor::message::change::delete_property::DeletePropertyRequest;
+use crate::actor::message::change::update_icon::UpdateIconRequest;
+use crate::actor::message::change::update_method::UpdateMethodRequest;
+use crate::actor::message::change::update_name::UpdateNameRequest;
+use crate::actor::message::change::update_property::UpdatePropertyRequest;
 use crate::actor::message::connect::ConnectRequest;
 use crate::actor::message::disconnect::DisconnectRequest;
 use crate::actor::message::lock::LockRequest;
@@ -52,6 +59,46 @@ impl Session {
             context.ping(b"");
         });
     }
+
+    fn handle_json(&mut self, json: Json) -> Result<(), String> {
+        match json.get("type").and_then(|v| v.as_str()) {
+            Some("lock") => self.server_address.do_send(LockRequest::parse(&self.session_id, &self.page_id, json)?),
+            Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
+            Some("add-node") => {
+                self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("add-edge") => {
+                self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("update-icon") => {
+                self.server_address.do_send(UpdateIconRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("update-name") => {
+                self.server_address.do_send(UpdateNameRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("add-property") => {
+                self.server_address.do_send(AddPropertyRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("update-property") => {
+                self.server_address.do_send(UpdatePropertyRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("delete-property") => {
+                self.server_address.do_send(DeletePropertyRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("add-method") => {
+                self.server_address.do_send(AddMethodRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("update-method") => {
+                self.server_address.do_send(UpdateMethodRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("delete-method") => {
+                self.server_address.do_send(DeleteMethodRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some(s) => Err(format!("unexpected typ: {s}"))?,
+            None => Err(String::from("type missing"))?,
+        };
+        Ok(())
+    }
 }
 
 impl Actor for Session {
@@ -92,38 +139,10 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                     self.last_heartbeat = Instant::now();
                 }
                 WsMessage::Text(byte) => {
-                    let map: Json = from_json_str(byte.trim()).unwrap();
-                    match map.get("type").and_then(|v| v.as_str()) {
-                        Some("lock") => match LockRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
-                            Ok(request) => self.server_address.do_send(request),
-                            Err(e) => println!("{}", e),
-                        },
-                        Some("unlock") => {
-                            match UnlockRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
-                                Ok(request) => self.server_address.do_send(request),
-                                Err(e) => println!("{}", e),
-                            }
-                        }
-                        Some("add-node") => {
-                            match AddNodeRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
-                                Ok(request) => self.server_address.do_send(request),
-                                Err(e) => println!("{}", e),
-                            }
-                        }
-                        Some("add-edge") => {
-                            match AddEdgeRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
-                                Ok(request) => self.server_address.do_send(request),
-                                Err(e) => println!("{}", e),
-                            }
-                        }
-                        Some("delete-method") => {
-                            match DeleteMethodRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
-                                Ok(request) => self.server_address.do_send(request),
-                                Err(e) => println!("{}", e),
-                            }
-                        }
-                        Some(s) => println!("unexpected typ: {}", s),
-                        None => println!("type missing"),
+                    let json: Json = from_json_str(byte.trim()).unwrap();
+                    match self.handle_json(json) {
+                        Ok(_) => {}
+                        Err(e) => println!("some errors occurred: {e}"),
                     }
                 }
                 WsMessage::Binary(_) => {

@@ -16,8 +16,12 @@ pub struct UnlockRequest {
 }
 
 impl UnlockRequest {
-    pub fn parse(session_id: SessionId, page_id: PageId, map: Json) -> Result<UnlockRequest, String> {
-        Ok(Self { session_id, page_id, object_id: parse_string(&map, "object_id")? })
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UnlockRequest, String> {
+        Ok(Self {
+            session_id: session_id.clone(),
+            page_id: page_id.clone(),
+            object_id: parse_string(&json, "object_id")?,
+        })
     }
 }
 

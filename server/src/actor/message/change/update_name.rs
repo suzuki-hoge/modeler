@@ -10,47 +10,50 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct LockRequest {
+pub struct UpdateNameRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
+    pub name: String,
 }
 
-impl LockRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<LockRequest, String> {
+impl UpdateNameRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateNameRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "object_id")?,
+            name: parse_string(&json, "name")?,
         })
     }
 }
 
-impl Handler<LockRequest> for Server {
+impl Handler<UpdateNameRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: LockRequest, _: &mut Context<Self>) {
-        println!("accept lock request");
+    fn handle(&mut self, request: UpdateNameRequest, _: &mut Context<Self>) {
+        println!("accept update-name request");
 
-        let response = LockResponse::new(request.object_id);
+        let response = UpdateNameResponse::new(request.object_id, request.name);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
 
 #[derive(Serialize)]
-pub struct LockResponse {
+pub struct UpdateNameResponse {
     r#type: String,
     object_id: ObjectId,
+    name: String,
 }
 
-impl LockResponse {
-    fn new(object_id: ObjectId) -> Self {
-        Self { r#type: String::from("lock"), object_id }
+impl UpdateNameResponse {
+    fn new(object_id: ObjectId, name: String) -> Self {
+        Self { r#type: String::from("update-name"), object_id, name }
     }
 }
 
-impl From<LockResponse> for Response {
-    fn from(value: LockResponse) -> Self {
+impl From<UpdateNameResponse> for Response {
+    fn from(value: UpdateNameResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }
