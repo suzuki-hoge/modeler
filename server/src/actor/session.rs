@@ -11,6 +11,7 @@ use uuid::Uuid;
 
 use crate::actor::message::change::add_edge::AddEdgeRequest;
 use crate::actor::message::change::add_node::AddNodeRequest;
+use crate::actor::message::change::delete_method::DeleteMethodRequest;
 use crate::actor::message::connect::ConnectRequest;
 use crate::actor::message::disconnect::DisconnectRequest;
 use crate::actor::message::lock::LockRequest;
@@ -111,6 +112,12 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                         }
                         Some("add-edge") => {
                             match AddEdgeRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
+                                Ok(request) => self.server_address.do_send(request),
+                                Err(e) => println!("{}", e),
+                            }
+                        }
+                        Some("delete-method") => {
+                            match DeleteMethodRequest::parse(self.session_id.clone(), self.page_id.clone(), map) {
                                 Ok(request) => self.server_address.do_send(request),
                                 Err(e) => println!("{}", e),
                             }

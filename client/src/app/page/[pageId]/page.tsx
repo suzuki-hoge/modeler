@@ -2,7 +2,7 @@
 import 'reactflow/dist/style.css'
 
 import { faker } from '@faker-js/faker'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import useWebSocket from 'react-use-websocket'
 import ReactFlow, {
   addEdge,
@@ -21,10 +21,12 @@ import ReactFlow, {
 } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
+import { WebSocketContext, Response } from '@/app/page/[pageId]/context'
 import DevTools from '@/app/page/[pageId]/dev-tool/Devtools'
 import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/message/add-edge'
 import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/page/[pageId]/message/add-node'
 import { handleConnectResponse } from '@/app/page/[pageId]/message/connect'
+import { handleDeleteMethodResponse } from '@/app/page/[pageId]/message/delete-method'
 import { handleDisconnectResponse } from '@/app/page/[pageId]/message/disconnect'
 import { handleLockResponse } from '@/app/page/[pageId]/message/lock'
 import { handleUnlockResponse } from '@/app/page/[pageId]/message/unlock'
@@ -32,29 +34,30 @@ import { ClassNode } from '@/app/page/[pageId]/object/class-node/ClassNode'
 import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/object/edge'
 import { selector, useStore } from '@/app/page/[pageId]/object/store'
 
-const user = faker.person.firstName()
-
 const nodeTypes: NodeTypes = { class: ClassNode }
 
-function Flow({ pageId }: { pageId: string }) {
+function Flow() {
   const reactFlowInstance = useReactFlow()
+
+  // context
+
+  const deleteMethod = useStore((state) => state.deleteMethod)
 
   // socket
 
-  const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket<Response>(
-    `ws://127.0.0.1:8080/ws/${pageId}/${user}`,
-  )
+  const { send, response, socket } = useContext(WebSocketContext)!
 
   useEffect(() => {
-    if (lastJsonMessage) {
-      handleConnectResponse(lastJsonMessage)
-      handleDisconnectResponse(lastJsonMessage)
-      handleLockResponse(lastJsonMessage)
-      handleUnlockResponse(lastJsonMessage)
-      handleAddNodeResponse(reactFlowInstance, lastJsonMessage)
-      handleAddEdgeResponse(reactFlowInstance, lastJsonMessage)
+    if (response) {
+      handleConnectResponse(response)
+      handleDisconnectResponse(response)
+      handleLockResponse(response)
+      handleUnlockResponse(response)
+      handleAddNodeResponse(reactFlowInstance, response)
+      handleAddEdgeResponse(reactFlowInstance, response)
+      handleDeleteMethodResponse(deleteMethod, response)
     }
-  }, [reactFlowInstance, lastJsonMessage])
+  }, [reactFlowInstance, deleteMethod, response])
 
   // object
 
@@ -72,10 +75,10 @@ function Flow({ pageId }: { pageId: string }) {
   )
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      sendAddEdgeRequest(sendJsonMessage, getWebSocket, connection)
+      sendAddEdgeRequest(send, socket, connection)
       setEdges((edges) => addEdge(connection, edges))
     },
-    [sendJsonMessage, getWebSocket, setEdges],
+    [send, socket, setEdges],
   )
 
   // tmp
@@ -87,8 +90,8 @@ function Flow({ pageId }: { pageId: string }) {
       data: { label: '4' },
     }
     reactFlowInstance.addNodes(node)
-    sendAddNodeRequest(sendJsonMessage, getWebSocket, node)
-  }, [reactFlowInstance, sendJsonMessage, getWebSocket])
+    sendAddNodeRequest(send, socket, node)
+  }, [reactFlowInstance, send, socket])
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -125,10 +128,18 @@ function Flow({ pageId }: { pageId: string }) {
   )
 }
 
+const user = faker.person.firstName()
+
 export default function Page({ params }: { params: { pageId: string } }) {
+  const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket<Response>(
+    `ws://127.0.0.1:8080/ws/${params.pageId}/${user}`,
+  )
+
   return (
     <ReactFlowProvider>
-      <Flow pageId={params.pageId} />
+      <WebSocketContext.Provider value={{ send: sendJsonMessage, response: lastJsonMessage, socket: getWebSocket }}>
+        <Flow />
+      </WebSocketContext.Provider>
     </ReactFlowProvider>
   )
 }

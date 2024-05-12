@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { AiOutlineDelete } from 'react-icons/ai'
 import { MdAddCircleOutline } from 'react-icons/md'
 import { Handle, Position } from 'reactflow'
 
+import { WebSocketContext } from '@/app/page/[pageId]/context'
+import { sendDeleteMethodRequest } from '@/app/page/[pageId]/message/delete-method'
 import { NodeData } from '@/app/page/[pageId]/object/node'
-import { DeleteMethod, useStore } from '@/app/page/[pageId]/object/store'
+import { useStore } from '@/app/page/[pageId]/object/store'
 
 import styles from './class-node.module.scss'
 
@@ -14,8 +16,6 @@ export interface Props {
 }
 
 export const ClassNode = ({ id, data }: Props) => {
-  const deleteMethod = useStore((state) => state.deleteMethod)
-
   return (
     <div className={styles.component}>
       <div className={styles.header}>
@@ -40,7 +40,7 @@ export const ClassNode = ({ id, data }: Props) => {
       {data.methods.length !== 0 ? (
         <div className={styles.methods}>
           {data.methods.map((method, i) => (
-            <Method key={i} deleteMethod={deleteMethod} id={id} i={i} method={method} />
+            <Method key={i} id={id} n={i} method={method} />
           ))}
         </div>
       ) : (
@@ -64,7 +64,7 @@ const Property = (props: { id: string; property: string }) => {
   )
 }
 
-const Method = (props: { deleteMethod: DeleteMethod; id: string; i: number; method: string }) => {
+const Method = (props: { id: string; n: number; method: string }) => {
   return (
     <div className={styles.line}>
       <span>{props.method}</span>
@@ -89,6 +89,18 @@ const AddIcon = () => {
   return <MdAddCircleOutline className={styles.icon} />
 }
 
-const DeleteIcon = (props: { deleteMethod: DeleteMethod; id: string; i: number }) => {
-  return <AiOutlineDelete className={styles.icon} onClick={() => props.deleteMethod(props.id, props.i)} />
+const DeleteIcon = (props: { id: string; n: number }) => {
+  const deleteMethod = useStore((state) => state.deleteMethod)
+
+  const { send, socket } = useContext(WebSocketContext)!
+
+  return (
+    <AiOutlineDelete
+      className={styles.icon}
+      onClick={() => {
+        deleteMethod(props.id, props.n)
+        sendDeleteMethodRequest(send, socket, props.id, props.n)
+      }}
+    />
+  )
 }
