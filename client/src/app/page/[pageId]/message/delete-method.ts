@@ -1,5 +1,5 @@
 import { ReadyState } from 'react-use-websocket'
-import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
+import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
 import { DeleteMethod } from '@/app/page/[pageId]/object/store'
@@ -21,7 +21,7 @@ export type DeleteMethodResponse = DeleteMethodRequest
 // send
 
 export function sendDeleteMethodRequest(
-  send: SendJsonMessage,
+  send: (request: DeleteMethodRequest) => void,
   socket: () => WebSocketLike | null,
   objectId: string,
   n: number,

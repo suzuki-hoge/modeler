@@ -3,17 +3,21 @@ import { createWithEqualityFn } from 'zustand/traditional'
 
 import { initialNodes, NodeData } from '@/app/page/[pageId]/object/node'
 
+export type UpdateIcon = (id: string, icon: string) => void
+export type UpdateName = (id: string, name: string) => void
 export type AddProperty = (id: string, n: number) => void
-export type UpdateProperty = (id: string, n: number, property: string) => void
+export type UpdateProperty = (id: string, property: string, n: number) => void
 export type DeleteProperty = (id: string, n: number) => void
 export type AddMethod = (id: string, n: number) => void
-export type UpdateMethod = (id: string, n: number, method: string) => void
+export type UpdateMethod = (id: string, method: string, n: number) => void
 export type DeleteMethod = (id: string, n: number) => void
 
 export type State = {
   nodes: Node<NodeData>[]
   onNodesChange: OnNodesChange
   dragging: boolean
+  updateIcon: UpdateIcon
+  updateName: UpdateName
   addProperty: AddProperty
   updateProperty: UpdateProperty
   deleteProperty: DeleteProperty
@@ -26,6 +30,8 @@ export const selector = (state: State) => ({
   nodes: state.nodes,
   onNodesChange: state.onNodesChange,
   dragging: state.dragging,
+  updateIcon: state.updateIcon,
+  updateName: state.updateName,
   addProperty: state.addProperty,
   updateProperty: state.updateProperty,
   deleteProperty: state.deleteProperty,
@@ -52,6 +58,26 @@ export const useStore = createWithEqualityFn<State>((set, get) => ({
     })
   },
   dragging: false,
+  updateIcon: (id: string, icon: string) => {
+    set({
+      nodes: get().nodes.map((node) => {
+        if (node.id === id) {
+          node.data = { ...node.data, icon }
+        }
+        return node
+      }),
+    })
+  },
+  updateName: (id: string, name: string) => {
+    set({
+      nodes: get().nodes.map((node) => {
+        if (node.id === id) {
+          node.data = { ...node.data, name }
+        }
+        return node
+      }),
+    })
+  },
   addProperty: (id: string, n: number) => {
     set({
       nodes: get().nodes.map((node) => {
@@ -63,7 +89,7 @@ export const useStore = createWithEqualityFn<State>((set, get) => ({
       }),
     })
   },
-  updateProperty: (id: string, n: number, property: string) => {
+  updateProperty: (id: string, property: string, n: number) => {
     set({
       nodes: get().nodes.map((node) => {
         if (node.id === id) {
@@ -96,7 +122,7 @@ export const useStore = createWithEqualityFn<State>((set, get) => ({
       }),
     })
   },
-  updateMethod: (id: string, n: number, method: string) => {
+  updateMethod: (id: string, method: string, n: number) => {
     set({
       nodes: get().nodes.map((node) => {
         if (node.id === id) {

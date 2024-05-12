@@ -1,5 +1,5 @@
 import { ReadyState } from 'react-use-websocket'
-import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
+import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Connection, Edge, ReactFlowInstance } from 'reactflow'
 import z from 'zod'
 
@@ -20,7 +20,11 @@ export type AddEdgeResponse = z.infer<typeof addEdgeResponse>
 
 // send
 
-export function sendAddEdgeRequest(send: SendJsonMessage, socket: () => WebSocketLike | null, connection: Connection) {
+export function sendAddEdgeRequest(
+  send: (request: AddEdgeRequest) => void,
+  socket: () => WebSocketLike | null,
+  connection: Connection,
+) {
   if (socket()?.readyState === ReadyState.OPEN) {
     console.log(`send ${type}`)
     send({ type: type, object_id: crypto.randomUUID(), src: connection.source!, dst: connection.target! })

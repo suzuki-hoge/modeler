@@ -14,8 +14,7 @@ pub struct UpdateIconRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
-    pub color: String,
-    pub text: String,
+    pub icon: String,
 }
 
 impl UpdateIconRequest {
@@ -24,8 +23,7 @@ impl UpdateIconRequest {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "object_id")?,
-            color: parse_string(&json, "color")?,
-            text: parse_string(&json, "text")?,
+            icon: parse_string(&json, "icon")?,
         })
     }
 }
@@ -36,7 +34,7 @@ impl Handler<UpdateIconRequest> for Server {
     fn handle(&mut self, request: UpdateIconRequest, _: &mut Context<Self>) {
         println!("accept update-icon request");
 
-        let response = UpdateIconResponse::new(request.object_id, request.color, request.text);
+        let response = UpdateIconResponse::new(request.object_id, request.icon);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
@@ -45,13 +43,12 @@ impl Handler<UpdateIconRequest> for Server {
 pub struct UpdateIconResponse {
     r#type: String,
     object_id: ObjectId,
-    color: String,
-    text: String,
+    icon: String,
 }
 
 impl UpdateIconResponse {
-    fn new(object_id: ObjectId, color: String, text: String) -> Self {
-        Self { r#type: String::from("update-icon"), object_id, color, text }
+    fn new(object_id: ObjectId, icon: String) -> Self {
+        Self { r#type: String::from("update-icon"), object_id, icon }
     }
 }
 

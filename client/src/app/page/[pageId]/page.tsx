@@ -24,12 +24,19 @@ import { shallow } from 'zustand/shallow'
 import { WebSocketContext, Response } from '@/app/page/[pageId]/context'
 import DevTools from '@/app/page/[pageId]/dev-tool/Devtools'
 import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/message/add-edge'
+import { handleAddMethodResponse } from '@/app/page/[pageId]/message/add-method'
 import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/page/[pageId]/message/add-node'
+import { handleAddPropertyResponse } from '@/app/page/[pageId]/message/add-property'
 import { handleConnectResponse } from '@/app/page/[pageId]/message/connect'
 import { handleDeleteMethodResponse } from '@/app/page/[pageId]/message/delete-method'
+import { handleDeletePropertyResponse } from '@/app/page/[pageId]/message/delete-property'
 import { handleDisconnectResponse } from '@/app/page/[pageId]/message/disconnect'
 import { handleLockResponse } from '@/app/page/[pageId]/message/lock'
 import { handleUnlockResponse } from '@/app/page/[pageId]/message/unlock'
+import { handleUpdateIconResponse } from '@/app/page/[pageId]/message/update-icon'
+import { handleUpdateMethodResponse } from '@/app/page/[pageId]/message/update-method'
+import { handleUpdateNameResponse } from '@/app/page/[pageId]/message/update-name'
+import { handleUpdatePropertyResponse } from '@/app/page/[pageId]/message/update-property'
 import { ClassNode } from '@/app/page/[pageId]/object/class-node/ClassNode'
 import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/object/edge'
 import { selector, useStore } from '@/app/page/[pageId]/object/store'
@@ -41,6 +48,13 @@ function Flow() {
 
   // context
 
+  const updateIcon = useStore((state) => state.updateIcon)
+  const updateName = useStore((state) => state.updateName)
+  const addProperty = useStore((state) => state.addProperty)
+  const updateProperty = useStore((state) => state.updateProperty)
+  const deleteProperty = useStore((state) => state.deleteProperty)
+  const addMethod = useStore((state) => state.addMethod)
+  const updateMethod = useStore((state) => state.updateMethod)
   const deleteMethod = useStore((state) => state.deleteMethod)
 
   // socket
@@ -55,9 +69,27 @@ function Flow() {
       handleUnlockResponse(response)
       handleAddNodeResponse(reactFlowInstance, response)
       handleAddEdgeResponse(reactFlowInstance, response)
+      handleAddPropertyResponse(addProperty, response)
+      handleUpdateIconResponse(updateIcon, response)
+      handleUpdateNameResponse(updateName, response)
+      handleUpdatePropertyResponse(updateProperty, response)
+      handleDeletePropertyResponse(deleteProperty, response)
+      handleAddMethodResponse(addMethod, response)
+      handleUpdateMethodResponse(updateMethod, response)
       handleDeleteMethodResponse(deleteMethod, response)
     }
-  }, [reactFlowInstance, deleteMethod, response])
+  }, [
+    reactFlowInstance,
+    updateIcon,
+    updateName,
+    addProperty,
+    updateProperty,
+    deleteProperty,
+    addMethod,
+    updateMethod,
+    deleteMethod,
+    response,
+  ])
 
   // object
 

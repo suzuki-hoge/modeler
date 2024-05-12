@@ -4,7 +4,14 @@ import { MdAddCircleOutline } from 'react-icons/md'
 import { Handle, Position } from 'reactflow'
 
 import { WebSocketContext } from '@/app/page/[pageId]/context'
+import { sendAddMethodRequest } from '@/app/page/[pageId]/message/add-method'
+import { sendAddPropertyRequest } from '@/app/page/[pageId]/message/add-property'
 import { sendDeleteMethodRequest } from '@/app/page/[pageId]/message/delete-method'
+import { sendDeletePropertyRequest } from '@/app/page/[pageId]/message/delete-property'
+import { sendUpdateIconRequest } from '@/app/page/[pageId]/message/update-icon'
+import { sendUpdateMethodRequest } from '@/app/page/[pageId]/message/update-method'
+import { sendUpdateNameRequest } from '@/app/page/[pageId]/message/update-name'
+import { sendUpdatePropertyRequest } from '@/app/page/[pageId]/message/update-property'
 import { NodeData } from '@/app/page/[pageId]/object/node'
 import { useStore } from '@/app/page/[pageId]/object/store'
 
@@ -19,8 +26,8 @@ export const ClassNode = ({ id, data }: Props) => {
   return (
     <div className={styles.component}>
       <div className={styles.header}>
-        <Icon color={data.icon.color} text={data.icon.text} />
-        <Name name={data.name} />
+        <Icon id={id} icon={data.icon} />
+        <Name id={id} name={data.name} />
       </div>
 
       <hr />
@@ -64,37 +71,39 @@ function getColor(s: string): string {
   }
 }
 
-const Icon = (props: { color: string; text: string }) => {
+const Icon = (props: { id: string; icon: string }) => {
   let editing = false
-  const [color, setColor] = useState(props.color)
-  const [text, setText] = useState(props.text)
+  const [icon, setIcon] = useState(props.icon)
   const ref = useRef<HTMLInputElement>(null)
+
+  useEffect(() => setIcon(props.icon), [props.icon])
+
+  const { send, socket } = useContext(WebSocketContext)!
 
   return (
     <>
       <input
         type={'text'}
         className={styles.icon}
-        style={{ backgroundColor: color }}
-        value={text}
+        style={{ backgroundColor: getColor(icon) }}
+        value={icon}
         maxLength={2}
         ref={ref}
         onClick={() => (editing = true)}
         onChange={(e) => {
-          setColor(getColor(e.target.value))
-          setText(e.target.value)
+          setIcon(e.target.value)
         }}
         onKeyDown={(e) => {
           if (e.key === 'Escape' || e.key === 'Enter') {
             editing = false
-            console.log('send update-icon')
+            sendUpdateIconRequest(send, socket, props.id, icon)
             ref.current?.blur()
           }
         }}
         onBlur={() => {
           if (editing) {
             editing = false
-            console.log('send update-icon')
+            sendUpdateIconRequest(send, socket, props.id, icon)
           }
         }}
       />
@@ -102,7 +111,7 @@ const Icon = (props: { color: string; text: string }) => {
   )
 }
 
-const Text = (props: { value: string; style?: CSSProperties | undefined }) => {
+const Text = (props: { value: string; send: (value: string) => void; style?: CSSProperties | undefined }) => {
   let editing = false
   const [value, setValue] = useState(props.value)
   const ref = useRef<HTMLInputElement>(null)
@@ -128,7 +137,7 @@ const Text = (props: { value: string; style?: CSSProperties | undefined }) => {
         if (e.key === 'Escape' || e.key === 'Enter') {
           editing = false
           if (value !== props.value) {
-            console.log('send')
+            props.send(value)
           }
           ref.current?.blur()
         }
@@ -136,21 +145,27 @@ const Text = (props: { value: string; style?: CSSProperties | undefined }) => {
       onBlur={() => {
         if (editing && value !== props.value) {
           editing = false
-          console.log('send')
+          props.send(value)
         }
       }}
     />
   )
 }
 
-const Name = (props: { name: string }) => {
-  return <Text value={props.name} style={{ fontWeight: 'bold' }} />
+const Name = (props: { id: string; name: string }) => {
+  const { send, socket } = useContext(WebSocketContext)!
+  const f = (name: string) => sendUpdateNameRequest(send, socket, props.id, name)
+
+  return <Text value={props.name} send={f} style={{ fontWeight: 'bold' }} />
 }
 
 const Property = (props: { id: string; n: number; property: string }) => {
+  const { send, socket } = useContext(WebSocketContext)!
+  const f = (property: string) => sendUpdatePropertyRequest(send, socket, props.id, property, props.n)
+
   return (
     <div className={styles.line}>
-      <Text value={props.property} />
+      <Text value={props.property} send={f} />
       <div>
         <DeleteIcon {...props} type={'property'} />
         <AddIcon {...props} type={'property'} />
@@ -160,9 +175,12 @@ const Property = (props: { id: string; n: number; property: string }) => {
 }
 
 const Method = (props: { id: string; n: number; method: string }) => {
+  const { send, socket } = useContext(WebSocketContext)!
+  const f = (method: string) => sendUpdateMethodRequest(send, socket, props.id, method, props.n)
+
   return (
     <div className={styles.line}>
-      <Text value={props.method} />
+      <Text value={props.method} send={f} />
       <div>
         <DeleteIcon {...props} type={'method'} />
         <AddIcon {...props} type={'method'} />
@@ -184,15 +202,19 @@ const AddIcon = (props: { id: string; n: number; type: 'property' | 'method' }) 
   const addProperty = useStore((state) => state.addProperty)
   const addMethod = useStore((state) => state.addMethod)
 
+  const { send, socket } = useContext(WebSocketContext)!
+
   return (
     <MdAddCircleOutline
       className={styles.button}
       onClick={() => {
         if (props.type === 'property') {
           addProperty(props.id, props.n)
+          sendAddPropertyRequest(send, socket, props.id, props.n)
         }
         if (props.type === 'method') {
           addMethod(props.id, props.n)
+          sendAddMethodRequest(send, socket, props.id, props.n)
         }
       }}
     />
@@ -211,6 +233,7 @@ const DeleteIcon = (props: { id: string; n: number; type: 'property' | 'method' 
       onClick={() => {
         if (props.type === 'property') {
           deleteProperty(props.id, props.n)
+          sendDeletePropertyRequest(send, socket, props.id, props.n)
         }
         if (props.type === 'method') {
           deleteMethod(props.id, props.n)

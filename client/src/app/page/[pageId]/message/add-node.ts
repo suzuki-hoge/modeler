@@ -1,5 +1,5 @@
 import { ReadyState } from 'react-use-websocket'
-import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
+import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Node, ReactFlowInstance } from 'reactflow'
 import z from 'zod'
 
@@ -21,7 +21,7 @@ export type AddNodeResponse = AddNodeRequest
 // send
 
 export function sendAddNodeRequest(
-  send: SendJsonMessage,
+  send: (request: AddNodeRequest) => void,
   socket: () => WebSocketLike | null,
   node: Node<{ label: string }>,
 ) {
