@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { Lock } from '@/app/page/[pageId]/object/store'
+
 // types
 
 const type = 'lock'
@@ -32,9 +34,10 @@ export function sendLockRequest(
 
 // receive
 
-export function handleLockResponse(response: unknown) {
+export function handleLockResponse(lock: Lock, response: unknown) {
   if (isLockResponse(response)) {
     console.log(`handle ${type}`, response)
+    lock(response.object_id)
   }
 }
 

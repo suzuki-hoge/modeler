@@ -3,6 +3,9 @@ import { createWithEqualityFn } from 'zustand/traditional'
 
 import { initialNodes, NodeData } from '@/app/page/[pageId]/object/node'
 
+export type Dragging = { current: string | null; prev: string | null }
+export type Lock = (id: string) => void
+export type Unlock = (id: string) => void
 export type UpdateIcon = (id: string, icon: string) => void
 export type UpdateName = (id: string, name: string) => void
 export type AddProperty = (id: string, n: number) => void
@@ -15,7 +18,10 @@ export type DeleteMethod = (id: string, n: number) => void
 export type State = {
   nodes: Node<NodeData>[]
   onNodesChange: OnNodesChange
-  dragging: boolean
+  dragging: Dragging
+  lockIds: string[]
+  lock: Lock
+  unlock: Unlock
   updateIcon: UpdateIcon
   updateName: UpdateName
   addProperty: AddProperty
@@ -30,6 +36,9 @@ export const selector = (state: State) => ({
   nodes: state.nodes,
   onNodesChange: state.onNodesChange,
   dragging: state.dragging,
+  lockIds: state.lockIds,
+  lock: state.lock,
+  unlock: state.unlock,
   updateIcon: state.updateIcon,
   updateName: state.updateName,
   addProperty: state.addProperty,
@@ -43,21 +52,33 @@ export const selector = (state: State) => ({
 export const useStore = createWithEqualityFn<State>((set, get) => ({
   nodes: initialNodes,
   onNodesChange: (changes: NodeChange[]) => {
-    console.log(changes[0])
-    if (changes[0].type === 'position' && changes[0].dragging && !get().dragging) {
-      set({ dragging: true })
+    const { current, prev } = get().dragging
+    if (changes[0].type === 'position' && changes[0].dragging && !current) {
+      set({ dragging: { current: changes[0].id, prev: null } })
+      get().lock(changes[0].id)
+    } else if (changes[0].type === 'position' && !changes[0].dragging && current && prev) {
+      set({ dragging: { current: null, prev: current } })
+      get().unlock(changes[0].id)
+    } else if (changes[0].type === 'position' && changes[0].dragging) {
+      set({ dragging: { current: changes[0].id, prev: current } })
     }
-    if (changes[0].type === 'position' && !changes[0].dragging && get().dragging) {
-      set({ dragging: false })
-    }
+
     if (changes[0].type === 'remove') {
       console.log('node remove')
     }
+
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     })
   },
-  dragging: false,
+  dragging: { current: null, prev: null },
+  lockIds: [],
+  lock: (id: string) => {
+    set({ lockIds: get().lockIds.concat(id) })
+  },
+  unlock: (id: string) => {
+    set({ lockIds: get().lockIds.filter((lockId) => lockId !== id) })
+  },
   updateIcon: (id: string, icon: string) => {
     set({
       nodes: get().nodes.map((node) => {

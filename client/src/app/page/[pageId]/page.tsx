@@ -31,8 +31,8 @@ import { handleConnectResponse } from '@/app/page/[pageId]/message/connect'
 import { handleDeleteMethodResponse } from '@/app/page/[pageId]/message/delete-method'
 import { handleDeletePropertyResponse } from '@/app/page/[pageId]/message/delete-property'
 import { handleDisconnectResponse } from '@/app/page/[pageId]/message/disconnect'
-import { handleLockResponse } from '@/app/page/[pageId]/message/lock'
-import { handleUnlockResponse } from '@/app/page/[pageId]/message/unlock'
+import { handleLockResponse, sendLockRequest } from '@/app/page/[pageId]/message/lock'
+import { handleUnlockResponse, sendUnlockRequest } from '@/app/page/[pageId]/message/unlock'
 import { handleUpdateIconResponse } from '@/app/page/[pageId]/message/update-icon'
 import { handleUpdateMethodResponse } from '@/app/page/[pageId]/message/update-method'
 import { handleUpdateNameResponse } from '@/app/page/[pageId]/message/update-name'
@@ -46,16 +46,23 @@ const nodeTypes: NodeTypes = { class: ClassNode }
 function Flow() {
   const reactFlowInstance = useReactFlow()
 
-  // context
+  // store
 
-  const updateIcon = useStore((state) => state.updateIcon)
-  const updateName = useStore((state) => state.updateName)
-  const addProperty = useStore((state) => state.addProperty)
-  const updateProperty = useStore((state) => state.updateProperty)
-  const deleteProperty = useStore((state) => state.deleteProperty)
-  const addMethod = useStore((state) => state.addMethod)
-  const updateMethod = useStore((state) => state.updateMethod)
-  const deleteMethod = useStore((state) => state.deleteMethod)
+  const {
+    nodes,
+    onNodesChange,
+    dragging,
+    lock,
+    unlock,
+    updateIcon,
+    updateName,
+    addProperty,
+    updateProperty,
+    deleteProperty,
+    addMethod,
+    updateMethod,
+    deleteMethod,
+  } = useStore(selector, shallow)
 
   // socket
 
@@ -65,8 +72,8 @@ function Flow() {
     if (response) {
       handleConnectResponse(response)
       handleDisconnectResponse(response)
-      handleLockResponse(response)
-      handleUnlockResponse(response)
+      handleLockResponse(lock, response)
+      handleUnlockResponse(unlock, response)
       handleAddNodeResponse(reactFlowInstance, response)
       handleAddEdgeResponse(reactFlowInstance, response)
       handleAddPropertyResponse(addProperty, response)
@@ -80,6 +87,8 @@ function Flow() {
     }
   }, [
     reactFlowInstance,
+    lock,
+    unlock,
     updateIcon,
     updateName,
     addProperty,
@@ -93,7 +102,6 @@ function Flow() {
 
   // object
 
-  const { nodes, onNodesChange, dragging } = useStore(selector, shallow)
   const [edges, setEdges] = useState(initialEdges)
 
   const onEdgesChange: OnEdgesChange = useCallback(
@@ -112,6 +120,17 @@ function Flow() {
     },
     [send, socket, setEdges],
   )
+
+  // dragging
+
+  useEffect(() => {
+    if (dragging.current && !dragging.prev) {
+      sendLockRequest(send, socket, dragging.current)
+    }
+    if (!dragging.current && dragging.prev) {
+      sendUnlockRequest(send, socket, dragging.prev)
+    }
+  }, [send, socket, dragging])
 
   // tmp
 
@@ -148,7 +167,7 @@ function Flow() {
         <Panel position='bottom-left'>
           <div style={{ display: 'flex', columnGap: '1rem' }}>
             <button onClick={add}>add</button>
-            <span>dragging: {dragging ? 'true' : 'false'}</span>
+            <span>{`dragging: { current: ${dragging.current || ''}, prev: ${dragging.prev || ''} }`}</span>
           </div>
         </Panel>
         <MiniMap zoomable pannable position={'bottom-right'} />

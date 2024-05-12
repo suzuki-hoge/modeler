@@ -2,29 +2,36 @@ import React, { CSSProperties, useContext, useEffect, useLayoutEffect, useRef, u
 import { AiOutlineDelete } from 'react-icons/ai'
 import { MdAddCircleOutline } from 'react-icons/md'
 import { Handle, Position } from 'reactflow'
+import { shallow } from 'zustand/shallow'
 
 import { WebSocketContext } from '@/app/page/[pageId]/context'
 import { sendAddMethodRequest } from '@/app/page/[pageId]/message/add-method'
 import { sendAddPropertyRequest } from '@/app/page/[pageId]/message/add-property'
 import { sendDeleteMethodRequest } from '@/app/page/[pageId]/message/delete-method'
 import { sendDeletePropertyRequest } from '@/app/page/[pageId]/message/delete-property'
+import { sendLockRequest } from '@/app/page/[pageId]/message/lock'
+import { sendUnlockRequest } from '@/app/page/[pageId]/message/unlock'
 import { sendUpdateIconRequest } from '@/app/page/[pageId]/message/update-icon'
 import { sendUpdateMethodRequest } from '@/app/page/[pageId]/message/update-method'
 import { sendUpdateNameRequest } from '@/app/page/[pageId]/message/update-name'
 import { sendUpdatePropertyRequest } from '@/app/page/[pageId]/message/update-property'
 import { NodeData } from '@/app/page/[pageId]/object/node'
-import { useStore } from '@/app/page/[pageId]/object/store'
+import { selector, useStore } from '@/app/page/[pageId]/object/store'
 
 import styles from './class-node.module.scss'
 
 export interface Props {
   id: string
   data: NodeData
+  selected: boolean
 }
 
-export const ClassNode = ({ id, data }: Props) => {
+export const ClassNode = ({ id, data, selected }: Props) => {
+  const { lockIds } = useStore(selector, shallow)
+  const locked = lockIds.includes(id) && !selected
+
   return (
-    <div className={styles.component}>
+    <div className={styles.component} style={{ backgroundColor: locked ? '#eeeeee' : 'lightyellow' }}>
       <div className={styles.header}>
         <Icon id={id} icon={data.icon} />
         <Name id={id} name={data.name} />
@@ -80,6 +87,8 @@ const Icon = (props: { id: string; icon: string }) => {
 
   const { send, socket } = useContext(WebSocketContext)!
 
+  const { lock, unlock } = useStore(selector, shallow)
+
   return (
     <>
       <input
@@ -89,29 +98,42 @@ const Icon = (props: { id: string; icon: string }) => {
         value={icon}
         maxLength={2}
         ref={ref}
-        onClick={() => (editing = true)}
+        onClick={() => {
+          editing = true
+          lock(props.id)
+          sendLockRequest(send, socket, props.id)
+        }}
         onChange={(e) => {
           setIcon(e.target.value)
         }}
         onKeyDown={(e) => {
           if (e.key === 'Escape' || e.key === 'Enter') {
-            editing = false
             sendUpdateIconRequest(send, socket, props.id, icon)
+            editing = false
+            unlock(props.id)
+            sendUnlockRequest(send, socket, props.id)
             ref.current?.blur()
           }
         }}
         onBlur={() => {
-          if (editing) {
-            editing = false
+          if (editing && icon !== props.icon) {
             sendUpdateIconRequest(send, socket, props.id, icon)
           }
+          editing = false
+          unlock(props.id)
+          sendUnlockRequest(send, socket, props.id)
         }}
       />
     </>
   )
 }
 
-const Text = (props: { value: string; send: (value: string) => void; style?: CSSProperties | undefined }) => {
+const Text = (props: {
+  id: string
+  value: string
+  send: (value: string) => void
+  style?: CSSProperties | undefined
+}) => {
   let editing = false
   const [value, setValue] = useState(props.value)
   const ref = useRef<HTMLInputElement>(null)
@@ -124,6 +146,10 @@ const Text = (props: { value: string; send: (value: string) => void; style?: CSS
     }
   }, [value.length])
 
+  const { send, socket } = useContext(WebSocketContext)!
+
+  const { lock, unlock } = useStore(selector, shallow)
+
   return (
     <input
       type={'text'}
@@ -131,22 +157,30 @@ const Text = (props: { value: string; send: (value: string) => void; style?: CSS
       style={props.style}
       value={value}
       ref={ref}
-      onClick={() => (editing = true)}
+      onClick={() => {
+        editing = true
+        lock(props.id)
+        sendLockRequest(send, socket, props.id)
+      }}
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Escape' || e.key === 'Enter') {
-          editing = false
           if (value !== props.value) {
             props.send(value)
           }
+          editing = false
+          unlock(props.id)
+          sendUnlockRequest(send, socket, props.id)
           ref.current?.blur()
         }
       }}
       onBlur={() => {
         if (editing && value !== props.value) {
-          editing = false
           props.send(value)
         }
+        editing = false
+        unlock(props.id)
+        sendUnlockRequest(send, socket, props.id)
       }}
     />
   )
@@ -156,7 +190,7 @@ const Name = (props: { id: string; name: string }) => {
   const { send, socket } = useContext(WebSocketContext)!
   const f = (name: string) => sendUpdateNameRequest(send, socket, props.id, name)
 
-  return <Text value={props.name} send={f} style={{ fontWeight: 'bold' }} />
+  return <Text id={props.id} value={props.name} send={f} style={{ fontWeight: 'bold' }} />
 }
 
 const Property = (props: { id: string; n: number; property: string }) => {
@@ -165,7 +199,7 @@ const Property = (props: { id: string; n: number; property: string }) => {
 
   return (
     <div className={styles.line}>
-      <Text value={props.property} send={f} />
+      <Text id={props.id} value={props.property} send={f} />
       <div>
         <DeleteIcon {...props} type={'property'} />
         <AddIcon {...props} type={'property'} />
@@ -180,7 +214,7 @@ const Method = (props: { id: string; n: number; method: string }) => {
 
   return (
     <div className={styles.line}>
-      <Text value={props.method} send={f} />
+      <Text id={props.id} value={props.method} send={f} />
       <div>
         <DeleteIcon {...props} type={'method'} />
         <AddIcon {...props} type={'method'} />
@@ -199,8 +233,7 @@ const Empty = (props: { id: string; type: 'property' | 'method' }) => {
 }
 
 const AddIcon = (props: { id: string; n: number; type: 'property' | 'method' }) => {
-  const addProperty = useStore((state) => state.addProperty)
-  const addMethod = useStore((state) => state.addMethod)
+  const { addProperty, addMethod } = useStore(selector, shallow)
 
   const { send, socket } = useContext(WebSocketContext)!
 
@@ -222,8 +255,7 @@ const AddIcon = (props: { id: string; n: number; type: 'property' | 'method' }) 
 }
 
 const DeleteIcon = (props: { id: string; n: number; type: 'property' | 'method' }) => {
-  const deleteProperty = useStore((state) => state.deleteProperty)
-  const deleteMethod = useStore((state) => state.deleteMethod)
+  const { deleteProperty, deleteMethod } = useStore(selector, shallow)
 
   const { send, socket } = useContext(WebSocketContext)!
 
