@@ -28,7 +28,7 @@ export function sendAddPropertyRequest(
   n: number,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId, property: '', n: n })
   } else {
     console.log('already disconnected')
@@ -39,7 +39,7 @@ export function sendAddPropertyRequest(
 
 export function handleAddPropertyResponse(addProperty: AddProperty, response: unknown) {
   if (isAddPropertyResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     addProperty(response.object_id, response.n)
   }
 }

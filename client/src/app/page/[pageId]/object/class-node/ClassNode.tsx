@@ -1,4 +1,13 @@
-import React, { CSSProperties, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, {
+  CSSProperties,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { AiOutlineDelete } from 'react-icons/ai'
 import { MdAddCircleOutline } from 'react-icons/md'
 import { Handle, Position } from 'reactflow'
@@ -20,6 +29,14 @@ import { selector, useStore } from '@/app/page/[pageId]/object/store'
 
 import styles from './class-node.module.scss'
 
+type Status = 'standard' | 'selected-by-me' | 'editing-by-me' | 'locked-by-someone'
+function getStyle(status: Status): string {
+  if (status === 'locked-by-someone') return `${styles.component} ${styles.locked}`
+  else if (status === 'editing-by-me') return `${styles.component} ${styles.editing}`
+  else if (status === 'selected-by-me') return `${styles.component} ${styles.selected}`
+  else return styles.component
+}
+
 export interface Props {
   id: string
   data: NodeData
@@ -27,14 +44,36 @@ export interface Props {
 }
 
 export const ClassNode = ({ id, data, selected }: Props) => {
-  const { lockIds } = useStore(selector, shallow)
-  const locked = lockIds.includes(id) && !selected
+  const [status, setStatus] = useState<Status>('standard')
+  const [editing, setEditing] = useState(false)
+
+  const { lockIds, unlock } = useStore(selector, shallow)
+
+  const { send, socket } = useContext(WebSocketContext)!
+
+  useEffect(() => {
+    if (lockIds.includes(id) && !selected) setStatus('locked-by-someone')
+    else if (editing) setStatus('editing-by-me')
+    else if (selected) setStatus('selected-by-me')
+    else setStatus('standard')
+  }, [id, lockIds, editing, selected])
 
   return (
-    <div className={styles.component} style={{ backgroundColor: locked ? '#eeeeee' : 'lightyellow' }}>
+    <div
+      className={getStyle(status)}
+      onClick={() => {
+        // non input area clicked
+        if (editing) {
+          // from any input area
+          setEditing(false)
+          unlock(id)
+          sendUnlockRequest(send, socket, id)
+        }
+      }}
+    >
       <div className={styles.header}>
-        <Icon id={id} icon={data.icon} />
-        <Name id={id} name={data.name} />
+        <Icon id={id} icon={data.icon} selected={selected} editing={editing} setEditing={setEditing} />
+        <Name id={id} name={data.name} selected={selected} editing={editing} setEditing={setEditing} />
       </div>
 
       <hr />
@@ -42,7 +81,15 @@ export const ClassNode = ({ id, data, selected }: Props) => {
       {data.properties.length !== 0 ? (
         <div className={styles.properties}>
           {data.properties.map((property, i) => (
-            <Property key={i} id={id} n={i} property={property} />
+            <Property
+              key={i}
+              id={id}
+              n={i}
+              property={property}
+              selected={selected}
+              editing={editing}
+              setEditing={setEditing}
+            />
           ))}
         </div>
       ) : (
@@ -54,7 +101,15 @@ export const ClassNode = ({ id, data, selected }: Props) => {
       {data.methods.length !== 0 ? (
         <div className={styles.methods}>
           {data.methods.map((method, i) => (
-            <Method key={i} id={id} n={i} method={method} />
+            <Method
+              key={i}
+              id={id}
+              n={i}
+              method={method}
+              selected={selected}
+              editing={editing}
+              setEditing={setEditing}
+            />
           ))}
         </div>
       ) : (
@@ -78,8 +133,13 @@ function getColor(s: string): string {
   }
 }
 
-const Icon = (props: { id: string; icon: string }) => {
-  let editing = false
+const Icon = (props: {
+  id: string
+  icon: string
+  selected: boolean
+  editing: boolean
+  setEditing: Dispatch<SetStateAction<boolean>>
+}) => {
   const [icon, setIcon] = useState(props.icon)
   const ref = useRef<HTMLInputElement>(null)
 
@@ -98,30 +158,43 @@ const Icon = (props: { id: string; icon: string }) => {
         value={icon}
         maxLength={2}
         ref={ref}
-        onClick={() => {
-          editing = true
-          lock(props.id)
-          sendLockRequest(send, socket, props.id)
+        onClick={(e) => {
+          if (!props.editing) {
+            // start editing
+            props.setEditing(true)
+            lock(props.id)
+            sendLockRequest(send, socket, props.id)
+          } else {
+            // continue editing
+          }
+          e.stopPropagation()
         }}
-        onChange={(e) => {
-          setIcon(e.target.value)
-        }}
+        onChange={(e) => setIcon(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Escape' || e.key === 'Enter') {
-            sendUpdateIconRequest(send, socket, props.id, icon)
-            editing = false
+            if (icon !== props.icon) {
+              // changed
+              sendUpdateIconRequest(send, socket, props.id, icon)
+            }
+            // fix
+            props.setEditing(false)
             unlock(props.id)
             sendUnlockRequest(send, socket, props.id)
             ref.current?.blur()
           }
         }}
         onBlur={() => {
-          if (editing && icon !== props.icon) {
+          if (props.editing && icon !== props.icon) {
             sendUpdateIconRequest(send, socket, props.id, icon)
           }
-          editing = false
-          unlock(props.id)
-          sendUnlockRequest(send, socket, props.id)
+          if (props.selected) {
+            // continue editing ( click another input area or click non input area )
+          } else {
+            // leave focus
+            props.setEditing(false)
+            unlock(props.id)
+            sendUnlockRequest(send, socket, props.id)
+          }
         }}
       />
     </>
@@ -131,10 +204,12 @@ const Icon = (props: { id: string; icon: string }) => {
 const Text = (props: {
   id: string
   value: string
+  selected: boolean
   send: (value: string) => void
+  editing: boolean
+  setEditing: Dispatch<SetStateAction<boolean>>
   style?: CSSProperties | undefined
 }) => {
-  let editing = false
   const [value, setValue] = useState(props.value)
   const ref = useRef<HTMLInputElement>(null)
 
@@ -157,49 +232,75 @@ const Text = (props: {
       style={props.style}
       value={value}
       ref={ref}
-      onClick={() => {
-        editing = true
-        lock(props.id)
-        sendLockRequest(send, socket, props.id)
+      onClick={(e) => {
+        if (!props.editing) {
+          // start editing
+          props.setEditing(true)
+          lock(props.id)
+          sendLockRequest(send, socket, props.id)
+        } else {
+          // continue editing
+        }
+        e.stopPropagation()
       }}
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Escape' || e.key === 'Enter') {
           if (value !== props.value) {
+            // changed
             props.send(value)
           }
-          editing = false
+          // fix
+          props.setEditing(false)
           unlock(props.id)
           sendUnlockRequest(send, socket, props.id)
           ref.current?.blur()
         }
       }}
       onBlur={() => {
-        if (editing && value !== props.value) {
+        if (props.editing && value !== props.value) {
           props.send(value)
         }
-        editing = false
-        unlock(props.id)
-        sendUnlockRequest(send, socket, props.id)
+        if (props.selected) {
+          // continue editing ( click another input area or click non input area )
+        } else {
+          // leave focus
+          props.setEditing(false)
+          unlock(props.id)
+          sendUnlockRequest(send, socket, props.id)
+        }
       }}
     />
   )
 }
 
-const Name = (props: { id: string; name: string }) => {
+const Name = (props: {
+  id: string
+  name: string
+  selected: boolean
+  editing: boolean
+  setEditing: Dispatch<SetStateAction<boolean>>
+}) => {
   const { send, socket } = useContext(WebSocketContext)!
   const f = (name: string) => sendUpdateNameRequest(send, socket, props.id, name)
 
-  return <Text id={props.id} value={props.name} send={f} style={{ fontWeight: 'bold' }} />
+  return <Text {...props} value={props.name} send={f} style={{ fontWeight: 'bold' }} />
 }
 
-const Property = (props: { id: string; n: number; property: string }) => {
+const Property = (props: {
+  id: string
+  n: number
+  property: string
+  selected: boolean
+  editing: boolean
+  setEditing: Dispatch<SetStateAction<boolean>>
+}) => {
   const { send, socket } = useContext(WebSocketContext)!
   const f = (property: string) => sendUpdatePropertyRequest(send, socket, props.id, property, props.n)
 
   return (
     <div className={styles.line}>
-      <Text id={props.id} value={props.property} send={f} />
+      <Text {...props} value={props.property} send={f} />
       <div>
         <DeleteIcon {...props} type={'property'} />
         <AddIcon {...props} type={'property'} />
@@ -208,13 +309,20 @@ const Property = (props: { id: string; n: number; property: string }) => {
   )
 }
 
-const Method = (props: { id: string; n: number; method: string }) => {
+const Method = (props: {
+  id: string
+  n: number
+  method: string
+  selected: boolean
+  editing: boolean
+  setEditing: Dispatch<SetStateAction<boolean>>
+}) => {
   const { send, socket } = useContext(WebSocketContext)!
   const f = (method: string) => sendUpdateMethodRequest(send, socket, props.id, method, props.n)
 
   return (
     <div className={styles.line}>
-      <Text id={props.id} value={props.method} send={f} />
+      <Text {...props} value={props.method} send={f} />
       <div>
         <DeleteIcon {...props} type={'method'} />
         <AddIcon {...props} type={'method'} />

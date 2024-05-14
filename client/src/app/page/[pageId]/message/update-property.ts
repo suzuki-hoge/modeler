@@ -29,7 +29,7 @@ export function sendUpdatePropertyRequest(
   n: number,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId, property: property, n: n })
   } else {
     console.log('already disconnected')
@@ -40,7 +40,7 @@ export function sendUpdatePropertyRequest(
 
 export function handleUpdatePropertyResponse(updateProperty: UpdateProperty, response: unknown) {
   if (isUpdatePropertyResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     updateProperty(response.object_id, response.property, response.n)
   }
 }

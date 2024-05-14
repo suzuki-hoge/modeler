@@ -27,7 +27,7 @@ export function sendUpdateIconRequest(
   icon: string,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId, icon: icon })
   } else {
     console.log('already disconnected')
@@ -38,7 +38,7 @@ export function sendUpdateIconRequest(
 
 export function handleUpdateIconResponse(updateIcon: UpdateIcon, response: unknown) {
   if (isUpdateIconResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     updateIcon(response.object_id, response.icon)
   }
 }

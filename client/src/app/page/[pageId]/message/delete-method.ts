@@ -27,7 +27,7 @@ export function sendDeleteMethodRequest(
   n: number,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId, n: n })
   } else {
     console.log('already disconnected')
@@ -38,7 +38,7 @@ export function sendDeleteMethodRequest(
 
 export function handleDeleteMethodResponse(deleteMethod: DeleteMethod, response: unknown) {
   if (isDeleteMethodResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     deleteMethod(response.object_id, response.n)
   }
 }

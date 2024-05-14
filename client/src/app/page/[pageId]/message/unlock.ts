@@ -25,7 +25,7 @@ export function sendUnlockRequest(
   objectId: string,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId })
   } else {
     console.log('already disconnected')
@@ -36,7 +36,7 @@ export function sendUnlockRequest(
 
 export function handleUnlockResponse(unlock: Unlock, response: unknown) {
   if (isUnlockResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     unlock(response.object_id)
   }
 }

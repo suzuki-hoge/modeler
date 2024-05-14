@@ -25,7 +25,7 @@ export function sendLockRequest(
   objectId: string,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId })
   } else {
     console.log('already disconnected')
@@ -36,7 +36,7 @@ export function sendLockRequest(
 
 export function handleLockResponse(lock: Lock, response: unknown) {
   if (isLockResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     lock(response.object_id)
   }
 }

@@ -27,7 +27,7 @@ export function sendUpdateNameRequest(
   name: string,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId, name: name })
   } else {
     console.log('already disconnected')
@@ -38,7 +38,7 @@ export function sendUpdateNameRequest(
 
 export function handleUpdateNameResponse(updateName: UpdateName, response: unknown) {
   if (isUpdateNameResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     updateName(response.object_id, response.name)
   }
 }

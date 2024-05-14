@@ -28,7 +28,7 @@ export function sendAddMethodRequest(
   n: number,
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(`send ${type}`)
+    console.log(objectId, `send ${type}`)
     send({ type: type, object_id: objectId, method: '', n: n })
   } else {
     console.log('already disconnected')
@@ -39,7 +39,7 @@ export function sendAddMethodRequest(
 
 export function handleAddMethodResponse(addMethod: AddMethod, response: unknown) {
   if (isAddMethodResponse(response)) {
-    console.log(`handle ${type}`, response)
+    console.log(response.object_id, `handle ${type}`, response)
     addMethod(response.object_id, response.n)
   }
 }
