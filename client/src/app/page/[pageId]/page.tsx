@@ -124,13 +124,21 @@ function Flow() {
   // dragging
 
   useEffect(() => {
-    if (dragging.current && !dragging.prev) {
-      sendLockRequest(send, socket, dragging.current)
+    for (const id of dragging.current) {
+      if (!dragging.prev.has(id)) {
+        // current only is locked
+        lock(id)
+        sendLockRequest(send, socket, id)
+      }
     }
-    if (!dragging.current && dragging.prev) {
-      sendUnlockRequest(send, socket, dragging.prev)
+    for (const id of dragging.prev) {
+      if (!dragging.current.has(id)) {
+        // prev only is unlocked
+        unlock(id)
+        sendUnlockRequest(send, socket, id)
+      }
     }
-  }, [send, socket, dragging])
+  }, [send, socket, dragging, lock, unlock])
 
   // tmp
 
@@ -167,7 +175,6 @@ function Flow() {
         <Panel position='bottom-left'>
           <div style={{ display: 'flex', columnGap: '1rem' }}>
             <button onClick={add}>add</button>
-            <span>{`dragging: { current: ${dragging.current || ''}, prev: ${dragging.prev || ''} }`}</span>
           </div>
         </Panel>
         <MiniMap zoomable pannable position={'bottom-right'} />

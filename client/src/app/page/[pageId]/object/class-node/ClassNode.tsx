@@ -45,14 +45,17 @@ export interface Props {
 
 export const ClassNode = ({ id, data, selected }: Props) => {
   const [status, setStatus] = useState<Status>('standard')
+
   const [editing, setEditing] = useState(false)
 
   const { lockIds, unlock } = useStore(selector, shallow)
 
   const { send, socket } = useContext(WebSocketContext)!
 
+  // status
+
   useEffect(() => {
-    if (lockIds.includes(id) && !selected) setStatus('locked-by-someone')
+    if (lockIds.has(id) && !selected) setStatus('locked-by-someone')
     else if (editing) setStatus('editing-by-me')
     else if (selected) setStatus('selected-by-me')
     else setStatus('standard')

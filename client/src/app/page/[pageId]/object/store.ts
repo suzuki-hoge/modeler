@@ -1,9 +1,11 @@
+import { Set } from 'immutable'
 import { applyNodeChanges, Node, NodeChange, OnNodesChange } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { initialNodes, NodeData } from '@/app/page/[pageId]/object/node'
 
-export type Dragging = { current: string | null; prev: string | null }
+export type Dragging = { current: Set<string>; prev: Set<string> }
+export type LockIds = Set<string>
 export type Lock = (id: string) => void
 export type Unlock = (id: string) => void
 export type UpdateIcon = (id: string, icon: string) => void
@@ -19,7 +21,7 @@ export type State = {
   nodes: Node<NodeData>[]
   onNodesChange: OnNodesChange
   dragging: Dragging
-  lockIds: string[]
+  lockIds: LockIds
   lock: Lock
   unlock: Unlock
   updateIcon: UpdateIcon
@@ -52,32 +54,45 @@ export const selector = (state: State) => ({
 export const useStore = createWithEqualityFn<State>((set, get) => ({
   nodes: initialNodes,
   onNodesChange: (changes: NodeChange[]) => {
-    const { current, prev } = get().dragging
-    if (changes[0].type === 'position' && changes[0].dragging && !current) {
-      set({ dragging: { current: changes[0].id, prev: null } })
-      get().lock(changes[0].id)
-    } else if (changes[0].type === 'position' && !changes[0].dragging && current && prev) {
-      set({ dragging: { current: null, prev: current } })
-      get().unlock(changes[0].id)
-    } else if (changes[0].type === 'position' && changes[0].dragging) {
-      set({ dragging: { current: changes[0].id, prev: current } })
-    }
+    for (const change of changes) {
+      const { current, prev } = get().dragging
 
-    if (changes[0].type === 'remove') {
-      console.log('node remove')
+      if (change.type === 'position' && change.dragging && !current.has(change.id)) {
+        // drag start: lock
+        set({ dragging: { current: current.add(change.id), prev: prev } })
+
+        // current only is locked
+        // get().lock(change.id)
+      } else if (change.type === 'position' && !change.dragging && current.has(change.id) && prev.has(change.id)) {
+        // drag end: unlock
+        set({ dragging: { current: current.delete(change.id), prev: prev } })
+
+        // prev only is unlocked
+        // get().unlock(change.id)
+      } else if (change.type === 'position' && change.dragging) {
+        // dragging: shift prev
+        set({ dragging: { current: current.add(change.id), prev: current } })
+      }
+
+      if (change.type === 'remove') {
+        console.log('node remove')
+      }
     }
 
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     })
   },
-  dragging: { current: null, prev: null },
-  lockIds: [],
+  dragging: { current: Set(), prev: Set() },
+  lockIds: Set(),
   lock: (id: string) => {
-    set({ lockIds: get().lockIds.concat(id) })
+    const ids = get().lockIds
+    set({ lockIds: ids.add(id) })
   },
   unlock: (id: string) => {
-    set({ lockIds: get().lockIds.filter((lockId) => lockId !== id) })
+    const ids = get().lockIds
+    const { current, prev } = get().dragging
+    set({ lockIds: ids.delete(id), dragging: { current: current, prev: prev.delete(id) } })
   },
   updateIcon: (id: string, icon: string) => {
     set({
