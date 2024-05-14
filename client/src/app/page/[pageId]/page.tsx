@@ -21,25 +21,24 @@ import ReactFlow, {
 } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
-import { WebSocketContext, Response } from '@/app/page/[pageId]/context'
-import DevTools from '@/app/page/[pageId]/dev-tool/Devtools'
-import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/page/[pageId]/message/add-edge'
-import { handleAddMethodResponse } from '@/app/page/[pageId]/message/add-method'
-import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/page/[pageId]/message/add-node'
-import { handleAddPropertyResponse } from '@/app/page/[pageId]/message/add-property'
-import { handleConnectResponse } from '@/app/page/[pageId]/message/connect'
-import { handleDeleteMethodResponse } from '@/app/page/[pageId]/message/delete-method'
-import { handleDeletePropertyResponse } from '@/app/page/[pageId]/message/delete-property'
-import { handleDisconnectResponse } from '@/app/page/[pageId]/message/disconnect'
-import { handleLockResponse, sendLockRequest } from '@/app/page/[pageId]/message/lock'
-import { handleUnlockResponse, sendUnlockRequest } from '@/app/page/[pageId]/message/unlock'
-import { handleUpdateIconResponse } from '@/app/page/[pageId]/message/update-icon'
-import { handleUpdateMethodResponse } from '@/app/page/[pageId]/message/update-method'
-import { handleUpdateNameResponse } from '@/app/page/[pageId]/message/update-name'
-import { handleUpdatePropertyResponse } from '@/app/page/[pageId]/message/update-property'
-import { ClassNode } from '@/app/page/[pageId]/object/class-node/ClassNode'
-import { defaultEdgeOptions, initialEdges } from '@/app/page/[pageId]/object/edge'
-import { selector, useStore } from '@/app/page/[pageId]/object/store'
+import { ClassNode } from '@/app/object/class-node/ClassNode'
+import { defaultEdgeOptions, initialEdges } from '@/app/object/edge'
+import { selector, useStore } from '@/app/object/store'
+import { WebSocketContext, Response } from '@/app/socket/context'
+import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/socket/message/add-edge'
+import { handleAddMethodResponse } from '@/app/socket/message/add-method'
+import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/socket/message/add-node'
+import { handleAddPropertyResponse } from '@/app/socket/message/add-property'
+import { handleConnectResponse } from '@/app/socket/message/connect'
+import { handleDeleteMethodResponse } from '@/app/socket/message/delete-method'
+import { handleDeletePropertyResponse } from '@/app/socket/message/delete-property'
+import { handleDisconnectResponse } from '@/app/socket/message/disconnect'
+import { handleLockResponse, sendLockRequest } from '@/app/socket/message/lock'
+import { handleUnlockResponse, sendUnlockRequest } from '@/app/socket/message/unlock'
+import { handleUpdateIconResponse } from '@/app/socket/message/update-icon'
+import { handleUpdateMethodResponse } from '@/app/socket/message/update-method'
+import { handleUpdateNameResponse } from '@/app/socket/message/update-name'
+import { handleUpdatePropertyResponse } from '@/app/socket/message/update-property'
 
 const nodeTypes: NodeTypes = { class: ClassNode }
 
@@ -180,7 +179,6 @@ function Flow() {
         <MiniMap zoomable pannable position={'bottom-right'} />
         <Controls position={'bottom-right'} />
         <Background />
-        <DevTools />
       </ReactFlow>
     </div>
   )

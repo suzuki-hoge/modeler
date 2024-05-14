@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { ClassNode } from '@/app/page/[pageId]/object/class-node/ClassNode'
+import { ClassNode } from '@/app/object/class-node/ClassNode'
 
 export default function Home() {
   return (

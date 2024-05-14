@@ -2,7 +2,7 @@ import { Set } from 'immutable'
 import { applyNodeChanges, Node, NodeChange, OnNodesChange } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
-import { initialNodes, NodeData } from '@/app/page/[pageId]/object/node'
+import { initialNodes, NodeData } from '@/app/object/node'
 
 export type Dragging = { current: Set<string>; prev: Set<string> }
 export type LockIds = Set<string>

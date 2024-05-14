@@ -2,7 +2,7 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
-import { UpdateName } from '@/app/page/[pageId]/object/store'
+import { UpdateName } from '@/app/object/store'
 
 // types
 
