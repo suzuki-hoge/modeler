@@ -14,6 +14,7 @@ use crate::actor::message::change::add_node::AddNodeRequest;
 use crate::actor::message::change::add_property::AddPropertyRequest;
 use crate::actor::message::change::delete_method::DeleteMethodRequest;
 use crate::actor::message::change::delete_property::DeletePropertyRequest;
+use crate::actor::message::change::move_node::MoveNodeRequest;
 use crate::actor::message::change::update_icon::UpdateIconRequest;
 use crate::actor::message::change::update_method::UpdateMethodRequest;
 use crate::actor::message::change::update_name::UpdateNameRequest;
@@ -66,6 +67,9 @@ impl Session {
             Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
             Some("add-node") => {
                 self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("move-node") => {
+                self.server_address.do_send(MoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("add-edge") => {
                 self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)

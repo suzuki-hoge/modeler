@@ -22,11 +22,15 @@ pub fn parse_usize(json: &Json, key: &str) -> Result<usize, String> {
     parse_i64(json, key).map(|v| v as usize)
 }
 
+pub fn parse_f64(json: &Json, key: &str) -> Result<f64, String> {
+    json.get(key).ok_or(format!("no such key: {key}"))?.as_f64().ok_or(format!("invalid format: {key}"))
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::from_str as from_json_str;
 
-    use crate::actor::message::{parse_i64, parse_string, Json};
+    use crate::actor::message::{parse_f64, parse_i64, parse_string, Json};
 
     #[test]
     fn parse_string_ok() {
@@ -69,6 +73,33 @@ mod tests {
         let json: Json = from_json_str(r#"{"n": "-42"}"#).unwrap();
 
         let act = parse_i64(&json, "n");
+
+        assert_eq!(Err(String::from("invalid format: n")), act);
+    }
+
+    #[test]
+    fn parse_f64_ok() {
+        let json: Json = from_json_str(r#"{"n": -42.195}"#).unwrap();
+
+        let act = parse_f64(&json, "n");
+
+        assert_eq!(Ok(-42.195), act);
+    }
+
+    #[test]
+    fn parse_f64_missing_err() {
+        let json: Json = from_json_str(r#"{}"#).unwrap();
+
+        let act = parse_f64(&json, "n");
+
+        assert_eq!(Err(String::from("no such key: n")), act);
+    }
+
+    #[test]
+    fn parse_f64_format_err() {
+        let json: Json = from_json_str(r#"{"n": "-42.195"}"#).unwrap();
+
+        let act = parse_f64(&json, "n");
 
         assert_eq!(Err(String::from("invalid format: n")), act);
     }

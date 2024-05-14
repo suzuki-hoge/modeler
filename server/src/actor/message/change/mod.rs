@@ -4,6 +4,7 @@ pub mod add_node;
 pub mod add_property;
 pub mod delete_method;
 pub mod delete_property;
+pub mod move_node;
 pub mod update_icon;
 pub mod update_method;
 pub mod update_name;

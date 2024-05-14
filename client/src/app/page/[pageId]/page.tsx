@@ -34,6 +34,7 @@ import { handleDeleteMethodResponse } from '@/app/socket/message/delete-method'
 import { handleDeletePropertyResponse } from '@/app/socket/message/delete-property'
 import { handleDisconnectResponse } from '@/app/socket/message/disconnect'
 import { handleLockResponse, sendLockRequest } from '@/app/socket/message/lock'
+import { handleMoveNodeResponse, sendMoveNodeRequest } from '@/app/socket/message/move-node'
 import { handleUnlockResponse, sendUnlockRequest } from '@/app/socket/message/unlock'
 import { handleUpdateIconResponse } from '@/app/socket/message/update-icon'
 import { handleUpdateMethodResponse } from '@/app/socket/message/update-method'
@@ -53,6 +54,7 @@ function Flow() {
     dragging,
     lock,
     unlock,
+    moveNode,
     updateIcon,
     updateName,
     addProperty,
@@ -73,11 +75,12 @@ function Flow() {
       handleDisconnectResponse(response)
       handleLockResponse(lock, response)
       handleUnlockResponse(unlock, response)
+      handleMoveNodeResponse(moveNode, response)
+      handleUpdateIconResponse(updateIcon, response)
+      handleUpdateNameResponse(updateName, response)
       handleAddNodeResponse(reactFlowInstance, response)
       handleAddEdgeResponse(reactFlowInstance, response)
       handleAddPropertyResponse(addProperty, response)
-      handleUpdateIconResponse(updateIcon, response)
-      handleUpdateNameResponse(updateName, response)
       handleUpdatePropertyResponse(updateProperty, response)
       handleDeletePropertyResponse(deleteProperty, response)
       handleAddMethodResponse(addMethod, response)
@@ -88,6 +91,7 @@ function Flow() {
     reactFlowInstance,
     lock,
     unlock,
+    moveNode,
     updateIcon,
     updateName,
     addProperty,
@@ -123,16 +127,19 @@ function Flow() {
   // dragging
 
   useEffect(() => {
-    for (const id of dragging.current) {
+    for (const id of dragging.current.keys()) {
       if (!dragging.prev.has(id)) {
         // current only is locked
         lock(id)
         sendLockRequest(send, socket, id)
       }
     }
-    for (const id of dragging.prev) {
+    for (const id of dragging.prev.keys()) {
       if (!dragging.current.has(id)) {
         // prev only is unlocked
+        const pos = dragging.prev.get(id)!
+        sendMoveNodeRequest(send, socket, id, pos.x, pos.y)
+
         unlock(id)
         sendUnlockRequest(send, socket, id)
       }
