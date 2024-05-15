@@ -2,7 +2,7 @@ import { Node } from 'reactflow'
 
 import { NodeData } from '../node'
 
-import { findCollision, getSideEdges, Line, Point } from './line'
+import { findCollision, getSideEdges, isSameVector, Line, Point } from './line'
 
 test('getSideEdges', () => {
   const node: Pick<Node<NodeData>, 'position' | 'height' | 'width'> = { position: { x: 0, y: 0 }, height: 8, width: 8 }
@@ -44,4 +44,14 @@ test('findCollision', () => {
   expect(a2).toBe(null)
   expect(a3).toBe(null)
   expect(a4).toBe(null)
+})
+
+test('isSameVector', () => {
+  const a1 = isSameVector({ s: { x: 4, y: 4 }, d: { x: 6, y: 6 } }, { s: { x: 3, y: 3 }, d: { x: 5, y: 5 } })
+  const a2 = isSameVector({ s: { x: 4, y: 4 }, d: { x: 6, y: 6 } }, { s: { x: 3, y: 3 }, d: { x: 3, y: 5 } })
+  const a3 = isSameVector({ s: { x: 4, y: 4 }, d: { x: 6, y: 6 } }, { s: { x: 3, y: 3 }, d: { x: 5, y: 3 } })
+
+  expect(a1).toBe(true)
+  expect(a2).toBe(false)
+  expect(a3).toBe(false)
 })

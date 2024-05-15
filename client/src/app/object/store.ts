@@ -2,6 +2,7 @@ import { Set, Map } from 'immutable'
 import { applyNodeChanges, Edge, Node, NodeChange, OnNodesChange } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
+import { initialEdges } from '@/app/object/edge'
 import { initialNodes, NodeData } from '@/app/object/node'
 
 export type Dragging = { current: Map<string, { x: number; y: number }>; prev: Map<string, { x: number; y: number }> }
@@ -61,8 +62,7 @@ export const selector = (state: State) => ({
 
 export const useStore = createWithEqualityFn<State>((set, get) => ({
   nodes: initialNodes,
-  // edges: initialEdges,
-  edges: [],
+  edges: initialEdges,
   onNodesChange: (changes: NodeChange[]) => {
     for (const c of changes) {
       const { current, prev } = get().dragging

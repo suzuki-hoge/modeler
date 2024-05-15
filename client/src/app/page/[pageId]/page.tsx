@@ -10,7 +10,6 @@ import ReactFlow, {
   Controls,
   DefaultEdgeOptions,
   EdgeTypes,
-  MarkerType,
   MiniMap,
   Node,
   NodeTypes,
@@ -24,6 +23,7 @@ import { shallow } from 'zustand/shallow'
 
 import { ClassEdge } from '@/app/object/class-edge/ClassEdge'
 import { ClassNode } from '@/app/object/class-node/ClassNode'
+import Arrows from '@/app/object/marker/Arrows'
 import { selector, useStore } from '@/app/object/store'
 import { Response, WebSocketContext } from '@/app/socket/context'
 import { handleAddEdgeResponse } from '@/app/socket/message/add-edge'
@@ -48,7 +48,7 @@ const connectionLineStyle = { stroke: 'gray', strokeWidth: 1 }
 const defaultEdgeOptions: DefaultEdgeOptions = {
   style: connectionLineStyle,
   type: 'class',
-  markerEnd: { type: MarkerType.ArrowClosed },
+  markerEnd: 'v-arrow',
 }
 
 function Flow() {
@@ -225,6 +225,7 @@ function Flow() {
         <Controls position={'bottom-right'} />
         <Background />
       </ReactFlow>
+      <Arrows />
     </div>
   )
 }

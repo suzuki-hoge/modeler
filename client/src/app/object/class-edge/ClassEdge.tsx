@@ -6,6 +6,7 @@ import { selector, useStore } from '@/app/object/store'
 
 export const ClassEdge = (props: EdgeProps) => {
   const { source, sourceX, sourceY, target, targetX, targetY } = props
+  console.log('class-edge', `${source} -> ${target}`)
 
   const { nodes } = useStore(selector, shallow)
   const sourceNode = nodes.find((node) => node.id === source)!
@@ -28,15 +29,15 @@ export const ClassEdge = (props: EdgeProps) => {
   if (sourceCollision && targetCollision) {
     const line = shorten({ s: sourceCollision, d: targetCollision }, 8)
 
-    const [edgePath] = getStraightPath({
-      sourceX: line.s.x,
-      sourceY: line.s.y,
-      targetX: line.d.x,
-      targetY: line.d.y,
-    })
-
-    return <BaseEdge path={edgePath} {...props} />
-  } else {
-    return <></>
+    if (line) {
+      const [edgePath] = getStraightPath({
+        sourceX: line.s.x,
+        sourceY: line.s.y,
+        targetX: line.d.x,
+        targetY: line.d.y,
+      })
+      return <BaseEdge path={edgePath} {...props} />
+    }
   }
+  return <></>
 }

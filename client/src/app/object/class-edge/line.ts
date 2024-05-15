@@ -38,7 +38,7 @@ export function findCollision(edge: Line, side: Line): Point | null {
   return s >= 0 && s <= 1 && t >= 0 && t <= 1 ? { x: edge.s.x + t * dex, y: edge.s.y + t * dey } : null
 }
 
-export function shorten(line: Line, pixel: number): Line {
+export function shorten(line: Line, pixel: number): Line | null {
   const dx = line.d.x - line.s.x
   const dy = line.d.y - line.s.y
   const len = Math.sqrt(dx * dx + dy * dy)
@@ -54,5 +54,9 @@ export function shorten(line: Line, pixel: number): Line {
   const dy2 = newLine.d.y - newLine.s.y
   const newLen = Math.sqrt(dx2 * dx2 + dy2 * dy2)
 
-  return len < pixel * 2.5 ? line : newLine
+  return 8 < newLen && isSameVector(line, newLine) ? newLine : null
+}
+
+export function isSameVector(l1: Line, l2: Line): boolean {
+  return l1.s.x < l1.d.x === l2.s.x < l2.d.x && l1.s.y < l1.d.y === l2.s.y < l2.d.y
 }
