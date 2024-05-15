@@ -31,10 +31,10 @@ import styles from './class-node.module.scss'
 
 type Status = 'standard' | 'selected-by-me' | 'editing-by-me' | 'locked-by-someone'
 function getStyle(status: Status): string {
-  if (status === 'locked-by-someone') return `${styles.component} ${styles.locked}`
-  else if (status === 'editing-by-me') return `${styles.component} ${styles.editing}`
-  else if (status === 'selected-by-me') return `${styles.component} ${styles.selected}`
-  else return styles.component
+  if (status === 'locked-by-someone') return `class-node ${styles.component} ${styles.locked}`
+  else if (status === 'editing-by-me') return `class-node ${styles.component} ${styles.editing}`
+  else if (status === 'selected-by-me') return `class-node ${styles.component} ${styles.selected}`
+  else return `class-node ${styles.component}`
 }
 
 export interface Props {
@@ -63,6 +63,7 @@ export const ClassNode = ({ id, data, selected }: Props) => {
 
   return (
     <div
+      id={id}
       className={getStyle(status)}
       onClick={() => {
         // non input area clicked
@@ -118,8 +119,12 @@ export const ClassNode = ({ id, data, selected }: Props) => {
       ) : (
         <Empty id={id} type={'method'} />
       )}
-      <Handle type='target' position={Position.Top} />
-      <Handle type='source' position={Position.Bottom} />
+      <Handle type='source' id={'t'} position={Position.Top} />
+      <Handle type='source' id={'r'} position={Position.Right} />
+      <Handle type='source' id={'b'} position={Position.Bottom} />
+      <Handle type='source' id={'l'} position={Position.Left} />
+      <Handle type='source' id={'center'} position={Position.Bottom} />
+      <Handle type='target' id={'center'} position={Position.Bottom} />
     </div>
   )
 }

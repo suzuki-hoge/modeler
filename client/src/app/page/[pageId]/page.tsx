@@ -2,30 +2,31 @@
 import 'reactflow/dist/style.css'
 
 import { faker } from '@faker-js/faker'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 import useWebSocket from 'react-use-websocket'
 import ReactFlow, {
-  addEdge,
-  applyEdgeChanges,
   Background,
   ConnectionLineType,
   Controls,
+  DefaultEdgeOptions,
+  EdgeTypes,
+  MarkerType,
   MiniMap,
   Node,
   NodeTypes,
-  OnConnect,
-  OnEdgesChange,
+  OnConnectEnd,
+  OnConnectStart,
   Panel,
   ReactFlowProvider,
   useReactFlow,
 } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
+import { ClassEdge } from '@/app/object/class-edge/ClassEdge'
 import { ClassNode } from '@/app/object/class-node/ClassNode'
-import { defaultEdgeOptions, initialEdges } from '@/app/object/edge'
 import { selector, useStore } from '@/app/object/store'
-import { WebSocketContext, Response } from '@/app/socket/context'
-import { handleAddEdgeResponse, sendAddEdgeRequest } from '@/app/socket/message/add-edge'
+import { Response, WebSocketContext } from '@/app/socket/context'
+import { handleAddEdgeResponse } from '@/app/socket/message/add-edge'
 import { handleAddMethodResponse } from '@/app/socket/message/add-method'
 import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/socket/message/add-node'
 import { handleAddPropertyResponse } from '@/app/socket/message/add-property'
@@ -42,6 +43,13 @@ import { handleUpdateNameResponse } from '@/app/socket/message/update-name'
 import { handleUpdatePropertyResponse } from '@/app/socket/message/update-property'
 
 const nodeTypes: NodeTypes = { class: ClassNode }
+const edgeTypes: EdgeTypes = { class: ClassEdge }
+const connectionLineStyle = { stroke: 'gray', strokeWidth: 1 }
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  style: connectionLineStyle,
+  type: 'class',
+  markerEnd: { type: MarkerType.ArrowClosed },
+}
 
 function Flow() {
   const reactFlowInstance = useReactFlow()
@@ -50,8 +58,10 @@ function Flow() {
 
   const {
     nodes,
+    edges,
     onNodesChange,
     dragging,
+    addEdge,
     lock,
     unlock,
     moveNode,
@@ -105,24 +115,24 @@ function Flow() {
 
   // object
 
-  const [edges, setEdges] = useState(initialEdges)
+  // const [edges, setEdges] = useState(initialEdges)
 
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => {
-      if (changes[0].type === 'remove') {
-        console.log('edge remove')
-      }
-      setEdges((edges) => applyEdgeChanges(changes, edges))
-    },
-    [setEdges],
-  )
-  const onConnect: OnConnect = useCallback(
-    (connection) => {
-      sendAddEdgeRequest(send, socket, connection)
-      setEdges((edges) => addEdge(connection, edges))
-    },
-    [send, socket, setEdges],
-  )
+  // const onEdgesChange: OnEdgesChange = useCallback(
+  //   (changes) => {
+  //     if (changes[0].type === 'remove') {
+  //       console.log('edge remove')
+  //     }
+  //     setEdges((edges) => applyEdgeChanges(changes, edges))
+  //   },
+  //   [setEdges],
+  // )
+  // const onConnect: OnConnect = useCallback(
+  //   (connection) => {
+  //     sendAddEdgeRequest(send, socket, connection)
+  //     setEdges((edges) => addEdge(connection, edges))
+  //   },
+  //   [send, socket, setEdges],
+  // )
 
   // dragging
 
@@ -158,17 +168,45 @@ function Flow() {
     sendAddNodeRequest(send, socket, node)
   }, [reactFlowInstance, send, socket])
 
+  const connectionStartNodeId = useRef<string | null>(null)
+
+  const onConnectStart: OnConnectStart = useCallback((e, p) => {
+    console.log('connect start', e, p)
+    connectionStartNodeId.current = p.nodeId
+  }, [])
+
+  const onConnectEnd: OnConnectEnd = useCallback((e) => {
+    console.log('connect end')
+    const event = e as MouseEvent
+    const targetNodeIds = document
+      .elementsFromPoint(event.clientX, event.clientY)
+      .filter((e) => e.classList.contains('class-node'))
+      .map((e) => e.id)
+
+    if (targetNodeIds.length === 0) {
+      console.log('new')
+    } else if (connectionStartNodeId.current !== targetNodeIds[0]) {
+      addEdge(connectionStartNodeId.current!, targetNodeIds[0])
+    } else {
+      console.log('nothing')
+    }
+  }, [])
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        defaultEdgeOptions={defaultEdgeOptions}
-        connectionLineType={ConnectionLineType.SmoothStep}
-        onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={defaultEdgeOptions}
+        connectionLineStyle={connectionLineStyle}
+        connectionLineType={ConnectionLineType.Straight}
+        onNodesChange={onNodesChange}
+        // onEdgesChange={onEdgesChange}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        // onConnect={onConnect}
         attributionPosition='top-right'
         fitView={true}
         panOnDrag={false}

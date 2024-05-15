@@ -1,10 +1,11 @@
 import { Set, Map } from 'immutable'
-import { applyNodeChanges, Node, NodeChange, OnNodesChange } from 'reactflow'
+import { applyNodeChanges, Edge, Node, NodeChange, OnNodesChange } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { initialNodes, NodeData } from '@/app/object/node'
 
 export type Dragging = { current: Map<string, { x: number; y: number }>; prev: Map<string, { x: number; y: number }> }
+export type AddEdge = (srcId: string, dstId: string) => void
 export type LockIds = Set<string>
 export type Lock = (id: string) => void
 export type Unlock = (id: string) => void
@@ -20,7 +21,9 @@ export type DeleteMethod = (id: string, n: number) => void
 
 export type State = {
   nodes: Node<NodeData>[]
+  edges: Edge[]
   onNodesChange: OnNodesChange
+  addEdge: AddEdge
   dragging: Dragging
   lockIds: LockIds
   lock: Lock
@@ -38,7 +41,9 @@ export type State = {
 
 export const selector = (state: State) => ({
   nodes: state.nodes,
+  edges: state.edges,
   onNodesChange: state.onNodesChange,
+  addEdge: state.addEdge,
   dragging: state.dragging,
   lockIds: state.lockIds,
   lock: state.lock,
@@ -56,6 +61,8 @@ export const selector = (state: State) => ({
 
 export const useStore = createWithEqualityFn<State>((set, get) => ({
   nodes: initialNodes,
+  // edges: initialEdges,
+  edges: [],
   onNodesChange: (changes: NodeChange[]) => {
     for (const c of changes) {
       const { current, prev } = get().dragging
@@ -84,6 +91,19 @@ export const useStore = createWithEqualityFn<State>((set, get) => ({
 
     set({
       nodes: applyNodeChanges(changes, get().nodes),
+    })
+  },
+  addEdge: (srcId: string, dstId: string) => {
+    const edge: Edge = {
+      id: crypto.randomUUID(),
+      source: srcId,
+      sourceHandle: 'center',
+      target: dstId,
+      targetHandle: 'center',
+    }
+
+    set({
+      edges: [...get().edges, edge],
     })
   },
   dragging: { current: Map(), prev: Map() },

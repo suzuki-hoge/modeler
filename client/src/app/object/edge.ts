@@ -1,4 +1,4 @@
-import { DefaultEdgeOptions, Edge } from 'reactflow'
+import { Edge } from 'reactflow'
 
 export const initialEdges: Edge[] = [
   {
@@ -12,5 +12,3 @@ export const initialEdges: Edge[] = [
     target: 'item',
   },
 ]
-
-export const defaultEdgeOptions: DefaultEdgeOptions = { type: 'smoothstep' }
