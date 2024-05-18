@@ -10,9 +10,9 @@ import React, {
 } from 'react'
 import { AiOutlineDelete } from 'react-icons/ai'
 import { MdAddCircleOutline } from 'react-icons/md'
-import { Handle, Position } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
+import { Handles } from '@/app/object/class-node/Handles'
 import { NodeData } from '@/app/object/node'
 import { selector, useStore } from '@/app/object/store'
 import { WebSocketContext } from '@/app/socket/context'
@@ -119,12 +119,7 @@ export const ClassNode = ({ id, data, selected }: Props) => {
       ) : (
         <Empty id={id} type={'method'} />
       )}
-      <Handle type='source' id={'t'} position={Position.Top} />
-      <Handle type='source' id={'r'} position={Position.Right} />
-      <Handle type='source' id={'b'} position={Position.Bottom} />
-      <Handle type='source' id={'l'} position={Position.Left} />
-      <Handle type='source' id={'center'} position={Position.Bottom} />
-      <Handle type='target' id={'center'} position={Position.Bottom} />
+      <Handles />
     </div>
   )
 }

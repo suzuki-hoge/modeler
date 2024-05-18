@@ -1,0 +1,113 @@
+.dot {
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  z-index: 1;
+}
+
+.arrow {
+  opacity: 0;
+  z-index: 0;
+}
+
+.dot:hover + .arrow {
+  opacity: 1;
+  transition: opacity 0.4s;
+}
+
+div.t1 {
+  position: absolute;
+  top: -24px;
+  left: calc(50% - 12px);
+}
+svg.t1 {
+  position: absolute;
+  top: -20px;
+  left: calc(50% - 12px - 8px);
+  transform: rotate(-135deg);
+}
+div.t2 {
+  position: absolute;
+  top: -24px;
+  left: calc(50% + 12px);
+}
+svg.t2 {
+  position: absolute;
+  top: -20px;
+  left: calc(50% + 12px - 8px);
+  transform: rotate(-135deg);
+}
+
+div.r1 {
+  position: absolute;
+  top: calc(50% - 12px);
+  right: -24px;
+}
+svg.r1 {
+  position: absolute;
+  top: calc(50% - 12px - 8px);
+  right: -20px;
+  transform: rotate(-45deg);
+}
+div.r2 {
+  position: absolute;
+  top: calc(50% + 12px);
+  right: -24px;
+}
+svg.r2 {
+  position: absolute;
+  top: calc(50% + 12px - 8px);
+  right: -20px;
+  transform: rotate(-45deg);
+}
+
+div.b1 {
+  position: absolute;
+  bottom: -24px;
+  left: calc(50% + 12px);
+}
+svg.b1 {
+  position: absolute;
+  bottom: -20px;
+  left: calc(50% + 12px - 8px);
+  transform: rotate(45deg);
+}
+div.b2 {
+  position: absolute;
+  bottom: -24px;
+  left: calc(50% - 12px);
+}
+svg.b2 {
+  position: absolute;
+  bottom: -20px;
+  left: calc(50% - 12px - 8px);
+  transform: rotate(45deg);
+}
+
+div.l1 {
+  position: absolute;
+  top: calc(50% + 12px);
+  left: -24px;
+}
+svg.l1 {
+  position: absolute;
+  top: calc(50% + 12px - 8px);
+  left: -20px;
+  transform: rotate(135deg);
+}
+div.l2 {
+  position: absolute;
+  top: calc(50% - 12px);
+  left: -24px;
+}
+svg.l2 {
+  position: absolute;
+  top: calc(50% - 12px - 8px);
+  left: -20px;
+  transform: rotate(135deg);
+}
+
+.center {
+  z-index: -1;
+  top: calc(50% - 4px);
+}

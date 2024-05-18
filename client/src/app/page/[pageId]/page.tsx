@@ -171,26 +171,27 @@ function Flow() {
   const connectionStartNodeId = useRef<string | null>(null)
 
   const onConnectStart: OnConnectStart = useCallback((e, p) => {
-    console.log('connect start', e, p)
     connectionStartNodeId.current = p.nodeId
   }, [])
 
-  const onConnectEnd: OnConnectEnd = useCallback((e) => {
-    console.log('connect end')
-    const event = e as MouseEvent
-    const targetNodeIds = document
-      .elementsFromPoint(event.clientX, event.clientY)
-      .filter((e) => e.classList.contains('class-node'))
-      .map((e) => e.id)
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (e) => {
+      const event = e as MouseEvent
+      const targetNodeIds = document
+        .elementsFromPoint(event.clientX, event.clientY)
+        .filter((e) => e.classList.contains('class-node'))
+        .map((e) => e.id)
 
-    if (targetNodeIds.length === 0) {
-      console.log('new')
-    } else if (connectionStartNodeId.current !== targetNodeIds[0]) {
-      addEdge(connectionStartNodeId.current!, targetNodeIds[0])
-    } else {
-      console.log('nothing')
-    }
-  }, [])
+      if (targetNodeIds.length === 0) {
+        console.log('new')
+      } else if (connectionStartNodeId.current !== targetNodeIds[0]) {
+        addEdge(connectionStartNodeId.current!, targetNodeIds[0])
+      } else {
+        console.log('nothing')
+      }
+    },
+    [addEdge],
+  )
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
