@@ -26,28 +26,38 @@ pub fn parse_f64(json: &Json, key: &str) -> Result<f64, String> {
     json.get(key).ok_or(format!("no such key: {key}"))?.as_f64().ok_or(format!("invalid format: {key}"))
 }
 
+pub fn parse_strings(json: &Json, key: &str) -> Result<Vec<String>, String> {
+    let values = json
+        .get(key)
+        .ok_or(format!("no such key: {key}"))?
+        .as_array()
+        .ok_or(format!("invalid format: {key}"))?
+        .to_vec();
+    Ok(values.into_iter().map(|v| v.as_str().unwrap().to_string()).collect())
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::from_str as from_json_str;
 
-    use crate::actor::message::{parse_f64, parse_i64, parse_string, Json};
+    use crate::actor::message::{parse_f64, parse_i64, parse_string, parse_strings, Json};
 
     #[test]
     fn parse_string_ok() {
-        let json: Json = from_json_str(r#"{"object_id": "b41738a8-a348-4cff-b1b6-34913a4e14f8"}"#).unwrap();
+        let json: Json = from_json_str(r#"{"value": "abc"}"#).unwrap();
 
-        let act = parse_string(&json, "object_id");
+        let act = parse_string(&json, "value");
 
-        assert_eq!(Ok(String::from("b41738a8-a348-4cff-b1b6-34913a4e14f8")), act);
+        assert_eq!(Ok(String::from("abc")), act);
     }
 
     #[test]
     fn parse_string_missing_err() {
         let json: Json = from_json_str(r#"{}"#).unwrap();
 
-        let act = parse_string(&json, "object_id");
+        let act = parse_string(&json, "value");
 
-        assert_eq!(Err(String::from("no such key: object_id")), act);
+        assert_eq!(Err(String::from("no such key: value")), act);
     }
 
     #[test]
@@ -102,5 +112,32 @@ mod tests {
         let act = parse_f64(&json, "n");
 
         assert_eq!(Err(String::from("invalid format: n")), act);
+    }
+
+    #[test]
+    fn parse_strings_ok() {
+        let json: Json = from_json_str(r#"{"values": ["abc", "xyz"]}"#).unwrap();
+
+        let act = parse_strings(&json, "values");
+
+        assert_eq!(Ok(vec![String::from("abc"), String::from("xyz")]), act);
+    }
+
+    #[test]
+    fn parse_strings_missing_err() {
+        let json: Json = from_json_str(r#"{}"#).unwrap();
+
+        let act = parse_strings(&json, "values");
+
+        assert_eq!(Err(String::from("no such key: values")), act);
+    }
+
+    #[test]
+    fn parse_strings_format_err() {
+        let json: Json = from_json_str(r#"{"values": "abc"}"#).unwrap();
+
+        let act = parse_strings(&json, "values");
+
+        assert_eq!(Err(String::from("invalid format: values")), act);
     }
 }

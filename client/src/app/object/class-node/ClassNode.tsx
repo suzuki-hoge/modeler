@@ -70,8 +70,8 @@ export const ClassNode = ({ id, data, selected }: Props) => {
         if (editing) {
           // from any input area
           setEditing(false)
-          unlock(id)
-          sendUnlockRequest(send, socket, id)
+          unlock([id])
+          sendUnlockRequest(send, socket, [id])
         }
       }}
     >
@@ -165,8 +165,8 @@ const Icon = (props: {
           if (!props.editing) {
             // start editing
             props.setEditing(true)
-            lock(props.id)
-            sendLockRequest(send, socket, props.id)
+            lock([props.id])
+            sendLockRequest(send, socket, [props.id])
           } else {
             // continue editing
           }
@@ -181,8 +181,8 @@ const Icon = (props: {
             }
             // fix
             props.setEditing(false)
-            unlock(props.id)
-            sendUnlockRequest(send, socket, props.id)
+            unlock([props.id])
+            sendUnlockRequest(send, socket, [props.id])
             ref.current?.blur()
           }
         }}
@@ -195,8 +195,8 @@ const Icon = (props: {
           } else {
             // leave focus
             props.setEditing(false)
-            unlock(props.id)
-            sendUnlockRequest(send, socket, props.id)
+            unlock([props.id])
+            sendUnlockRequest(send, socket, [props.id])
           }
         }}
       />
@@ -239,8 +239,8 @@ const Text = (props: {
         if (!props.editing) {
           // start editing
           props.setEditing(true)
-          lock(props.id)
-          sendLockRequest(send, socket, props.id)
+          lock([props.id])
+          sendLockRequest(send, socket, [props.id])
         } else {
           // continue editing
         }
@@ -255,8 +255,8 @@ const Text = (props: {
           }
           // fix
           props.setEditing(false)
-          unlock(props.id)
-          sendUnlockRequest(send, socket, props.id)
+          unlock([props.id])
+          sendUnlockRequest(send, socket, [props.id])
           ref.current?.blur()
         }
       }}
@@ -269,8 +269,8 @@ const Text = (props: {
         } else {
           // leave focus
           props.setEditing(false)
-          unlock(props.id)
-          sendUnlockRequest(send, socket, props.id)
+          unlock([props.id])
+          sendUnlockRequest(send, socket, [props.id])
         }
       }}
     />

@@ -18,8 +18,8 @@ export type Dragging = { current: Map<string, { x: number; y: number }>; prev: M
 export type AddNode = (x: number, y: number, id?: string) => void
 export type AddEdge = (srcId: string, dstId: string) => void
 export type LockIds = Set<string>
-export type Lock = (id: string) => void
-export type Unlock = (id: string) => void
+export type Lock = (ids: string[]) => void
+export type Unlock = (ids: string[]) => void
 export type MoveNode = (id: string, x: number, y: number) => void
 export type UpdateIcon = (id: string, icon: string) => void
 export type UpdateName = (id: string, name: string) => void
@@ -135,14 +135,15 @@ export const useStore = createWithEqualityFn<State>((set, get) => ({
   },
   dragging: { current: Map(), prev: Map() },
   lockIds: Set(),
-  lock: (id: string) => {
-    const ids = get().lockIds
-    set({ lockIds: ids.add(id) })
+  lock: (ids: string[]) => {
+    set({ lockIds: get().lockIds.merge(...ids) })
   },
-  unlock: (id: string) => {
-    const ids = get().lockIds
+  unlock: (ids: string[]) => {
     const { current, prev } = get().dragging
-    set({ lockIds: ids.delete(id), dragging: { current: current, prev: prev.delete(id) } })
+    set({
+      lockIds: get().lockIds.filter((id) => !ids.includes(id)),
+      dragging: { current: current, prev: prev.deleteAll(ids) },
+    })
   },
   moveNode: (id: string, x: number, y: number) => {
     set({

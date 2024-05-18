@@ -64,6 +64,7 @@ function Flow() {
     dragging,
     addEdge,
     lock,
+    lockIds,
     unlock,
     moveNode,
     updateIcon,
@@ -141,8 +142,8 @@ function Flow() {
     for (const id of dragging.current.keys()) {
       if (!dragging.prev.has(id)) {
         // current only is locked
-        lock(id)
-        sendLockRequest(send, socket, id)
+        lock([id])
+        sendLockRequest(send, socket, [id])
       }
     }
     for (const id of dragging.prev.keys()) {
@@ -151,8 +152,8 @@ function Flow() {
         const pos = dragging.prev.get(id)!
         sendMoveNodeRequest(send, socket, id, pos.x, pos.y)
 
-        unlock(id)
-        sendUnlockRequest(send, socket, id)
+        unlock([id])
+        sendUnlockRequest(send, socket, [id])
       }
     }
   }, [send, socket, dragging, lock, unlock])

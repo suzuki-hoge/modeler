@@ -10,7 +10,7 @@ const type = 'lock'
 
 const lockRequest = z.object({
   type: z.string(),
-  object_id: z.string(),
+  object_ids: z.array(z.string()),
 })
 type LockRequest = z.infer<typeof lockRequest>
 
@@ -22,11 +22,11 @@ export type LockResponse = z.infer<typeof lockResponse>
 export function sendLockRequest(
   send: (request: LockRequest) => void,
   socket: () => WebSocketLike | null,
-  objectId: string,
+  objectIds: string[],
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(objectId, `send ${type}`)
-    send({ type: type, object_id: objectId })
+    console.log(objectIds, `send ${type}`)
+    send({ type: type, object_ids: objectIds })
   } else {
     console.log('already disconnected')
   }
@@ -36,8 +36,8 @@ export function sendLockRequest(
 
 export function handleLockResponse(lock: Lock, response: unknown) {
   if (isLockResponse(response)) {
-    console.log(response.object_id, `handle ${type}`, response)
-    lock(response.object_id)
+    console.log(response.object_ids, `handle ${type}`, response)
+    lock(response.object_ids)
   }
 }
 

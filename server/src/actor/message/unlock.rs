@@ -1,4 +1,4 @@
-use crate::actor::message::{parse_string, Json};
+use crate::actor::message::{parse_strings, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::{PageId, SessionId};
@@ -12,7 +12,7 @@ use serde_json::to_string as to_json_string;
 pub struct UnlockRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
-    pub object_id: ObjectId,
+    pub object_ids: Vec<ObjectId>,
 }
 
 impl UnlockRequest {
@@ -20,7 +20,7 @@ impl UnlockRequest {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
-            object_id: parse_string(&json, "object_id")?,
+            object_ids: parse_strings(&json, "object_ids")?,
         })
     }
 }
@@ -31,7 +31,7 @@ impl Handler<UnlockRequest> for Server {
     fn handle(&mut self, request: UnlockRequest, _: &mut Context<Self>) {
         println!("accept unlock request");
 
-        let response = UnlockResponse::new(request.object_id);
+        let response = UnlockResponse::new(request.object_ids);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
@@ -39,12 +39,12 @@ impl Handler<UnlockRequest> for Server {
 #[derive(Serialize)]
 pub struct UnlockResponse {
     r#type: String,
-    object_id: ObjectId,
+    object_ids: Vec<ObjectId>,
 }
 
 impl UnlockResponse {
-    fn new(object_id: ObjectId) -> Self {
-        Self { r#type: String::from("unlock"), object_id }
+    fn new(object_ids: Vec<ObjectId>) -> Self {
+        Self { r#type: String::from("unlock"), object_ids }
     }
 }
 

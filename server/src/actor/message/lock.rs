@@ -2,7 +2,7 @@ use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
 use serde_json::to_string as to_json_string;
 
-use crate::actor::message::{parse_string, Json};
+use crate::actor::message::{parse_strings, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::{PageId, SessionId};
@@ -13,7 +13,7 @@ use crate::data::ObjectId;
 pub struct LockRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
-    pub object_id: ObjectId,
+    pub object_ids: Vec<ObjectId>,
 }
 
 impl LockRequest {
@@ -21,7 +21,7 @@ impl LockRequest {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
-            object_id: parse_string(&json, "object_id")?,
+            object_ids: parse_strings(&json, "object_ids")?,
         })
     }
 }
@@ -32,7 +32,7 @@ impl Handler<LockRequest> for Server {
     fn handle(&mut self, request: LockRequest, _: &mut Context<Self>) {
         println!("accept lock request");
 
-        let response = LockResponse::new(request.object_id);
+        let response = LockResponse::new(request.object_ids);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
@@ -40,12 +40,12 @@ impl Handler<LockRequest> for Server {
 #[derive(Serialize)]
 pub struct LockResponse {
     r#type: String,
-    object_id: ObjectId,
+    object_ids: Vec<ObjectId>,
 }
 
 impl LockResponse {
-    fn new(object_id: ObjectId) -> Self {
-        Self { r#type: String::from("lock"), object_id }
+    fn new(object_ids: Vec<ObjectId>) -> Self {
+        Self { r#type: String::from("lock"), object_ids }
     }
 }
 

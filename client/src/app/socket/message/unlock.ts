@@ -10,7 +10,7 @@ const type = 'unlock'
 
 const unlockRequest = z.object({
   type: z.string(),
-  object_id: z.string(),
+  object_ids: z.array(z.string()),
 })
 type UnlockRequest = z.infer<typeof unlockRequest>
 
@@ -22,11 +22,11 @@ export type UnlockResponse = z.infer<typeof unlockResponse>
 export function sendUnlockRequest(
   send: (request: UnlockRequest) => void,
   socket: () => WebSocketLike | null,
-  objectId: string,
+  objectIds: string[],
 ) {
   if (socket()?.readyState === ReadyState.OPEN) {
-    console.log(objectId, `send ${type}`)
-    send({ type: type, object_id: objectId })
+    console.log(objectIds, `send ${type}`)
+    send({ type: type, object_ids: objectIds })
   } else {
     console.log('already disconnected')
   }
@@ -36,8 +36,8 @@ export function sendUnlockRequest(
 
 export function handleUnlockResponse(unlock: Unlock, response: unknown) {
   if (isUnlockResponse(response)) {
-    console.log(response.object_id, `handle ${type}`, response)
-    unlock(response.object_id)
+    console.log(response.object_ids, `handle ${type}`, response)
+    unlock(response.object_ids)
   }
 }
 
