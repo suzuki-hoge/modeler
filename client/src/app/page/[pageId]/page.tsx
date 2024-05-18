@@ -11,7 +11,6 @@ import ReactFlow, {
   DefaultEdgeOptions,
   EdgeTypes,
   MiniMap,
-  Node,
   NodeTypes,
   OnConnectEnd,
   OnConnectStart,
@@ -28,7 +27,7 @@ import { selector, useStore } from '@/app/object/store'
 import { Response, WebSocketContext } from '@/app/socket/context'
 import { handleAddEdgeResponse } from '@/app/socket/message/add-edge'
 import { handleAddMethodResponse } from '@/app/socket/message/add-method'
-import { handleAddNodeResponse, sendAddNodeRequest } from '@/app/socket/message/add-node'
+import { handleAddNodeResponse } from '@/app/socket/message/add-node'
 import { handleAddPropertyResponse } from '@/app/socket/message/add-property'
 import { handleConnectResponse } from '@/app/socket/message/connect'
 import { handleDeleteMethodResponse } from '@/app/socket/message/delete-method'
@@ -59,7 +58,9 @@ function Flow() {
   const {
     nodes,
     edges,
+    addNode,
     onNodesChange,
+    onEdgesChange,
     dragging,
     addEdge,
     lock,
@@ -158,16 +159,6 @@ function Flow() {
 
   // tmp
 
-  const add = useCallback(() => {
-    const node: Node = {
-      id: crypto.randomUUID(),
-      position: { x: -125, y: 200 },
-      data: { label: '4' },
-    }
-    reactFlowInstance.addNodes(node)
-    sendAddNodeRequest(send, socket, node)
-  }, [reactFlowInstance, send, socket])
-
   const connectionStartNodeId = useRef<string | null>(null)
 
   const onConnectStart: OnConnectStart = useCallback((e, p) => {
@@ -193,8 +184,14 @@ function Flow() {
     [addEdge],
   )
 
+  const onPaneClick: (event: React.MouseEvent<Element, MouseEvent>) => void = (event) => {
+    const pos = reactFlowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY })
+
+    addNode(pos.x, pos.y)
+  }
+
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div id='page' style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -204,24 +201,20 @@ function Flow() {
         connectionLineStyle={connectionLineStyle}
         connectionLineType={ConnectionLineType.Straight}
         onNodesChange={onNodesChange}
-        // onEdgesChange={onEdgesChange}
+        onEdgesChange={onEdgesChange}
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
         // onConnect={onConnect}
         attributionPosition='top-right'
         fitView={true}
         panOnDrag={false}
-        selectionOnDrag={true}
-        zoomOnScroll={false}
-        zoomOnPinch={true}
         panOnScroll={true}
+        zoomOnPinch={true}
+        zoomOnScroll={false}
+        selectionOnDrag={true}
+        onPaneClick={onPaneClick}
       >
         <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
-        <Panel position='bottom-left'>
-          <div style={{ display: 'flex', columnGap: '1rem' }}>
-            <button onClick={add}>add</button>
-          </div>
-        </Panel>
         <MiniMap zoomable pannable position={'bottom-right'} />
         <Controls position={'bottom-right'} />
         <Background />

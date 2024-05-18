@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Arrows() {
   return (
-    <svg style={{ position: 'absolute', top: 0, left: 0 }}>
+    <svg>
       <defs>
         <marker
           id='v-arrow'

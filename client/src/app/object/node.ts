@@ -32,3 +32,12 @@ export const initialNodes: Node<NodeData>[] = [
     },
   },
 ]
+
+export function createNode(x: number, y: number): Node<NodeData> {
+  return {
+    id: crypto.randomUUID(),
+    type: 'class',
+    position: { x: x, y: y },
+    data: { icon: 'C', name: '', properties: [], methods: [] },
+  }
+}

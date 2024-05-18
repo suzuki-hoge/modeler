@@ -1,11 +1,21 @@
 import { Set, Map } from 'immutable'
-import { applyNodeChanges, Edge, Node, NodeChange, OnNodesChange } from 'reactflow'
+import {
+  applyEdgeChanges,
+  applyNodeChanges,
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange,
+  OnEdgesChange,
+  OnNodesChange,
+} from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { initialEdges } from '@/app/object/edge'
-import { initialNodes, NodeData } from '@/app/object/node'
+import { createNode, initialNodes, NodeData } from '@/app/object/node'
 
 export type Dragging = { current: Map<string, { x: number; y: number }>; prev: Map<string, { x: number; y: number }> }
+export type AddNode = (x: number, y: number, id?: string) => void
 export type AddEdge = (srcId: string, dstId: string) => void
 export type LockIds = Set<string>
 export type Lock = (id: string) => void
@@ -23,7 +33,9 @@ export type DeleteMethod = (id: string, n: number) => void
 export type State = {
   nodes: Node<NodeData>[]
   edges: Edge[]
+  addNode: AddNode
   onNodesChange: OnNodesChange
+  onEdgesChange: OnEdgesChange
   addEdge: AddEdge
   dragging: Dragging
   lockIds: LockIds
@@ -43,7 +55,9 @@ export type State = {
 export const selector = (state: State) => ({
   nodes: state.nodes,
   edges: state.edges,
+  addNode: state.addNode,
   onNodesChange: state.onNodesChange,
+  onEdgesChange: state.onEdgesChange,
   addEdge: state.addEdge,
   dragging: state.dragging,
   lockIds: state.lockIds,
@@ -63,6 +77,9 @@ export const selector = (state: State) => ({
 export const useStore = createWithEqualityFn<State>((set, get) => ({
   nodes: initialNodes,
   edges: initialEdges,
+  addNode: (x: number, y: number, id?: string) => {
+    set({ nodes: [...get().nodes, createNode(x, y)] })
+  },
   onNodesChange: (changes: NodeChange[]) => {
     for (const c of changes) {
       const { current, prev } = get().dragging
@@ -91,6 +108,16 @@ export const useStore = createWithEqualityFn<State>((set, get) => ({
 
     set({
       nodes: applyNodeChanges(changes, get().nodes),
+    })
+  },
+  onEdgesChange: (changes: EdgeChange[]) => {
+    for (const c of changes) {
+      if (c.type === 'remove') {
+        console.log('edge remove')
+      }
+    }
+    set({
+      edges: applyEdgeChanges(changes, get().edges),
     })
   },
   addEdge: (srcId: string, dstId: string) => {
