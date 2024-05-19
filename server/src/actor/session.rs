@@ -8,21 +8,23 @@ use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext
 use serde_json::from_str as from_json_str;
 use uuid::Uuid;
 
-use crate::actor::message::change::add_edge::AddEdgeRequest;
-use crate::actor::message::change::add_method::AddMethodRequest;
-use crate::actor::message::change::add_node::AddNodeRequest;
-use crate::actor::message::change::add_property::AddPropertyRequest;
-use crate::actor::message::change::delete_method::DeleteMethodRequest;
-use crate::actor::message::change::delete_property::DeletePropertyRequest;
-use crate::actor::message::change::move_node::MoveNodeRequest;
-use crate::actor::message::change::update_icon::UpdateIconRequest;
-use crate::actor::message::change::update_method::UpdateMethodRequest;
-use crate::actor::message::change::update_name::UpdateNameRequest;
-use crate::actor::message::change::update_property::UpdatePropertyRequest;
-use crate::actor::message::connect::ConnectRequest;
-use crate::actor::message::disconnect::DisconnectRequest;
-use crate::actor::message::lock::LockRequest;
-use crate::actor::message::unlock::UnlockRequest;
+use crate::actor::message::connection::connect::ConnectRequest;
+use crate::actor::message::connection::disconnect::DisconnectRequest;
+use crate::actor::message::edge::add_edge::AddEdgeRequest;
+use crate::actor::message::edge::delete_edge::DeleteEdgeRequest;
+use crate::actor::message::node::add_node::AddNodeRequest;
+use crate::actor::message::node::delete_node::DeleteNodeRequest;
+use crate::actor::message::node::header::update_icon::UpdateIconRequest;
+use crate::actor::message::node::header::update_name::UpdateNameRequest;
+use crate::actor::message::node::method::delete_method::DeleteMethodRequest;
+use crate::actor::message::node::method::insert_method::InsertMethodRequest;
+use crate::actor::message::node::method::update_method::UpdateMethodRequest;
+use crate::actor::message::node::move_node::MoveNodeRequest;
+use crate::actor::message::node::property::delete_property::DeletePropertyRequest;
+use crate::actor::message::node::property::insert_property::InsertPropertyRequest;
+use crate::actor::message::node::property::update_property::UpdatePropertyRequest;
+use crate::actor::message::state::lock::LockRequest;
+use crate::actor::message::state::unlock::UnlockRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
 use crate::actor::{PageId, SessionId};
@@ -63,25 +65,30 @@ impl Session {
 
     fn handle_json(&mut self, json: Json) -> Result<(), String> {
         match json.get("type").and_then(|v| v.as_str()) {
+            // state
             Some("lock") => self.server_address.do_send(LockRequest::parse(&self.session_id, &self.page_id, json)?),
             Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
+
+            // node
             Some("add-node") => {
                 self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("move-node") => {
                 self.server_address.do_send(MoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-            Some("add-edge") => {
-                self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            Some("delete-node") => {
+                self.server_address.do_send(DeleteNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
+
             Some("update-icon") => {
                 self.server_address.do_send(UpdateIconRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("update-name") => {
                 self.server_address.do_send(UpdateNameRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-            Some("add-property") => {
-                self.server_address.do_send(AddPropertyRequest::parse(&self.session_id, &self.page_id, json)?)
+
+            Some("insert-property") => {
+                self.server_address.do_send(InsertPropertyRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("update-property") => {
                 self.server_address.do_send(UpdatePropertyRequest::parse(&self.session_id, &self.page_id, json)?)
@@ -89,8 +96,9 @@ impl Session {
             Some("delete-property") => {
                 self.server_address.do_send(DeletePropertyRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-            Some("add-method") => {
-                self.server_address.do_send(AddMethodRequest::parse(&self.session_id, &self.page_id, json)?)
+
+            Some("insert-method") => {
+                self.server_address.do_send(InsertMethodRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("update-method") => {
                 self.server_address.do_send(UpdateMethodRequest::parse(&self.session_id, &self.page_id, json)?)
@@ -98,6 +106,15 @@ impl Session {
             Some("delete-method") => {
                 self.server_address.do_send(DeleteMethodRequest::parse(&self.session_id, &self.page_id, json)?)
             }
+
+            // edge
+            Some("add-edge") => {
+                self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("delete-edge") => {
+                self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+
             Some(s) => Err(format!("unexpected typ: {s}"))?,
             None => Err(String::from("type missing"))?,
         };

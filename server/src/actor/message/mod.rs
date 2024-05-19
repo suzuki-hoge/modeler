@@ -1,12 +1,11 @@
+pub mod connection;
+pub mod edge;
+pub mod node;
+pub mod state;
+
 use std::collections::HashMap;
 
 use serde_json::Value;
-
-pub mod change;
-pub mod connect;
-pub mod disconnect;
-pub mod lock;
-pub mod unlock;
 
 pub type Json = HashMap<String, Value>;
 
