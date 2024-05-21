@@ -1,5 +1,7 @@
 import React from 'react'
 
+export type ArrowType = 'v-arrow' | 'filled-arrow'
+
 export default function Arrows() {
   return (
     <svg>

@@ -10,7 +10,6 @@ export const connectionLineStyle: CSSProperties = { stroke: 'gray', strokeWidth:
 export const defaultEdgeOptions: DefaultEdgeOptions = {
   style: connectionLineStyle,
   type: 'class',
-  markerEnd: 'v-arrow',
 }
 
 export const connectionLineType = ConnectionLineType.Straight

@@ -9,6 +9,7 @@ export function fetchInitialEdges(): Edge[] {
       target: 'item',
       targetHandle: 'center',
       type: 'class',
+      markerEnd: 'v-arrow',
     },
   ]
 }
