@@ -1,7 +1,7 @@
 import { Map, Set } from 'immutable'
 import { NodePositionChange } from 'reactflow'
 
-// drag
+import { LockIds } from '@/app/object/state/lock'
 
 export type DragHistory = {
   current: Map<string, { x: number; y: number }>
@@ -52,16 +52,4 @@ export function getMovedPositions({ current, prev }: DragHistory): { id: string;
   return getUnlockIds({ current, prev })
     .toArray()
     .map((id) => ({ id, ...prev.get(id)! }))
-}
-
-// lock
-
-export type LockIds = Set<string>
-
-export function lock(ids: string[], current: LockIds): LockIds {
-  return current.merge(...ids)
-}
-
-export function unlock(ids: string[], current: LockIds): LockIds {
-  return current.filter((id) => !ids.includes(id))
 }

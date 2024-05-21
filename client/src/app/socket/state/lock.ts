@@ -2,7 +2,7 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
-import { LockIds } from '@/app/object/state'
+import { LockIds } from '@/app/object/state/lock'
 
 // types
 

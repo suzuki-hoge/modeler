@@ -1,6 +1,6 @@
 import { Map, Set } from 'immutable'
 
-import { DragHistory, getLockIds, getMovedPositions, getUnlockIds } from './state'
+import { DragHistory, getLockIds, getMovedPositions, getUnlockIds } from '@/app/object/state/drag'
 
 test('getLockIds', () => {
   const dragHistory: DragHistory = { current: Map([['1', { x: 1, y: 1 }]]), prev: Map([['2', { x: 2, y: 2 }]]) }

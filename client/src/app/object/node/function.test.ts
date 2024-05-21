@@ -1,4 +1,5 @@
-import { insertMethod, insertProperty, NodeData } from './node'
+import { insertMethod, insertProperty } from '@/app/object/node/function'
+import { NodeData } from '@/app/object/node/type'
 
 test('insertProperty - empty', () => {
   const data: NodeData = { icon: 'C', name: 'Item', properties: [], methods: [] }

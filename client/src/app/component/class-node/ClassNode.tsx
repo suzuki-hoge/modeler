@@ -14,8 +14,9 @@ import { MdAddCircleOutline } from 'react-icons/md'
 import { shallow } from 'zustand/shallow'
 
 import { Handles } from '@/app/component/class-node/Handles'
-import { deleteMethod, deleteProperty, insertMethod, insertProperty, NodeData } from '@/app/object/node'
-import { lock, unlock } from '@/app/object/state'
+import { deleteMethod, deleteProperty, insertMethod, insertProperty } from '@/app/object/node/function'
+import { NodeData } from '@/app/object/node/type'
+import { lock, unlock } from '@/app/object/state/lock'
 import { selector, useStore } from '@/app/object/store'
 import { SocketContext } from '@/app/socket/socket'
 

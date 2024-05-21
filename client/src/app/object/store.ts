@@ -2,9 +2,11 @@ import { Set } from 'immutable'
 import { Edge, Node } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
-import { initialEdges } from '@/app/object/edge'
-import { initialNodes, NodeData } from '@/app/object/node'
-import { DragHistory, initDragHistory, LockIds } from '@/app/object/state'
+import { fetchInitialEdges } from '@/app/object/edge/fetch'
+import { getInitialNodes } from '@/app/object/node/fetch'
+import { NodeData } from '@/app/object/node/type'
+import { DragHistory, initDragHistory } from '@/app/object/state/drag'
+import { LockIds } from '@/app/object/state/lock'
 
 // state
 export type UpdateDragHistory = (dragHistory: DragHistory) => void
@@ -66,7 +68,7 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
   },
 
   // node
-  nodes: initialNodes,
+  nodes: getInitialNodes(),
   updateNodes: (updater) => {
     set({ nodes: updater(get().nodes) })
   },
@@ -82,7 +84,7 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
   },
 
   // edge
-  edges: initialEdges,
+  edges: fetchInitialEdges(),
   updateEdges: (updater) => {
     set({ edges: updater(get().edges) })
   },

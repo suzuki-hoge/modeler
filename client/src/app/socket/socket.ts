@@ -1,7 +1,7 @@
 import { createContext } from 'react'
 import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
 
-import { createEdge } from '@/app/object/edge'
+import { createEdge } from '@/app/object/edge/function'
 import {
   createNode,
   deleteMethod,
@@ -10,8 +10,9 @@ import {
   insertProperty,
   updateMethod,
   updateProperty,
-} from '@/app/object/node'
-import { completeDragEnd, lock, unlock } from '@/app/object/state'
+} from '@/app/object/node/function'
+import { completeDragEnd } from '@/app/object/state/drag'
+import { lock, unlock } from '@/app/object/state/lock'
 import { Store } from '@/app/object/store'
 import { handleConnect } from '@/app/socket/connection/connect'
 import { handleDisconnect } from '@/app/socket/connection/disconnect'

@@ -1,6 +1,6 @@
 import { Node } from 'reactflow'
 
-import { NodeData } from '@/app/object/node'
+import { NodeData } from '@/app/object/node/type'
 
 export type Line = { s: Point; d: Point }
 export type Point = { x: number; y: number }

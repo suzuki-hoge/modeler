@@ -1,8 +1,7 @@
 import { Node } from 'reactflow'
 
-import { NodeData } from '../../object/node'
-
-import { findCollision, getSideEdges, isSameVector, Line, Point } from './line'
+import { findCollision, getSideEdges, isSameVector, Line, Point } from '@/app/component/class-edge/line'
+import { NodeData } from '@/app/object/node/type'
 
 test('getSideEdges', () => {
   const node: Pick<Node<NodeData>, 'position' | 'height' | 'width'> = { position: { x: 0, y: 0 }, height: 8, width: 8 }
