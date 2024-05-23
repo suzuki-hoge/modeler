@@ -3,6 +3,7 @@ import { Edge, Node } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { fetchInitialEdges } from '@/app/object/edge/fetch'
+import { EdgeData } from '@/app/object/edge/type'
 import { getInitialNodes } from '@/app/object/node/fetch'
 import { NodeData } from '@/app/object/node/type'
 import { DragHistory, initDragHistory } from '@/app/object/state/drag'
@@ -13,12 +14,15 @@ export type UpdateDragHistory = (dragHistory: DragHistory) => void
 export type UpdateLockIds = (lockIds: LockIds) => void
 
 // node
+export type GetNode = (id: string) => Node<NodeData>
 export type UpdateNodes = (updater: (nodes: Node<NodeData>[]) => Node<NodeData>[]) => void
 export type UpdateNode = (id: string, updater: (node: Node<NodeData>) => Node<NodeData>) => void
 export type UpdateNodeData = (id: string, updater: (data: NodeData) => NodeData) => void
 
 // edge
-export type UpdateEdges = (updater: (edges: Edge[]) => Edge[]) => void
+export type GetEdge = (id: string) => Edge<EdgeData>
+export type UpdateEdges = (updater: (edges: Edge<EdgeData>[]) => Edge<EdgeData>[]) => void
+export type UpdateEdge = (id: string, updater: (node: Edge<EdgeData>) => Edge<EdgeData>) => void
 
 export type Store = {
   // state
@@ -29,13 +33,16 @@ export type Store = {
 
   // node
   nodes: Node<NodeData>[]
+  getNode: GetNode
   updateNodes: UpdateNodes
   updateNode: UpdateNode
   updateNodeData: UpdateNodeData
 
   // edge
-  edges: Edge[]
+  edges: Edge<EdgeData>[]
+  getEdge: GetEdge
   updateEdges: UpdateEdges
+  updateEdge: UpdateEdge
 }
 
 export const selector = (store: Store) => ({
@@ -47,13 +54,16 @@ export const selector = (store: Store) => ({
 
   // node
   nodes: store.nodes,
+  getNode: store.getNode,
   updateNodes: store.updateNodes,
   updateNode: store.updateNode,
   updateNodeData: store.updateNodeData,
 
   // edge
   edges: store.edges,
+  getEdge: store.getEdge,
   updateEdges: store.updateEdges,
+  updateEdge: store.updateEdge,
 })
 
 export const useStore = createWithEqualityFn<Store>((set, get) => ({
@@ -69,6 +79,9 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
 
   // node
   nodes: getInitialNodes(),
+  getNode: (id) => {
+    return get().nodes.find((node) => node.id === id)!
+  },
   updateNodes: (updater) => {
     set({ nodes: updater(get().nodes) })
   },
@@ -85,7 +98,15 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
 
   // edge
   edges: fetchInitialEdges(),
+  getEdge: (id) => {
+    return get().edges.find((edge) => edge.id === id)!
+  },
   updateEdges: (updater) => {
     set({ edges: updater(get().edges) })
+  },
+  updateEdge: (id, updater) => {
+    set({
+      edges: get().edges.map((edge) => (edge.id === id ? updater(edge) : edge)),
+    })
   },
 }))

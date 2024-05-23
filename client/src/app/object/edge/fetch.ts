@@ -1,6 +1,8 @@
 import { Edge } from 'reactflow'
 
-export function fetchInitialEdges(): Edge[] {
+import { EdgeData } from '@/app/object/edge/type'
+
+export function fetchInitialEdges(): Edge<EdgeData>[] {
   return [
     {
       id: '80A0C576-AAC3-4FA5-B8D7-FACE0B7D9B72',
@@ -10,6 +12,7 @@ export function fetchInitialEdges(): Edge[] {
       targetHandle: 'center',
       type: 'class',
       markerEnd: 'v-arrow',
+      data: { arrowType: 'v-arrow', label: '0..*' },
     },
   ]
 }

@@ -37,7 +37,7 @@ export function useOnConnect(store: Store, socket: Socket): OnConnect {
     if (targetNodeIds.length === 0) {
       console.log('new')
     } else if (source.current?.id !== targetNodeIds[0]) {
-      const edge = createEdge(allocateEdgeId(), source.current!.id, targetNodeIds[0], source.current!.type)
+      const edge = createEdge(allocateEdgeId(), source.current!.id, targetNodeIds[0], source.current!.type, '1')
 
       socket.addEdge(edge)
       store.updateEdges((edges) => [...edges, edge])

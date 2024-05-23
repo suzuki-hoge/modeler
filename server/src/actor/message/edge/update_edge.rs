@@ -10,7 +10,7 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct AddEdgeRequest {
+pub struct UpdateEdgeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
@@ -20,8 +20,8 @@ pub struct AddEdgeRequest {
     pub label: String,
 }
 
-impl AddEdgeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<AddEdgeRequest, String> {
+impl UpdateEdgeRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateEdgeRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
@@ -34,21 +34,21 @@ impl AddEdgeRequest {
     }
 }
 
-impl Handler<AddEdgeRequest> for Server {
+impl Handler<UpdateEdgeRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
-        println!("accept add-edge request");
+    fn handle(&mut self, request: UpdateEdgeRequest, _: &mut Context<Self>) {
+        println!("accept update-edge request");
 
         let response =
-            AddEdgeResponse::new(request.object_id, request.src, request.dst, request.arrow_type, request.label);
+            UpdateEdgeResponse::new(request.object_id, request.src, request.dst, request.arrow_type, request.label);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AddEdgeResponse {
+pub struct UpdateEdgeResponse {
     r#type: String,
     object_id: ObjectId,
     src: ObjectId,
@@ -57,14 +57,14 @@ pub struct AddEdgeResponse {
     label: String,
 }
 
-impl AddEdgeResponse {
+impl UpdateEdgeResponse {
     fn new(object_id: ObjectId, src: ObjectId, dst: ObjectId, arrow_type: String, label: String) -> Self {
-        Self { r#type: String::from("add-edge"), object_id, src, dst, arrow_type, label }
+        Self { r#type: String::from("update-edge"), object_id, src, dst, arrow_type, label }
     }
 }
 
-impl From<AddEdgeResponse> for Response {
-    fn from(value: AddEdgeResponse) -> Self {
+impl From<UpdateEdgeResponse> for Response {
+    fn from(value: UpdateEdgeResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

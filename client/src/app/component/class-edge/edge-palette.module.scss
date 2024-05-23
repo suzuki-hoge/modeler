@@ -1,0 +1,32 @@
+.component {
+  display: flex;
+  flex-direction: row;
+  column-gap: 0.2rem;
+  align-items: center;
+  border-radius: 3px;
+  border: 1px gray solid;
+  background-color: white;
+  padding: 3px 5px;
+  height: 1rem;
+}
+
+.reverse {
+}
+
+.arrow {
+  transform: rotate(-135deg);
+}
+
+.asterisk {
+}
+
+.choices {
+  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.choices:focus {
+  outline: none;
+}

@@ -12,6 +12,7 @@ use crate::actor::message::connection::connect::ConnectRequest;
 use crate::actor::message::connection::disconnect::DisconnectRequest;
 use crate::actor::message::edge::add_edge::AddEdgeRequest;
 use crate::actor::message::edge::delete_edge::DeleteEdgeRequest;
+use crate::actor::message::edge::update_edge::UpdateEdgeRequest;
 use crate::actor::message::node::add_node::AddNodeRequest;
 use crate::actor::message::node::delete_node::DeleteNodeRequest;
 use crate::actor::message::node::header::update_icon::UpdateIconRequest;
@@ -110,6 +111,9 @@ impl Session {
             // edge
             Some("add-edge") => {
                 self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("update-edge") => {
+                self.server_address.do_send(UpdateEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("delete-edge") => {
                 self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.page_id, json)?)

@@ -7,9 +7,9 @@ import { EdgeData } from '@/app/object/edge/type'
 
 // types
 
-const type = 'add-edge'
+const type = 'update-edge'
 
-const addEdgeRequest = z.object({
+const updateEdgeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
   src: z.string(),
@@ -17,16 +17,19 @@ const addEdgeRequest = z.object({
   arrowType: z.union([z.literal('v-arrow'), z.literal('filled-arrow')]),
   label: z.string(),
 })
-type AddEdgeRequest = z.infer<typeof addEdgeRequest>
+type UpdateEdgeRequest = z.infer<typeof updateEdgeRequest>
 
-const addEdgeResponse = addEdgeRequest
-type AddEdgeResponse = z.infer<typeof addEdgeResponse>
+const updateEdgeResponse = updateEdgeRequest
+type UpdateEdgeResponse = z.infer<typeof updateEdgeResponse>
 
-export type AddEdge = (edge: Edge<EdgeData>) => void
+export type UpdateEdge = (edge: Edge<EdgeData>) => void
 
 // send
 
-export function createAddEdge(send: (request: AddEdgeRequest) => void, socket: () => WebSocketLike | null): AddEdge {
+export function createUpdateEdge(
+  send: (request: UpdateEdgeRequest) => void,
+  socket: () => WebSocketLike | null,
+): UpdateEdge {
   return (edge: Edge<EdgeData>) => {
     if (socket()?.readyState === ReadyState.OPEN) {
       const request = {
@@ -47,14 +50,14 @@ export function createAddEdge(send: (request: AddEdgeRequest) => void, socket: (
 
 // handle
 
-export function handleAddEdge(response: unknown, handler: (response: AddEdgeResponse) => void) {
-  if (isAddEdgeResponse(response)) {
+export function handleUpdateEdge(response: unknown, handler: (response: UpdateEdgeResponse) => void) {
+  if (isUpdateEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
     handler(response)
   }
 }
 
-function isAddEdgeResponse(value: unknown): value is AddEdgeResponse {
-  const json = addEdgeResponse.safeParse(value)
+function isUpdateEdgeResponse(value: unknown): value is UpdateEdgeResponse {
+  const json = updateEdgeResponse.safeParse(value)
   return json.success && json.data.type === type
 }

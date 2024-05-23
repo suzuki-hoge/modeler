@@ -1,7 +1,7 @@
 import { createContext } from 'react'
 import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
 
-import { createEdge } from '@/app/object/edge/function'
+import { createEdge, updateEdge } from '@/app/object/edge/function'
 import {
   createNode,
   deleteMethod,
@@ -20,6 +20,7 @@ import { handleAddEdge } from '@/app/socket/edge/add-edge'
 import { createAddEdge, AddEdge } from '@/app/socket/edge/add-edge'
 import { handleDeleteEdge } from '@/app/socket/edge/delete-edge'
 import { createDeleteEdge, DeleteEdge } from '@/app/socket/edge/delete-edge'
+import { createUpdateEdge, handleUpdateEdge, UpdateEdge } from '@/app/socket/edge/update-edge'
 import { handleAddNode } from '@/app/socket/node/add-node'
 import { createAddNode, AddNode } from '@/app/socket/node/add-node'
 import { handleDeleteNode } from '@/app/socket/node/delete-node'
@@ -72,6 +73,7 @@ export type Socket = {
 
   // edge
   addEdge: AddEdge
+  updateEdge: UpdateEdge
   deleteEdge: DeleteEdge
 }
 
@@ -101,6 +103,7 @@ export function createSocket(send: SendJsonMessage, response: unknown, socket: (
 
     // edge
     addEdge: createAddEdge(send, socket),
+    updateEdge: createUpdateEdge(send, socket),
     deleteEdge: createDeleteEdge(send, socket),
   }
 }
@@ -160,8 +163,12 @@ export function handle(response: unknown, store: Store) {
 
     // edge
     handleAddEdge(response, (response) =>
-      store.updateEdges((edges) => [...edges, createEdge(response.objectId, response.src, response.dst)]),
+      store.updateEdges((edges) => [
+        ...edges,
+        createEdge(response.objectId, response.src, response.dst, response.arrowType, response.label),
+      ]),
     )
+    handleUpdateEdge(response, (response) => store.updateEdge(response.objectId, (edge) => updateEdge(edge, response)))
     handleDeleteEdge(response, (response) =>
       store.updateEdges((edges) => edges.filter((edge) => edge.id !== response.objectId)),
     )
