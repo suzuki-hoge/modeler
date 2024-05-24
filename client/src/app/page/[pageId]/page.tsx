@@ -7,6 +7,7 @@ import useWebSocket from 'react-use-websocket'
 import ReactFlow, { Background, Controls, MiniMap, Panel, ReactFlowProvider } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
+import { ConnectionLine } from '@/app/component/connection-line/ConnectionLine'
 import Arrows from '@/app/component/marker/Arrows'
 import { connectionLineStyle, connectionLineType, defaultEdgeOptions, edgeTypes } from '@/app/object/edge/config'
 import { useOnConnect, useOnEdgesChange } from '@/app/object/edge/operation'
@@ -48,6 +49,7 @@ function Flow() {
         defaultEdgeOptions={defaultEdgeOptions}
         connectionLineStyle={connectionLineStyle}
         connectionLineType={connectionLineType}
+        connectionLineComponent={ConnectionLine}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnectStart={onConnectStart}

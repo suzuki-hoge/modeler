@@ -1,3 +1,4 @@
+import { Set } from 'immutable'
 import { useRef } from 'react'
 import { applyEdgeChanges, OnConnectEnd, OnConnectStart, OnEdgesChange } from 'reactflow'
 
@@ -23,12 +24,18 @@ type OnConnect = { onConnectStart: OnConnectStart; onConnectEnd: OnConnectEnd }
 export function useOnConnect(store: Store, socket: Socket): OnConnect {
   const source = useRef<{ id: string; type: ArrowType } | null>(null)
 
-  const onConnectStart: OnConnectStart = (e, p) => {
+  const onConnectStart: OnConnectStart = (_, p) => {
+    console.log(p.handleId)
     source.current = { id: p.nodeId!, type: p.handleId?.endsWith('v') ? 'v-arrow' : 'filled-arrow' }
   }
 
   const onConnectEnd: OnConnectEnd = (e) => {
     const event = e as MouseEvent
+    const sourceNodeIds = Set([
+      ...store.nodes.filter((node) => node.selected).map((node) => node.id),
+      source.current!.id,
+    ])
+
     const targetNodeIds = document
       .elementsFromPoint(event.clientX, event.clientY)
       .filter((e) => e.classList.contains('class-node'))
@@ -37,10 +44,12 @@ export function useOnConnect(store: Store, socket: Socket): OnConnect {
     if (targetNodeIds.length === 0) {
       console.log('new')
     } else if (source.current?.id !== targetNodeIds[0]) {
-      const edge = createEdge(allocateEdgeId(), source.current!.id, targetNodeIds[0], source.current!.type, '1')
+      sourceNodeIds.forEach((sourceNodeId) => {
+        const edge = createEdge(allocateEdgeId(), sourceNodeId, targetNodeIds[0], source.current!.type, '1')
 
-      socket.addEdge(edge)
-      store.updateEdges((edges) => [...edges, edge])
+        socket.addEdge(edge)
+        store.updateEdges((edges) => [...edges, edge])
+      })
     } else {
       console.log('nothing')
     }
