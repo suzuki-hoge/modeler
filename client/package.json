@@ -12,14 +12,17 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
+    "axios": "^1.7.2",
     "immutable": "^4.3.6",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^5.2.1",
+    "react-spinners": "^0.13.8",
     "react-select": "^5.8.0",
     "react-use-websocket": "^4.8.1",
     "reactflow": "^11.11.3",
+    "swr": "^2.2.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

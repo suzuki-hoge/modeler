@@ -6,12 +6,12 @@ export function allocateNodeId(): string {
   return crypto.randomUUID()
 }
 
-export function createNode(id: string, x: number, y: number): Node<NodeData> {
+export function createNode(id: string, x: number, y: number, name: string): Node<NodeData> {
   return {
     id,
     type: 'class',
     position: { x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)) },
-    data: { icon: 'C', name: '', properties: [], methods: [] },
+    data: { icon: 'C', name, properties: [], methods: [] },
   }
 }
 

@@ -16,6 +16,7 @@ pub struct AddNodeRequest {
     pub object_id: ObjectId,
     pub x: f64,
     pub y: f64,
+    pub name: String,
 }
 
 impl AddNodeRequest {
@@ -26,6 +27,7 @@ impl AddNodeRequest {
             object_id: parse_string(&json, "objectId")?,
             x: parse_f64(&json, "x")?,
             y: parse_f64(&json, "y")?,
+            name: parse_string(&json, "name")?,
         })
     }
 }
@@ -36,7 +38,7 @@ impl Handler<AddNodeRequest> for Server {
     fn handle(&mut self, request: AddNodeRequest, _: &mut Context<Self>) {
         println!("accept add-node request");
 
-        let response = AddNodeResponse::new(request.object_id, request.x, request.y);
+        let response = AddNodeResponse::new(request.object_id, request.x, request.y, request.name);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
@@ -48,11 +50,12 @@ pub struct AddNodeResponse {
     object_id: ObjectId,
     x: f64,
     y: f64,
+    name: String,
 }
 
 impl AddNodeResponse {
-    fn new(object_id: ObjectId, x: f64, y: f64) -> Self {
-        Self { r#type: String::from("add-node"), object_id, x, y }
+    fn new(object_id: ObjectId, x: f64, y: f64, name: String) -> Self {
+        Self { r#type: String::from("add-node"), object_id, x, y, name }
     }
 }
 

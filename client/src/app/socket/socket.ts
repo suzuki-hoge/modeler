@@ -125,7 +125,7 @@ export function handle(response: unknown, store: Store) {
 
     // node
     handleAddNode(response, (response) =>
-      store.updateNodes((nodes) => [...nodes, createNode(response.objectId, response.x, response.y)]),
+      store.updateNodes((nodes) => [...nodes, createNode(response.objectId, response.x, response.y, response.name)]),
     )
     handleMoveNode(response, (response) =>
       store.updateNode(response.objectId, (node) => ({ ...node, position: { x: response.x, y: response.y } })),

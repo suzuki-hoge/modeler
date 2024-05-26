@@ -10,13 +10,12 @@ use actix_web_actors::ws::start;
 
 use crate::actor::server::Server;
 use crate::actor::session::{create_session_id, Session};
-use crate::data::User;
+use crate::data::{PageId, User};
 
 mod message;
 mod server;
 mod session;
 
-type PageId = String;
 type SessionId = String;
 
 pub async fn start_session(

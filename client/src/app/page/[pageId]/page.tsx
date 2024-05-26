@@ -2,11 +2,12 @@
 import 'reactflow/dist/style.css'
 
 import { faker } from '@faker-js/faker'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import useWebSocket from 'react-use-websocket'
 import ReactFlow, { Background, Controls, MiniMap, Panel, ReactFlowProvider } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
+import { ApplyToNewNode, ClassSelector, ClassSelectorVarsContext } from '@/app/component/class-selector/ClassSelector'
 import { ConnectionLine } from '@/app/component/connection-line/ConnectionLine'
 import Arrows from '@/app/component/marker/Arrows'
 import { connectionLineStyle, connectionLineType, defaultEdgeOptions, edgeTypes } from '@/app/object/edge/config'
@@ -28,6 +29,9 @@ function Flow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [socket.response],
   )
+
+  // class selector
+  const { showClassSelector } = useContext(ClassSelectorVarsContext)!
 
   // node
   const onNodesChange = useOnNodesChange(store, socket)
@@ -69,6 +73,7 @@ function Flow() {
         <Background />
       </ReactFlow>
       <Arrows />
+      {showClassSelector && <ClassSelector projectId={'1'} />}
     </div>
   )
 }
@@ -80,11 +85,18 @@ export default function Page({ params }: { params: { pageId: string } }) {
     `ws://127.0.0.1:8080/ws/${params.pageId}/${user}`,
   )
 
+  const [showClassSelector, setShowClassSelector] = useState(false)
+  const [newNodePos, setNewNodePos] = useState({ x: 0, y: 0 })
+  const [applyToNewNode, setApplyToNewNode] = useState<ApplyToNewNode>(() => () => {})
+  const vars = { showClassSelector, setShowClassSelector, newNodePos, setNewNodePos, applyToNewNode, setApplyToNewNode }
+
   return (
     <ReactFlowProvider>
-      <SocketContext.Provider value={createSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
-        <Flow />
-      </SocketContext.Provider>
+      <ClassSelectorVarsContext.Provider value={vars}>
+        <SocketContext.Provider value={createSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
+          <Flow />
+        </SocketContext.Provider>
+      </ClassSelectorVarsContext.Provider>
     </ReactFlowProvider>
   )
 }

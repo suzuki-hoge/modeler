@@ -30,7 +30,7 @@ function getStyle(status: Status): string {
   else return `class-node ${styles.component}`
 }
 
-export interface Props {
+interface Props {
   id: string
   data: NodeData
   selected: boolean
@@ -283,7 +283,7 @@ const Name = (props: {
       {...props}
       value={props.name}
       send={(value) => socket.updateName(props.id, value)}
-      style={{ fontWeight: 'bold' }}
+      style={{ fontWeight: 600 }}
     />
   )
 }

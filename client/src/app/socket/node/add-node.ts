@@ -14,6 +14,7 @@ const addNodeRequest = z.object({
   objectId: z.string(),
   x: z.number(),
   y: z.number(),
+  name: z.string(),
 })
 type AddNodeRequest = z.infer<typeof addNodeRequest>
 
@@ -27,7 +28,7 @@ export type AddNode = (node: Node<NodeData>) => void
 export function createAddNode(send: (request: AddNodeRequest) => void, socket: () => WebSocketLike | null): AddNode {
   return (node: Node<NodeData>) => {
     if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId: node.id, x: node.position.x, y: node.position.y }
+      const request = { type, objectId: node.id, x: node.position.x, y: node.position.y, name: node.data.name }
       console.log(`--> ${JSON.stringify(request)}`)
       send(request)
     } else {

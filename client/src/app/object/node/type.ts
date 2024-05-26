@@ -4,3 +4,9 @@ export interface NodeData {
   properties: string[]
   methods: string[]
 }
+
+export interface NodeHeader {
+  id: string
+  icon: string
+  name: string
+}
