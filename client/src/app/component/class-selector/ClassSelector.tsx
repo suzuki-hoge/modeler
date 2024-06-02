@@ -2,7 +2,7 @@
 
 import axios from 'axios'
 import React, { createContext, useContext, useEffect, useRef } from 'react'
-import Select from 'react-select/base'
+import SelectBase from 'react-select/base'
 import CreatableSelect from 'react-select/creatable'
 import { MoonLoader } from 'react-spinners'
 import { Node, XYPosition } from 'reactflow'
@@ -59,7 +59,7 @@ const Selector = ({ projectId }: Props) => {
   const url = `http://localhost:8080/node/headers/${projectId}/0`
   const { data, isValidating } = useSWR<NodeHeader[]>(url, fetcher)
 
-  const ref = useRef<Select<Option>>(null)
+  const ref = useRef<SelectBase<Option>>(null)
 
   useEffect(() => {
     if (showClassSelector && !isValidating) ref.current?.focus()
@@ -78,7 +78,6 @@ const Selector = ({ projectId }: Props) => {
     return (
       <CreatableSelect
         id={'class-selector'}
-        className={styles.component}
         options={options}
         placeholder={'Select or Type new'}
         isSearchable

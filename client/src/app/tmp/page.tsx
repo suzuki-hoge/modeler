@@ -6,5 +6,5 @@ import React from 'react'
 import { CompletableInput } from '@/app/component/completable-input/CompletableInput'
 
 export default function Page() {
-  return <CompletableInput />
+  return <CompletableInput inner={'foo(a: ref#123#, b: ref#456#)'} />
 }

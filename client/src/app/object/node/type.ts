@@ -10,3 +10,5 @@ export interface NodeHeader {
   icon: string
   name: string
 }
+
+export type NodeNames = { [id: string]: string }
