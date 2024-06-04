@@ -7,16 +7,20 @@ import useWebSocket from 'react-use-websocket'
 import ReactFlow, { Background, Controls, MiniMap, Panel, ReactFlowProvider } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
-import { ApplyToNewNode, ClassSelector, ClassSelectorVarsContext } from '@/app/component/class-selector/ClassSelector'
-import { ConnectionLine } from '@/app/component/connection-line/ConnectionLine'
-import Arrows from '@/app/component/marker/Arrows'
-import { connectionLineStyle, connectionLineType, defaultEdgeOptions, edgeTypes } from '@/app/object/edge/config'
-import { useOnConnect, useOnEdgesChange } from '@/app/object/edge/operation'
-import { nodeTypes } from '@/app/object/node/config'
-import { useOnNodesChange } from '@/app/object/node/operation'
-import { useOnPaneClick } from '@/app/object/pane/pane'
-import { selector, useStore } from '@/app/object/store'
-import { createSocket, handle, SocketContext } from '@/app/socket/socket'
+import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
+import Arrows from '@/app/_component/chart/marker/Arrows'
+import {
+  ApplyToNewNode,
+  ClassSelector,
+  ClassSelectorVarsContext,
+} from '@/app/_component/text/class-selector/ClassSelector'
+import { createSocket, handle, SocketContext } from '@/app/_socket/socket'
+import { connectionLineStyle, connectionLineType, defaultEdgeOptions, edgeTypes } from '@/app/_store/edge/config'
+import { useOnConnect, useOnEdgesChange } from '@/app/_store/edge/operation'
+import { nodeTypes } from '@/app/_store/node/config'
+import { useOnNodesChange } from '@/app/_store/node/operation'
+import { useOnPaneClick } from '@/app/_store/pane/pane'
+import { selector, useStore } from '@/app/_store/store'
 
 function Flow() {
   // store
