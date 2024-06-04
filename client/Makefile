@@ -9,3 +9,5 @@ fix:
 	@yarn lint
 	@yarn test
 
+sb:
+	@yarn storybook
