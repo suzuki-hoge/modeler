@@ -1,0 +1,13 @@
+.component {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid gray;
+  border-radius: 50%;
+  font-size: 1rem;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  user-select: none;
+}

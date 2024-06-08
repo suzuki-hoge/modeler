@@ -13,7 +13,7 @@ import {
   ApplyToNewNode,
   ClassSelector,
   ClassSelectorVarsContext,
-} from '@/app/_component/text/class-selector/ClassSelector'
+} from '@/app/_component/input/class-selector/ClassSelector'
 import { createSocket, handle, SocketContext } from '@/app/_socket/socket'
 import { connectionLineStyle, connectionLineType, defaultEdgeOptions, edgeTypes } from '@/app/_store/edge/config'
 import { useOnConnect, useOnEdgesChange } from '@/app/_store/edge/operation'

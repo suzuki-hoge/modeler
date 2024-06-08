@@ -1,7 +1,7 @@
 import * as Diff from 'diff'
 import { Change } from 'diff'
 
-import { NodeNames } from '@/app/_store/node/type'
+import { NodeHeader2 } from '@/app/_store/node/type'
 
 const re_ref = /(ref#[^#]+#)/g
 const re_id = /ref#([^#]+)#/
@@ -11,43 +11,45 @@ export type RefString = {
   front: string
 }
 
-export function innerToRef(inner: string, names: NodeNames): RefString {
+export function innerToRef(inner: string, headers: NodeHeader2[]): RefString {
   const front = inner
     .split(re_ref)
     .filter((s) => s)
     .map((s) => {
       const id = s.match(re_id)
-      return id ? names[id[1]] || '???' : s
+      return id ? headers.find((header) => header.id === id[1])?.name || '???' : s
     })
     .join('')
   return { inner, front }
 }
 
-export function innerToParts(inner: string, names: NodeNames): { value: string; ref: boolean }[] {
+export function innerToParts(inner: string, headers: NodeHeader2[]): { value: string; ref: boolean }[] {
   return inner
     .split(re_ref)
     .filter((s) => s)
     .map((s) => {
       const id = s.match(re_id)
-      return id ? { value: names[id[1]] || '???', ref: true } : { value: s, ref: false }
+      return id
+        ? { value: headers.find((header) => header.id === id[1])?.name || '???', ref: true }
+        : { value: s, ref: false }
     })
 }
 
-export function changedByInput(prev: RefString, front: string, names: NodeNames): RefString {
-  const [changed, next] = apply(prev, front, names)
+export function changedByInput(prev: RefString, front: string, headers: NodeHeader2[]): RefString {
+  const [changed, next] = apply(prev, front, headers)
   if (changed) {
-    return changedByInput(next, front, names)
+    return changedByInput(next, front, headers)
   } else {
     return next
   }
 }
 
-function apply(prev: RefString, front: string, names: NodeNames): [boolean, RefString] {
+function apply(prev: RefString, front: string, headers: NodeHeader2[]): [boolean, RefString] {
   const diffs = Diff.diffChars(prev.front, front)
   const firstInsertDiffI = diffs.findIndex((diff) => diff.added)
   const firstDeleteDiffI = diffs.findIndex((diff) => diff.removed)
 
-  const refPositions = findRefPositions(prev.inner, names)
+  const refPositions = findRefPositions(prev.inner, headers)
 
   if (firstInsertDiffI !== -1 && firstDeleteDiffI !== -1 && firstDeleteDiffI + 1 === firstInsertDiffI) {
     // delete + insert is update
@@ -228,7 +230,7 @@ interface RefPosition {
   frontE: number
 }
 
-export function findRefPositions(inner: string, names: NodeNames): RefPosition[] {
+export function findRefPositions(inner: string, headers: NodeHeader2[]): RefPosition[] {
   const result = []
   let totalRag = 0
 
@@ -236,8 +238,8 @@ export function findRefPositions(inner: string, names: NodeNames): RefPosition[]
   while ((m = re_ref.exec(inner))) {
     const ref = m[0]
     const id = ref.match(re_id)![1]
-    const label = names[id]
-    const rag = ref.length - label.length
+    const name = headers.find((header) => header.id === id)?.name || '???'
+    const rag = ref.length - name.length
     result.push({
       innerS: m.index,
       innerE: m.index + m[0].length - 1,
@@ -251,12 +253,12 @@ export function findRefPositions(inner: string, names: NodeNames): RefPosition[]
 
 export function changedBySelect(
   prev: RefString,
-  names: NodeNames,
+  headers: NodeHeader2[],
   id: string,
-  label: string,
+  name: string,
   cursorFrontS: number,
 ): RefString {
-  const refPositions = findRefPositions(prev.inner, names)
+  const refPositions = findRefPositions(prev.inner, headers)
 
   const brokenPos =
     refPositions[refPositions.findIndex(({ frontS, frontE }) => frontS < cursorFrontS && cursorFrontS <= frontE)]
@@ -264,18 +266,8 @@ export function changedBySelect(
   if (brokenPos) {
     // break and insert
     return {
-      inner:
-        prev.inner.slice(0, brokenPos.innerS) +
-        prev.front.slice(brokenPos.frontS, cursorFrontS) +
-        `ref#${id}#` +
-        prev.front.slice(cursorFrontS, brokenPos.frontE + 1) +
-        prev.inner.slice(brokenPos.innerE + 1),
-      front:
-        prev.front.slice(0, brokenPos.frontS) +
-        prev.front.slice(brokenPos.frontS, cursorFrontS) +
-        label +
-        prev.front.slice(cursorFrontS, brokenPos.frontE + 1) +
-        prev.front.slice(brokenPos.frontE + 1),
+      inner: prev.inner.slice(0, brokenPos.innerS) + `ref#${id}#` + prev.inner.slice(brokenPos.innerE + 1),
+      front: prev.front.slice(0, brokenPos.frontS) + name + prev.front.slice(brokenPos.frontE + 1),
     }
   } else {
     // insert
@@ -286,7 +278,7 @@ export function changedBySelect(
         .reduce((a, b) => a + b, 0) + cursorFrontS
     return {
       inner: prev.inner.slice(0, insertedInnerS) + `ref#${id}#` + prev.inner.slice(insertedInnerS),
-      front: prev.front.slice(0, cursorFrontS) + label + prev.front.slice(cursorFrontS),
+      front: prev.front.slice(0, cursorFrontS) + name + prev.front.slice(cursorFrontS),
     }
   }
 }

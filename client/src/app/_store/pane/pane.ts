@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { Node, useReactFlow } from 'reactflow'
 
-import { ClassSelectorVarsContext } from '@/app/_component/text/class-selector/ClassSelector'
+import { ClassSelectorVarsContext } from '@/app/_component/input/class-selector/ClassSelector'
 import { Socket } from '@/app/_socket/socket'
 import { NodeData } from '@/app/_store/node/type'
 import { Store } from '@/app/_store/store'

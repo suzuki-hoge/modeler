@@ -4,10 +4,13 @@ import {
   innerToParts,
   innerToRef,
   RefString,
-} from '@/app/_component/text/completable-input/RefString'
-import { NodeNames } from '@/app/_store/node/type'
+} from '@/app/_component/input/completable-input/RefString'
+import { NodeHeader2 } from '@/app/_store/node/type'
 
-const names: NodeNames = { '123': 'Foo', '456': 'Bar' }
+const headers: NodeHeader2[] = [
+  { id: '123', icon: { preview: 'C', desc: 'Class', color: 'lightgreen' }, name: 'Foo' },
+  { id: '456', icon: { preview: 'C', desc: 'Class', color: 'lightgreen' }, name: 'Bar' },
+]
 
 test.each`
   inner                              | exp
@@ -15,7 +18,7 @@ test.each`
   ${'foo(a: Int, b: Int)'}           | ${'foo(a: Int, b: Int)'}
   ${'foo(a: ref#789#)'}              | ${'foo(a: ???)'}
 `('innerToRef: $label', ({ inner, exp }: { inner: string; exp: string }) => {
-  const act = innerToRef(inner, names).front
+  const act = innerToRef(inner, headers).front
   expect(act).toStrictEqual(exp)
 })
 
@@ -26,7 +29,7 @@ test.each`
   ${'ref#123#'}                      | ${[{ value: 'Foo', ref: true }]}
   ${'ref#789#'}                      | ${[{ value: '???', ref: true }]}
 `('innerToParts: $label', ({ inner, exp }: { inner: string; exp: { value: string; ref: boolean }[] }) => {
-  const act = innerToParts(inner, names)
+  const act = innerToParts(inner, headers)
   expect(act).toStrictEqual(exp)
 })
 
@@ -77,7 +80,7 @@ test.each`
   ${'break delete and break update'}    | ${ref} | ${'foo(a: Fo, b: Ban)'}        | ${{ inner: 'foo(a: Fo, b: Ban)', front: 'foo(a: Fo, b: Ban)' }}
   ${'no diff'}                          | ${ref} | ${'foo(a: Foo, b: Bar)'}       | ${{ inner: 'foo(a: ref#123#, b: ref#456#)', front: 'foo(a: Foo, b: Bar)' }}
 `('changedByInput: $label', ({ ref, front, exp }: { ref: RefString; front: string; exp: RefString }) => {
-  const act = changedByInput(ref, front, names)
+  const act = changedByInput(ref, front, headers)
   expect(act).toStrictEqual(exp)
 })
 
@@ -93,8 +96,8 @@ test.each`
   prev   | id       | label    | cursor | exp
   ${ref} | ${'456'} | ${'Bar'} | ${0}   | ${{ inner: 'ref#456#foo(a: ref#123#, b: ref#456#)', front: 'Barfoo(a: Foo, b: Bar)' }}
   ${ref} | ${'456'} | ${'Bar'} | ${19}  | ${{ inner: 'foo(a: ref#123#, b: ref#456#)ref#456#', front: 'foo(a: Foo, b: Bar)Bar' }}
-  ${ref} | ${'456'} | ${'Bar'} | ${8}   | ${{ inner: 'foo(a: Fref#456#oo, b: ref#456#)', front: 'foo(a: FBaroo, b: Bar)' }}
+  ${ref} | ${'456'} | ${'Bar'} | ${8}   | ${{ inner: 'foo(a: ref#456#, b: ref#456#)', front: 'foo(a: Bar, b: Bar)' }}
 `('changedBySelect', ({ prev, id, label, cursor, exp }: ChangedBySelectProps) => {
-  const act = changedBySelect(prev, names, id, label, cursor)
+  const act = changedBySelect(prev, headers, id, label, cursor)
   expect(act).toStrictEqual(exp)
 })

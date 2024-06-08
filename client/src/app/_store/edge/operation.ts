@@ -3,7 +3,7 @@ import { useContext, useRef } from 'react'
 import { applyEdgeChanges, Node, OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'reactflow'
 
 import { ArrowType } from '@/app/_component/chart/marker/Arrows'
-import { ClassSelectorVarsContext } from '@/app/_component/text/class-selector/ClassSelector'
+import { ClassSelectorVarsContext } from '@/app/_component/input/class-selector/ClassSelector'
 import { Socket } from '@/app/_socket/socket'
 import { allocateEdgeId, createEdge } from '@/app/_store/edge/function'
 import { NodeData } from '@/app/_store/node/type'
