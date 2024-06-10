@@ -1,8 +1,38 @@
 .component {
+  width: 100%;
+}
+
+.input,
+.preview {
+  display: block;
+  font-size: 1rem;
+  font-weight: normal;
+  line-height: 1rem;
+  height: 1rem;
+  padding: 0;
+  margin: 0 0 1px;
+}
+
+.input {
+  border: 0;
+  background-color: transparent;
+}
+.input:focus {
+  height: 1rem;
+  outline: none;
+  margin: 0;
+  border-bottom: 1px solid gray;
+  cursor: text;
 }
 
 .preview {
   cursor: pointer;
+
+  span {
+    display: inline-block;
+    height: 1rem;
+    white-space: pre;
+  }
 }
 
 .ref {

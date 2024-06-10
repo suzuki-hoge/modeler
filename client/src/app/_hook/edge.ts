@@ -1,12 +1,11 @@
 import { Set } from 'immutable'
-import { useContext, useRef } from 'react'
-import { applyEdgeChanges, Node, OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'reactflow'
+import { useRef } from 'react'
+import { applyEdgeChanges, OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'reactflow'
 
-import { ArrowType } from '@/app/_component/chart/marker/Arrows'
-import { ClassSelectorVarsContext } from '@/app/_component/input/class-selector/ClassSelector'
+import { allocateEdgeId, createEdge } from '@/app/_object/edge/function'
+import { ArrowType, EdgeData } from '@/app/_object/edge/type'
+import { NodeData } from '@/app/_object/node/type'
 import { Socket } from '@/app/_socket/socket'
-import { allocateEdgeId, createEdge } from '@/app/_store/edge/function'
-import { NodeData } from '@/app/_store/node/type'
 import { Store } from '@/app/_store/store'
 
 export function useOnEdgesChange(store: Store, socket: Socket): OnEdgesChange {
@@ -25,11 +24,11 @@ type OnConnect = { onConnectStart: OnConnectStart; onConnectEnd: OnConnectEnd }
 
 export function useOnConnect(store: Store, socket: Socket): OnConnect {
   const source = useRef<{ id: string; type: ArrowType } | null>(null)
-  const reactFlowInstance = useReactFlow()
-  const { setShowClassSelector, setNewNodePos, setApplyToNewNode } = useContext(ClassSelectorVarsContext)!
+  const reactFlowInstance = useReactFlow<NodeData, EdgeData>()
+  // const { setShowClassSelector, setNewNodePos, setApplyToNewNode } = useContext(ClassSelectorVarsContext)!
 
   const onConnectStart: OnConnectStart = (_, p) => {
-    source.current = { id: p.nodeId!, type: p.handleId?.endsWith('v') ? 'v-arrow' : 'filled-arrow' }
+    source.current = { id: p.nodeId!, type: p.handleId?.startsWith('simple') ? 'simple' : 'generalization' }
   }
 
   const onConnectEnd: OnConnectEnd = (e) => {
@@ -45,23 +44,24 @@ export function useOnConnect(store: Store, socket: Socket): OnConnect {
       .map((e) => e.id)
 
     if (targetNodeIds.length === 0) {
-      // create new node
+      // // create new node
       const pos = reactFlowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY })
-
-      // apply class selector
-      setShowClassSelector(true)
-      setNewNodePos(pos)
-      setApplyToNewNode(() => (targetNode: Node<NodeData>) => {
-        socket.addNode(targetNode)
-        store.updateNodes((nodes) => [...nodes, targetNode])
-
-        sourceNodeIds.forEach((sourceNodeId) => {
-          const edge = createEdge(allocateEdgeId(), sourceNodeId, targetNode.id, source.current!.type, '1')
-
-          socket.addEdge(edge)
-          store.updateEdges((edges) => [...edges, edge])
-        })
-      })
+      console.log('connect end', pos)
+      //
+      // // apply class selector
+      // setShowClassSelector(true)
+      // setNewNodePos(pos)
+      // setApplyToNewNode(() => (targetNode: Node<NodeData>) => {
+      //   socket.addNode(targetNode)
+      //   store.updateNodes((nodes) => [...nodes, targetNode])
+      //
+      //   sourceNodeIds.forEach((sourceNodeId) => {
+      //     const edge = createEdge(allocateEdgeId(), sourceNodeId, targetNode.id, source.current!.type, '1')
+      //
+      //     socket.addEdge(edge)
+      //     store.updateEdges((edges) => [...edges, edge])
+      //   })
+      // })
     } else if (source.current?.id !== targetNodeIds[0]) {
       // connect
       sourceNodeIds.forEach((sourceNodeId) => {

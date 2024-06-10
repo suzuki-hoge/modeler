@@ -7,7 +7,7 @@ import { CharIcon } from '@/app/_component/icon/char-icon/CharIcon'
 import styles from './icon-text.module.scss'
 
 interface Props {
-  icon: string
+  preview: string
   color: string
   desc: string
 }
@@ -15,7 +15,7 @@ interface Props {
 export const IconText = (props: Props) => {
   return (
     <div className={styles.component}>
-      <CharIcon char={props.icon} color={props.color} />
+      <CharIcon char={props.preview} color={props.color} />
       <span>{props.desc}</span>
     </div>
   )

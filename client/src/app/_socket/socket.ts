@@ -1,6 +1,17 @@
 import { createContext } from 'react'
 import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
 
+import { createEdge, updateEdge } from '@/app/_object/edge/function'
+import { createNode } from '@/app/_object/node/function'
+import {
+  deleteMethod,
+  deleteProperty,
+  insertMethod,
+  insertProperty,
+  updateMethod,
+  updateProperty,
+} from '@/app/_object/node/function'
+import { lock, unlock } from '@/app/_object/state/function'
 import { handleConnect } from '@/app/_socket/connection/connect'
 import { handleDisconnect } from '@/app/_socket/connection/disconnect'
 import { handleAddEdge } from '@/app/_socket/edge/add-edge'
@@ -12,8 +23,7 @@ import { handleAddNode } from '@/app/_socket/node/add-node'
 import { createAddNode, AddNode } from '@/app/_socket/node/add-node'
 import { handleDeleteNode } from '@/app/_socket/node/delete-node'
 import { createDeleteNode, DeleteNode } from '@/app/_socket/node/delete-node'
-import { handleUpdateIcon } from '@/app/_socket/node/header/update-icon'
-import { createUpdateIcon, UpdateIcon } from '@/app/_socket/node/header/update-icon'
+import { createUpdateIconId, handleUpdateIconId, UpdateIconId } from '@/app/_socket/node/header/update-icon-id'
 import { handleUpdateName } from '@/app/_socket/node/header/update-name'
 import { createUpdateName, UpdateName } from '@/app/_socket/node/header/update-name'
 import { handleDeleteMethod } from '@/app/_socket/node/method/delete-method'
@@ -34,24 +44,12 @@ import { handleLock } from '@/app/_socket/state/lock'
 import { createLock, Lock } from '@/app/_socket/state/lock'
 import { handleUnlock } from '@/app/_socket/state/unlock'
 import { createUnlock, Unlock } from '@/app/_socket/state/unlock'
-import { createEdge, updateEdge } from '@/app/_store/edge/function'
-import {
-  createNode,
-  deleteMethod,
-  deleteProperty,
-  insertMethod,
-  insertProperty,
-  updateMethod,
-  updateProperty,
-} from '@/app/_store/node/function'
-import { completeDragEnd } from '@/app/_store/state/drag'
-import { lock, unlock } from '@/app/_store/state/lock'
 import { Store } from '@/app/_store/store'
 
 export type Socket = {
   response: unknown
 
-  // state
+  // lock
   lock: Lock
   unlock: Unlock
 
@@ -60,7 +58,7 @@ export type Socket = {
   moveNode: MoveNode
   deleteNode: DeleteNode
 
-  updateIcon: UpdateIcon
+  updateIconId: UpdateIconId
   updateName: UpdateName
 
   insertMethod: InsertMethod
@@ -81,7 +79,7 @@ export function createSocket(send: SendJsonMessage, response: unknown, socket: (
   return {
     response,
 
-    // state
+    // lock
     lock: createLock(send, socket),
     unlock: createUnlock(send, socket),
 
@@ -90,7 +88,7 @@ export function createSocket(send: SendJsonMessage, response: unknown, socket: (
     moveNode: createMoveNode(send, socket),
     deleteNode: createDeleteNode(send, socket),
 
-    updateIcon: createUpdateIcon(send, socket),
+    updateIconId: createUpdateIconId(send, socket),
     updateName: createUpdateName(send, socket),
 
     insertMethod: createInsertMethod(send, socket),
@@ -116,11 +114,10 @@ export function handle(response: unknown, store: Store) {
     handleConnect(response, () => {})
     handleDisconnect(response, () => {})
 
-    // state
-    handleLock(response, (response) => store.updateLockIds(lock(response.objectIds, store.lockIds)))
+    // lock
+    handleLock(response, (response) => store.updateLockIds((lockedIds) => lock(response.objectId, lockedIds)))
     handleUnlock(response, (response) => {
-      store.updateLockIds(unlock(response.objectIds, store.lockIds))
-      store.updateDragHistory(completeDragEnd(response.objectIds, store.dragHistory))
+      store.updateLockIds((lockedIds) => unlock(response.objectId, lockedIds))
     })
 
     // node
@@ -134,8 +131,8 @@ export function handle(response: unknown, store: Store) {
       store.updateNodes((nodes) => nodes.filter((node) => node.id !== response.objectId)),
     )
 
-    handleUpdateIcon(response, (response) =>
-      store.updateNodeData(response.objectId, (data) => ({ ...data, icon: response.icon })),
+    handleUpdateIconId(response, (response) =>
+      store.updateNodeData(response.objectId, (data) => ({ ...data, iconId: response.iconId })),
     )
     handleUpdateName(response, (response) =>
       store.updateNodeData(response.objectId, (data) => ({ ...data, name: response.name })),

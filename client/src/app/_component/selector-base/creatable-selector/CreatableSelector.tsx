@@ -1,10 +1,7 @@
 'use client'
 
-import React, { Dispatch, ReactNode, RefObject, SetStateAction, useEffect, useRef } from 'react'
-import SelectBase from 'react-select/base'
+import React, { ReactNode } from 'react'
 import CreatableSelect from 'react-select/creatable'
-
-import { PopupState } from '@/app/_hook/popup'
 
 type Option<Choice> =
   | (Choice & {
@@ -24,20 +21,10 @@ export interface Props<Choice> {
   search: (keyof Choice)[]
   onSelect: (choice: Choice) => void
   onCreate: (value: string) => void
-  popupState: PopupState
-  setPopupState: Dispatch<SetStateAction<PopupState>>
-  closePopup: () => void
-  focusBackRef?: RefObject<HTMLInputElement>
 }
 
-export function PopupCreatableSelector<Choice>(props: Props<Choice>) {
+export function CreatableSelector<Choice>(props: Props<Choice>) {
   const options: Option<Choice>[] = props.choices.map((choice) => ({ ...choice, __isNew__: false }))
-
-  const ref = useRef<SelectBase<Option<Choice>>>(null)
-
-  useEffect(() => {
-    if (props.popupState) ref.current?.focus()
-  }, [props.popupState])
 
   return (
     <CreatableSelect
@@ -69,20 +56,7 @@ export function PopupCreatableSelector<Choice>(props: Props<Choice>) {
         } else if (meta.action === 'create-option' && option && option.__isNew__) {
           props.onCreate(option.value)
         }
-        props.closePopup()
-        props.focusBackRef?.current?.focus()
       }}
-      onMenuClose={() => {
-        props.closePopup()
-        props.focusBackRef?.current?.focus()
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
-          props.closePopup()
-          props.focusBackRef?.current?.focus()
-        }
-      }}
-      ref={ref}
     />
   )
 }

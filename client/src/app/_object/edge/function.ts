@@ -1,7 +1,6 @@
 import { Edge } from 'reactflow'
 
-import { ArrowType } from '@/app/_component/chart/marker/Arrows'
-import { EdgeData } from '@/app/_store/edge/type'
+import { ArrowType, EdgeData } from '@/app/_object/edge/type'
 
 export function allocateEdgeId(): string {
   return crypto.randomUUID()

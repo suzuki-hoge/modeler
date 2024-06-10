@@ -15,7 +15,7 @@ use crate::actor::message::edge::delete_edge::DeleteEdgeRequest;
 use crate::actor::message::edge::update_edge::UpdateEdgeRequest;
 use crate::actor::message::node::add_node::AddNodeRequest;
 use crate::actor::message::node::delete_node::DeleteNodeRequest;
-use crate::actor::message::node::header::update_icon::UpdateIconRequest;
+use crate::actor::message::node::header::update_icon_id::UpdateIconIdRequest;
 use crate::actor::message::node::header::update_name::UpdateNameRequest;
 use crate::actor::message::node::method::delete_method::DeleteMethodRequest;
 use crate::actor::message::node::method::insert_method::InsertMethodRequest;
@@ -81,8 +81,8 @@ impl Session {
                 self.server_address.do_send(DeleteNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
 
-            Some("update-icon") => {
-                self.server_address.do_send(UpdateIconRequest::parse(&self.session_id, &self.page_id, json)?)
+            Some("update-icon-id") => {
+                self.server_address.do_send(UpdateIconIdRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("update-name") => {
                 self.server_address.do_send(UpdateNameRequest::parse(&self.session_id, &self.page_id, json)?)

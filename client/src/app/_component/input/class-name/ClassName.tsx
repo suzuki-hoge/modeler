@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import styles from './class-name.module.scss'
 
-interface BaseProps {
+interface Props {
   name: string
+  readonly: boolean
+  onChange: (name: string) => void
 }
-
-type Props = (BaseProps & { readonly: false; onChange: (name: string) => void }) | (BaseProps & { readonly: true })
 
 export const ClassName = (props: Props) => {
   const [isEditing, setIsEditing] = useState(false)

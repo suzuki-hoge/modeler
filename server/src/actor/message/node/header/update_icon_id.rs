@@ -10,51 +10,51 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct UpdateIconRequest {
+pub struct UpdateIconIdRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
-    pub icon: String,
+    pub icon_id: String,
 }
 
-impl UpdateIconRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateIconRequest, String> {
+impl UpdateIconIdRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateIconIdRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "objectId")?,
-            icon: parse_string(&json, "icon")?,
+            icon_id: parse_string(&json, "iconId")?,
         })
     }
 }
 
-impl Handler<UpdateIconRequest> for Server {
+impl Handler<UpdateIconIdRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: UpdateIconRequest, _: &mut Context<Self>) {
-        println!("accept update-icon request");
+    fn handle(&mut self, request: UpdateIconIdRequest, _: &mut Context<Self>) {
+        println!("accept update-icon-id request");
 
-        let response = UpdateIconResponse::new(request.object_id, request.icon);
+        let response = UpdateIconIdResponse::new(request.object_id, request.icon_id);
         self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateIconResponse {
+pub struct UpdateIconIdResponse {
     r#type: String,
     object_id: ObjectId,
-    icon: String,
+    icon_id: String,
 }
 
-impl UpdateIconResponse {
-    fn new(object_id: ObjectId, icon: String) -> Self {
-        Self { r#type: String::from("update-icon"), object_id, icon }
+impl UpdateIconIdResponse {
+    fn new(object_id: ObjectId, icon_id: String) -> Self {
+        Self { r#type: String::from("update-icon-id"), object_id, icon_id }
     }
 }
 
-impl From<UpdateIconResponse> for Response {
-    fn from(value: UpdateIconResponse) -> Self {
+impl From<UpdateIconIdResponse> for Response {
+    fn from(value: UpdateIconIdResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

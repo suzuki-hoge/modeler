@@ -15,96 +15,88 @@
   transition: opacity 0.4s;
 }
 
-div.tv {
+div.t1 {
   position: absolute;
   top: -24px;
   left: calc(50% - 12px);
 }
-svg.tv {
+svg.t1 {
   position: absolute;
   top: -20px;
   left: calc(50% - 12px - 8px);
-  transform: rotate(-135deg);
 }
-div.tf {
+div.t2 {
   position: absolute;
   top: -24px;
   left: calc(50% + 12px);
 }
-svg.tf {
+svg.t2 {
   position: absolute;
   top: -20px;
   left: calc(50% + 12px - 8px);
-  transform: rotate(-135deg);
 }
 
-div.rv {
+div.r1 {
   position: absolute;
   top: calc(50% - 12px);
   right: -24px;
 }
-svg.rv {
+svg.r1 {
   position: absolute;
   top: calc(50% - 12px - 8px);
   right: -20px;
-  transform: rotate(-45deg);
 }
-div.rf {
+div.r2 {
   position: absolute;
   top: calc(50% + 12px);
   right: -24px;
 }
-svg.rf {
+svg.r2 {
   position: absolute;
   top: calc(50% + 12px - 8px);
   right: -20px;
-  transform: rotate(-45deg);
 }
 
-div.bv {
+div.b1 {
   position: absolute;
   bottom: -24px;
   left: calc(50% + 12px);
 }
-svg.bv {
+svg.b1 {
   position: absolute;
   bottom: -20px;
   left: calc(50% + 12px - 8px);
-  transform: rotate(45deg);
 }
-div.bf {
+div.b2 {
   position: absolute;
   bottom: -24px;
   left: calc(50% - 12px);
 }
-svg.bf {
+svg.b2 {
   position: absolute;
   bottom: -20px;
   left: calc(50% - 12px - 8px);
-  transform: rotate(45deg);
 }
 
-div.lv {
+div.l1 {
   position: absolute;
   top: calc(50% + 12px);
   left: -24px;
 }
-svg.lv {
+svg.l1 {
   position: absolute;
   top: calc(50% + 12px - 8px);
   left: -20px;
-  transform: rotate(135deg);
 }
-div.lf {
+div.l2 {
   position: absolute;
   top: calc(50% - 12px);
   left: -24px;
 }
-svg.lf {
+svg.l2 {
   position: absolute;
   top: calc(50% - 12px - 8px);
   left: -20px;
-  transform: rotate(135deg);
 }
 
 .center {

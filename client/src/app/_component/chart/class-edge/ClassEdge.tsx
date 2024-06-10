@@ -1,53 +1,153 @@
-import { BaseEdge, EdgeProps, getStraightPath } from 'reactflow'
+import { CSSProperties, memo, useCallback, useContext, useMemo } from 'react'
+import { BaseEdge, ConnectionLineType, DefaultEdgeOptions, EdgeProps, EdgeTypes } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import { EdgeLabel } from '@/app/_component/chart/class-edge/EdgeLabel'
 import { EdgePalette } from '@/app/_component/chart/class-edge/EdgePalette'
-import { getSideEdges, findCollision, shorten, shift, moveToVertical } from '@/app/_component/chart/class-edge/line'
-import { EdgeData } from '@/app/_store/edge/type'
+import { getInnerProps } from '@/app/_component/chart/class-edge/line'
+import { updateEdge } from '@/app/_object/edge/function'
+import { ArrowType, EdgeData } from '@/app/_object/edge/type'
+import { SocketContext } from '@/app/_socket/socket'
 import { selector, useStore } from '@/app/_store/store'
 
 export const ClassEdge = (props: EdgeProps<EdgeData>) => {
-  const { id, source, sourceX, sourceY, target, targetX, targetY, selected, data } = props
-
   const store = useStore(selector, shallow)
-  const sourceNode = store.getNode(source)
-  const targetNode = store.getNode(target)
+  const socket = useContext(SocketContext)!
 
-  if (!sourceNode || !targetNode) return <></>
+  const sourceNode = store.getNode(props.source)
+  const targetNode = store.getNode(props.target)
 
-  const edge = { s: { x: sourceX, y: sourceY - 4 }, d: { x: targetX, y: targetY - 4 } }
-
-  // collision
-  const sourceCollision = getSideEdges(sourceNode)
-    .map((side) => findCollision(edge, side))
-    .filter((c) => c)[0]
-  const targetCollision = getSideEdges(targetNode)
-    .map((side) => findCollision(edge, side))
-    .filter((c) => c)[0]
-
-  if (sourceCollision && targetCollision) {
-    const line = shorten({ s: sourceCollision, d: targetCollision }, 4)
-
-    if (line) {
-      const [edgePath, labelX, labelY] = getStraightPath({
-        sourceX: line.s.x,
-        sourceY: line.s.y,
-        targetX: line.d.x,
-        targetY: line.d.y,
-      })
-
-      const palettePos = { x: labelX, y: labelY }
-      const labelPos = moveToVertical(shift(line.d, line.s, 12), line, 12)
-
-      return (
-        <>
-          <BaseEdge path={edgePath} {...props} />
-          {selected && <EdgePalette id={id} data={data!} pos={palettePos} />}
-          <EdgeLabel pos={labelPos} value={data!.label} />
-        </>
-      )
-    }
+  const innerProps = useMemo(
+    () =>
+      getInnerProps(
+        props.sourceX,
+        props.sourceY,
+        sourceNode.position.x,
+        sourceNode.position.y,
+        sourceNode.width!,
+        sourceNode.height!,
+        props.targetX,
+        props.targetY,
+        targetNode.position.x,
+        targetNode.position.y,
+        targetNode.width!,
+        targetNode.height!,
+      ),
+    [
+      props.sourceX,
+      props.sourceY,
+      sourceNode.position.x,
+      sourceNode.position.y,
+      sourceNode.width,
+      sourceNode.height,
+      props.targetX,
+      props.targetY,
+      targetNode.position.x,
+      targetNode.position.y,
+      targetNode.width,
+      targetNode.height,
+    ],
+  )
+  const onRotate = useCallback(
+    () => {
+      store.updateEdge(props.id, (edge) => updateEdge(edge, { src: edge.target, dst: edge.source }))
+      socket.updateEdge(store.getEdge(props.id))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onChangeToGeneralization = useCallback(
+    () => {
+      store.updateEdge(props.id, (edge) => updateEdge(edge, { arrowType: 'generalization' }))
+      socket.updateEdge(store.getEdge(props.id))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onChangeToSimple = useCallback(
+    () => {
+      store.updateEdge(props.id, (edge) => updateEdge(edge, { arrowType: 'simple' }))
+      socket.updateEdge(store.getEdge(props.id))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onChangeLabel = useCallback(
+    (label: string) => {
+      store.updateEdge(props.id, (edge) => updateEdge(edge, { label }))
+      socket.updateEdge(store.getEdge(props.id))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  if (innerProps) {
+    return (
+      <ClassEdgeInner
+        id={props.id}
+        arrowType={props.data!.arrowType}
+        label={props.data!.label}
+        selected={props.selected || false}
+        edgePath={innerProps.edgePath}
+        palettePointX={innerProps.palettePoint.x}
+        palettePointY={innerProps.palettePoint.y}
+        labelPointX={innerProps.labelPoint.x}
+        labelPointY={innerProps.labelPoint.y}
+        onRotate={onRotate}
+        onChangeToGeneralization={onChangeToGeneralization}
+        onChangeToSimple={onChangeToSimple}
+        onChangeLabel={onChangeLabel}
+      />
+    )
+  } else {
+    return <></>
   }
-  return <></>
 }
+
+interface InnerProps {
+  id: string
+  arrowType: ArrowType
+  label: string
+  selected: boolean
+  edgePath: string
+  palettePointX: number
+  palettePointY: number
+  labelPointX: number
+  labelPointY: number
+  onRotate: () => void
+  onChangeToGeneralization: () => void
+  onChangeToSimple: () => void
+  onChangeLabel: (label: string) => void
+}
+
+export const ClassEdgeInner = memo(function _ClassEdgeInner(props: InnerProps) {
+  return (
+    <>
+      <BaseEdge path={props.edgePath} markerEnd={`url('#${props.arrowType}')`} />
+      {props.selected && (
+        <EdgePalette
+          id={props.id}
+          arrowType={props.arrowType}
+          label={props.label}
+          x={props.palettePointX}
+          y={props.palettePointY}
+          onRotate={props.onRotate}
+          onChangeToGeneralization={props.onChangeToGeneralization}
+          onChangeToSimple={props.onChangeToSimple}
+          onChangeLabel={props.onChangeLabel}
+        />
+      )}
+      <EdgeLabel x={props.labelPointX} y={props.labelPointY} value={props.label} />
+    </>
+  )
+})
+
+export const edgeTypes: EdgeTypes = { class: ClassEdge }
+
+export const connectionLineStyle: CSSProperties = { stroke: 'gray', strokeWidth: 1 }
+
+export const defaultEdgeOptions: DefaultEdgeOptions = {
+  style: connectionLineStyle,
+  type: 'class',
+}
+
+export const connectionLineType = ConnectionLineType.Straight

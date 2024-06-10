@@ -1,9 +1,13 @@
 import { Node } from 'reactflow'
 
-import { NodeData } from '@/app/_store/node/type'
+import { NodeData, NodeIcon } from '@/app/_object/node/type'
 
 export function allocateNodeId(): string {
   return crypto.randomUUID()
+}
+
+export function getIcon(iconId: string, icons: NodeIcon[]): NodeIcon {
+  return icons.find((icon) => icon.id === iconId) || icons.find((icon) => icon.id === 'default')!
 }
 
 export function createNode(id: string, x: number, y: number, name: string): Node<NodeData> {
@@ -11,7 +15,7 @@ export function createNode(id: string, x: number, y: number, name: string): Node
     id,
     type: 'class',
     position: { x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)) },
-    data: { icon: 'C', name, properties: [], methods: [] },
+    data: { iconId: 'default', name, properties: [], methods: [] },
   }
 }
 

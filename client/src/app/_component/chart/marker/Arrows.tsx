@@ -1,5 +1,6 @@
 import React from 'react'
 
+// migrated
 export type ArrowType = 'v-arrow' | 'filled-arrow'
 
 export default function Arrows() {
@@ -7,7 +8,7 @@ export default function Arrows() {
     <svg>
       <defs>
         <marker
-          id='v-arrow'
+          id='simple'
           viewBox='0 0 10 10'
           refX='8'
           refY='5'
@@ -20,7 +21,7 @@ export default function Arrows() {
           <path d='M 8 5 L 0 10 z' fill='none' stroke='gray' />
         </marker>
         <marker
-          id='filled-arrow'
+          id='generalization'
           viewBox='0 0 10 10'
           refX='8'
           refY='5'

@@ -12,10 +12,10 @@ type Story = StoryObj<typeof meta>
 
 export const Input: Story = {
   args: {
-    icon: { preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
+    iconId: 'abc',
     icons: [
-      { preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
-      { preview: 'D', desc: 'Domain', color: 'lightgreen' },
+      { id: 'abc', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
+      { id: 'def', preview: 'D', desc: 'Domain', color: 'lightgreen' },
     ],
     readonly: false,
     onChange: console.log,
@@ -24,11 +24,12 @@ export const Input: Story = {
 
 export const Readonly: Story = {
   args: {
-    icon: { preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
+    iconId: 'abc',
     icons: [
-      { preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
-      { preview: 'D', desc: 'Domain', color: 'lightgreen' },
+      { id: 'abc', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
+      { id: 'def', preview: 'D', desc: 'Domain', color: 'lightgreen' },
     ],
     readonly: true,
+    onChange: console.log,
   },
 }

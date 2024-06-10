@@ -1,18 +1,13 @@
-import { Node } from 'reactflow'
-
 import { findCollision, getSideEdges, isSameVector, Line, Point } from '@/app/_component/chart/class-edge/line'
-import { NodeData } from '@/app/_store/node/type'
 
 test('getSideEdges', () => {
-  const node: Pick<Node<NodeData>, 'position' | 'height' | 'width'> = { position: { x: 0, y: 0 }, height: 8, width: 8 }
-
   const exp: Line[] = [
     { s: { x: 0, y: 0 }, d: { x: 0, y: 8 } },
     { s: { x: 0, y: 0 }, d: { x: 8, y: 0 } },
     { s: { x: 8, y: 0 }, d: { x: 8, y: 8 } },
     { s: { x: 0, y: 8 }, d: { x: 8, y: 8 } },
   ]
-  const act = getSideEdges(node)
+  const act = getSideEdges(0, 0, 8, 8)
 
   expect(act).toEqual(exp)
 })

@@ -6,19 +6,12 @@
   padding: 0.5rem;
 }
 
-.locked {
-  background-color: #eeeeee;
-  border-radius: 5px;
-}
-
-.editing {
-  border: 2px solid dodgerblue;
-  border-radius: 5px;
-}
-
 .selected {
   border: 2px solid dodgerblue;
-  border-radius: 5px;
+}
+
+.locked {
+  background-color: #eeeeee;
 }
 
 .header {
@@ -26,40 +19,6 @@
   flex-direction: row;
   align-items: center;
   column-gap: 0.5rem;
-
-  .picker {
-    position: relative;
-    top: 5px;
-    left: 0;
-  }
-
-  .icon {
-    display: inline-block;
-    border: 1px solid gray;
-    border-radius: 50%;
-    font-size: 1rem;
-    padding: 0;
-    width: 1.2rem;
-    height: 1.2rem;
-    line-height: 1.2rem;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .icon:focus {
-    outline: none;
-    cursor: text;
-  }
-}
-
-.properties {
-  display: flex;
-  flex-direction: column;
-}
-
-.methods {
-  display: flex;
-  flex-direction: column;
 }
 
 .line {
@@ -68,39 +27,10 @@
   align-items: center;
   height: 1.2rem;
 
-  div {
+  .buttons {
     display: flex;
     flex-direction: row;
     align-items: center;
-    column-gap: 0.3rem;
-  }
-
-  div:nth-child(2) {
     margin-left: 0.5rem;
   }
-
-  .button {
-    visibility: hidden;
-    cursor: pointer;
-  }
-}
-
-.line:hover {
-  .button {
-    visibility: visible;
-  }
-}
-
-.input {
-  border: 0;
-  background-color: transparent;
-  margin-bottom: 1px;
-  cursor: pointer;
-}
-
-.input:focus {
-  outline: none;
-  margin-bottom: 0;
-  border-bottom: 1px solid gray;
-  cursor: text;
 }

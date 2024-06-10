@@ -1,34 +1,26 @@
-import { Set } from 'immutable'
-import React, {
-  CSSProperties,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react'
-import { AiOutlineDelete } from 'react-icons/ai'
-import { MdAddCircleOutline } from 'react-icons/md'
+import React, { memo, ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
+import { NodeTypes } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import { Handles } from '@/app/_component/chart/class-node/Handles'
+import { AddIcon } from '@/app/_component/icon/add-icon/AddIcon'
+import { DeleteIcon } from '@/app/_component/icon/delete-icon/DeleteIcon'
+import { ClassIcon } from '@/app/_component/input/class-icon/ClassIcon'
+import { ClassName } from '@/app/_component/input/class-name/ClassName'
+import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
+import {
+  deleteMethod,
+  deleteProperty,
+  insertMethod,
+  insertProperty,
+  updateMethod,
+  updateProperty,
+} from '@/app/_object/node/function'
+import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 import { SocketContext } from '@/app/_socket/socket'
-import { deleteMethod, deleteProperty, insertMethod, insertProperty } from '@/app/_store/node/function'
-import { NodeData } from '@/app/_store/node/type'
-import { lock, unlock } from '@/app/_store/state/lock'
 import { selector, useStore } from '@/app/_store/store'
 
 import styles from './class-node.module.scss'
-
-type Status = 'standard' | 'selected-by-me' | 'editing-by-me' | 'locked-by-someone'
-function getStyle(status: Status): string {
-  if (status === 'locked-by-someone') return `class-node ${styles.component} ${styles.locked}`
-  else if (status === 'editing-by-me') return `class-node ${styles.component} ${styles.editing}`
-  else if (status === 'selected-by-me') return `class-node ${styles.component} ${styles.selected}`
-  else return `class-node ${styles.component}`
-}
 
 interface Props {
   id: string
@@ -36,347 +28,295 @@ interface Props {
   selected: boolean
 }
 
-export const ClassNode = ({ id, data, selected }: Props) => {
-  const [status, setStatus] = useState<Status>('standard')
-
-  const [editing, setEditing] = useState(false)
-
-  // fixme
-  const { lockIds } = useStore(selector, shallow)
-
-  // status
-
-  useEffect(() => {
-    if (lockIds.has(id) && !selected) setStatus('locked-by-someone')
-    else if (editing) setStatus('editing-by-me')
-    else if (selected) setStatus('selected-by-me')
-    else setStatus('standard')
-  }, [id, lockIds, editing, selected])
-
+export const ClassNode = (props: Props) => {
   const store = useStore(selector, shallow)
   const socket = useContext(SocketContext)!
 
-  return (
-    <div
-      id={id}
-      className={getStyle(status)}
-      onClick={() => {
-        // non input area clicked
-        if (editing) {
-          // from any input area
-          setEditing(false)
-          socket.unlock(Set(id))
-          store.updateLockIds(unlock([id], store.lockIds))
-        }
-      }}
-    >
-      <div className={styles.header}>
-        <Icon id={id} icon={data.icon} selected={selected} editing={editing} setEditing={setEditing} />
-        <Name id={id} name={data.name} selected={selected} editing={editing} setEditing={setEditing} />
-      </div>
+  const headers = useMemo(() => store.nodeHeaders, [store.nodeHeaders])
+  const icons = useMemo(() => store.nodeIcons, [store.nodeIcons])
 
-      <hr />
-
-      {data.properties.length !== 0 ? (
-        <div className={styles.properties}>
-          {data.properties.map((property, i) => (
-            <Property
-              key={i}
-              id={id}
-              n={i}
-              property={property}
-              selected={selected}
-              editing={editing}
-              setEditing={setEditing}
-            />
-          ))}
-        </div>
-      ) : (
-        <Empty id={id} type={'property'} />
-      )}
-
-      <hr />
-
-      {data.methods.length !== 0 ? (
-        <div className={styles.methods}>
-          {data.methods.map((method, i) => (
-            <Method
-              key={i}
-              id={id}
-              n={i}
-              method={method}
-              selected={selected}
-              editing={editing}
-              setEditing={setEditing}
-            />
-          ))}
-        </div>
-      ) : (
-        <Empty id={id} type={'method'} />
-      )}
-      <Handles />
-    </div>
+  const isSelected = props.selected
+  useEffect(
+    () => {
+      if (isSelected) {
+        socket.lock(props.id)
+      } else {
+        socket.unlock(props.id)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isSelected],
   )
-}
+  const isLocked = store.isLocked(props.id)
 
-function getColor(s: string): string {
-  if (s === 'S') {
-    return '#c5def5'
-  } else if (s === 'C') {
-    return '#fef2c0'
-  } else if (s === 'DC') {
-    return '#c2e0c6'
-  } else {
-    return '#ffffff'
-  }
-}
+  const onChangeName = useCallback(
+    (name: string) => {
+      store.updateNodeData(props.id, (data) => ({ ...data, name }))
+      socket.updateName(props.id, name)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onChangeIconId = useCallback(
+    (iconId: string) => {
+      store.updateNodeData(props.id, (data) => ({ ...data, iconId }))
+      socket.updateIconId(props.id, iconId)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onInsertProperties = useMemo(
+    () =>
+      props.data.properties.map((_, n) => () => {
+        store.updateNodeData(props.id, (data) => insertProperty(data, '', n))
+        socket.insertProperty(props.id, '', n)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data.properties],
+  )
+  const onUpdateProperties = useMemo(
+    () =>
+      props.data.properties.map((_, n) => (inner: string) => {
+        store.updateNodeData(props.id, (data) => updateProperty(data, inner, n))
+        socket.updateProperty(props.id, inner, n)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data.properties],
+  )
+  const onDeleteProperties = useMemo(
+    () =>
+      props.data.properties.map((_, n) => () => {
+        store.updateNodeData(props.id, (data) => deleteProperty(data, n))
+        socket.deleteProperty(props.id, n)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data.properties],
+  )
+  const onInsertFirstProperty = useCallback(
+    () => {
+      store.updateNodeData(props.id, (data) => insertProperty(data, '', 0))
+      socket.insertProperty(props.id, '', 0)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onInsertMethods = useMemo(
+    () =>
+      props.data.methods.map((_, n) => () => {
+        store.updateNodeData(props.id, (data) => insertMethod(data, '', n))
+        socket.insertMethod(props.id, '', n)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data.methods],
+  )
+  const onUpdateMethods = useMemo(
+    () =>
+      props.data.methods.map((_, n) => (inner: string) => {
+        store.updateNodeData(props.id, (data) => updateMethod(data, inner, n))
+        socket.updateMethod(props.id, inner, n)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data.methods],
+  )
+  const onDeleteMethods = useMemo(
+    () =>
+      props.data.methods.map((_, n) => () => {
+        store.updateNodeData(props.id, (data) => deleteMethod(data, n))
+        socket.deleteMethod(props.id, n)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.data.methods],
+  )
+  const onInsertFirstMethod = useCallback(
+    () => {
+      store.updateNodeData(props.id, (data) => insertMethod(data, '', 0))
+      socket.insertMethod(props.id, '', 0)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
-const Icon = (props: {
-  id: string
-  icon: string
-  selected: boolean
-  editing: boolean
-  setEditing: Dispatch<SetStateAction<boolean>>
-}) => {
-  const [icon, setIcon] = useState(props.icon)
-  const ref = useRef<HTMLInputElement>(null)
-
-  useEffect(() => setIcon(props.icon), [props.icon])
-
-  const store = useStore(selector, shallow)
-  const socket = useContext(SocketContext)!
+  const handles = useMemo(() => <Handles />, [])
 
   return (
     <>
-      <input
-        type={'text'}
-        className={styles.icon}
-        style={{ backgroundColor: getColor(icon) }}
-        value={icon}
-        maxLength={2}
-        ref={ref}
-        onClick={(e) => {
-          if (!props.editing) {
-            // start editing
-            props.setEditing(true)
-            socket.lock(Set(props.id))
-            store.updateLockIds(lock([props.id], store.lockIds))
-          } else {
-            // continue editing
-          }
-          e.stopPropagation()
-        }}
-        onChange={(e) => setIcon(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' || e.key === 'Enter') {
-            if (icon !== props.icon) {
-              // changed
-              socket.updateIcon(props.id, icon)
-            }
-            // fix
-            props.setEditing(false)
-            socket.unlock(Set(props.id))
-            store.updateLockIds(unlock([props.id], store.lockIds))
-            ref.current?.blur()
-          }
-        }}
-        onBlur={() => {
-          if (props.editing && icon !== props.icon) {
-            socket.updateIcon(props.id, icon)
-          }
-          if (props.selected) {
-            // continue editing ( click another input area or click non input area )
-          } else {
-            // leave focus
-            props.setEditing(false)
-            socket.unlock(Set(props.id))
-            store.updateLockIds(unlock([props.id], store.lockIds))
-          }
-        }}
-      />
+      <ClassNodeInner
+        {...props}
+        isSelected={isSelected}
+        isLocked={isLocked}
+        headers={headers}
+        icons={icons}
+        onChangeName={onChangeName}
+        onChangeIconId={onChangeIconId}
+        onInsertProperties={onInsertProperties}
+        onUpdateProperties={onUpdateProperties}
+        onDeleteProperties={onDeleteProperties}
+        onInsertFirstProperty={onInsertFirstProperty}
+        onInsertMethods={onInsertMethods}
+        onUpdateMethods={onUpdateMethods}
+        onDeleteMethods={onDeleteMethods}
+        onInsertFirstMethod={onInsertFirstMethod}
+      >
+        {handles}
+      </ClassNodeInner>
     </>
   )
 }
 
-const Text = (props: {
+interface InnerProps {
   id: string
-  value: string
-  selected: boolean
-  send: (value: string) => void
-  editing: boolean
-  setEditing: Dispatch<SetStateAction<boolean>>
-  style?: CSSProperties | undefined
-}) => {
-  const [value, setValue] = useState(props.value)
-  const ref = useRef<HTMLInputElement>(null)
-
-  useEffect(() => setValue(props.value), [props.value])
-
-  useLayoutEffect(() => {
-    if (ref.current) {
-      ref.current.style.width = value.length !== 0 ? `${value.length * 0.5}rem` : '3rem'
-    }
-  }, [value.length])
-
-  const store = useStore(selector, shallow)
-  const socket = useContext(SocketContext)!
-
-  return (
-    <input
-      type={'text'}
-      className={styles.input}
-      style={props.style}
-      value={value}
-      ref={ref}
-      onClick={(e) => {
-        if (!props.editing) {
-          // start editing
-          props.setEditing(true)
-          socket.lock(Set(props.id))
-          store.updateLockIds(lock([props.id], store.lockIds))
-        } else {
-          // continue editing
-        }
-        e.stopPropagation()
-      }}
-      onChange={(e) => setValue(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape' || e.key === 'Enter') {
-          if (value !== props.value) {
-            // changed
-            props.send(value)
-          }
-          // fix
-          props.setEditing(false)
-          socket.unlock(Set(props.id))
-          store.updateLockIds(unlock([props.id], store.lockIds))
-          ref.current?.blur()
-        }
-      }}
-      onBlur={() => {
-        if (props.editing && value !== props.value) {
-          props.send(value)
-        }
-        if (props.selected) {
-          // continue editing ( click another input area or click non input area )
-        } else {
-          // leave focus
-          props.setEditing(false)
-          socket.unlock(Set(props.id))
-          store.updateLockIds(unlock([props.id], store.lockIds))
-        }
-      }}
-    />
-  )
+  isSelected: boolean
+  isLocked: boolean
+  data: NodeData
+  headers: NodeHeader[]
+  icons: NodeIcon[]
+  onChangeName: (name: string) => void
+  onChangeIconId: (iconId: string) => void
+  onInsertProperties: Array<() => void>
+  onUpdateProperties: Array<(inner: string) => void>
+  onDeleteProperties: Array<() => void>
+  onInsertFirstProperty: () => void
+  onInsertMethods: Array<() => void>
+  onUpdateMethods: Array<(inner: string) => void>
+  onDeleteMethods: Array<() => void>
+  onInsertFirstMethod: () => void
+  children: ReactNode
 }
 
-const Name = (props: {
-  id: string
+export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
+  const classNames = ['class-node', styles.component]
+  if (props.isSelected) classNames.push(styles.selected)
+  if (props.isLocked) classNames.push(styles.locked)
+
+  return (
+    <div id={props.id} className={classNames.join(' ')}>
+      <Header
+        iconId={props.data.iconId}
+        icons={props.icons}
+        name={props.data.name}
+        onChangeName={props.onChangeName}
+        onChangeIconId={props.onChangeIconId}
+      />
+      <hr />
+      {props.data.properties.map((property, i) => (
+        <Property
+          key={i}
+          inner={property}
+          headers={props.headers}
+          icons={props.icons}
+          onInsertProperty={props.onInsertProperties[i]}
+          onUpdateProperty={props.onUpdateProperties[i]}
+          onDeleteProperty={props.onDeleteProperties[i]}
+        />
+      ))}
+      {props.data.properties.length === 0 && <EmptyLine onInsert={props.onInsertFirstProperty} />}
+      <hr />
+      {props.data.methods.map((method, i) => (
+        <Method
+          key={i}
+          inner={method}
+          headers={props.headers}
+          icons={props.icons}
+          onInsertMethod={props.onInsertMethods[i]}
+          onUpdateMethod={props.onUpdateMethods[i]}
+          onDeleteMethod={props.onDeleteMethods[i]}
+        />
+      ))}
+      {props.data.methods.length === 0 && <EmptyLine onInsert={props.onInsertFirstMethod} />}
+      {props.children}
+    </div>
+  )
+})
+
+interface HeaderProps {
+  iconId: string
+  icons: NodeIcon[]
   name: string
-  selected: boolean
-  editing: boolean
-  setEditing: Dispatch<SetStateAction<boolean>>
-}) => {
-  const socket = useContext(SocketContext)!
-  return (
-    <Text
-      {...props}
-      value={props.name}
-      send={(value) => socket.updateName(props.id, value)}
-      style={{ fontWeight: 600 }}
-    />
-  )
+  onChangeName: (name: string) => void
+  onChangeIconId: (iconId: string) => void
 }
 
-const Property = (props: {
-  id: string
-  n: number
-  property: string
-  selected: boolean
-  editing: boolean
-  setEditing: Dispatch<SetStateAction<boolean>>
-}) => {
-  const socket = useContext(SocketContext)!
+const Header = memo(function _Header(props: HeaderProps) {
+  return (
+    <div className={styles.header}>
+      <ClassIcon
+        iconId={props.iconId}
+        icons={props.icons}
+        readonly={false}
+        onChange={(icon) => props.onChangeIconId(icon.id)}
+      />
+      <ClassName name={props.name} readonly={false} onChange={props.onChangeName} />
+    </div>
+  )
+})
 
+interface PropertyProps {
+  inner: string
+  headers: NodeHeader[]
+  icons: NodeIcon[]
+  onInsertProperty: () => void
+  onUpdateProperty: (inner: string) => void
+  onDeleteProperty: () => void
+}
+
+const Property = memo(function _Property(props: PropertyProps) {
   return (
     <div className={styles.line}>
-      <Text {...props} value={props.property} send={(value) => socket.updateProperty(props.id, value, props.n)} />
-      <div>
-        <DeleteIcon {...props} type={'property'} />
-        <AddIcon {...props} type={'property'} />
+      <CompletableInput
+        inner={props.inner}
+        headers={props.headers}
+        icons={props.icons}
+        readonly={false}
+        onChange={props.onUpdateProperty}
+      />
+      <div className={styles.buttons}>
+        <AddIcon onClick={props.onInsertProperty} />
+        <DeleteIcon onClick={props.onDeleteProperty} />
       </div>
     </div>
   )
+})
+
+interface MethodProps {
+  inner: string
+  headers: NodeHeader[]
+  icons: NodeIcon[]
+  onInsertMethod: () => void
+  onUpdateMethod: (inner: string) => void
+  onDeleteMethod: () => void
 }
 
-const Method = (props: {
-  id: string
-  n: number
-  method: string
-  selected: boolean
-  editing: boolean
-  setEditing: Dispatch<SetStateAction<boolean>>
-}) => {
-  const socket = useContext(SocketContext)!
-
+const Method = memo(function _Method(props: MethodProps) {
   return (
     <div className={styles.line}>
-      <Text {...props} value={props.method} send={(value) => socket.updateMethod(props.id, value, props.n)} />
-      <div>
-        <DeleteIcon {...props} type={'method'} />
-        <AddIcon {...props} type={'method'} />
+      <CompletableInput
+        inner={props.inner}
+        headers={props.headers}
+        icons={props.icons}
+        readonly={false}
+        onChange={props.onUpdateMethod}
+      />
+      <div className={styles.buttons}>
+        <AddIcon onClick={props.onInsertMethod} />
+        <DeleteIcon onClick={props.onDeleteMethod} />
       </div>
     </div>
   )
+})
+
+interface EmptyLineProps {
+  onInsert: () => void
 }
 
-const Empty = (props: { id: string; type: 'property' | 'method' }) => {
+const EmptyLine = memo(function _EmptyLine(props: EmptyLineProps) {
   return (
     <div className={styles.line}>
       <div></div>
-      <AddIcon {...props} n={0} />
+      <div className={styles.buttons}>
+        <AddIcon onClick={props.onInsert} />
+      </div>
     </div>
   )
-}
+})
 
-const AddIcon = (props: { id: string; n: number; type: 'property' | 'method' }) => {
-  const store = useStore(selector, shallow)
-  const socket = useContext(SocketContext)!
-
-  return (
-    <MdAddCircleOutline
-      className={styles.button}
-      onClick={() => {
-        if (props.type === 'property') {
-          store.updateNodeData(props.id, (data) => insertProperty(data, '', props.n))
-          socket.insertProperty(props.id, '', props.n)
-        }
-        if (props.type === 'method') {
-          store.updateNodeData(props.id, (data) => insertMethod(data, '', props.n))
-          socket.insertMethod(props.id, '', props.n)
-        }
-      }}
-    />
-  )
-}
-
-const DeleteIcon = (props: { id: string; n: number; type: 'property' | 'method' }) => {
-  const store = useStore(selector, shallow)
-  const socket = useContext(SocketContext)!
-
-  return (
-    <AiOutlineDelete
-      className={styles.button}
-      onClick={() => {
-        if (props.type === 'property') {
-          store.updateNodeData(props.id, (data) => deleteProperty(data, props.n))
-          socket.deleteProperty(props.id, props.n)
-        }
-        if (props.type === 'method') {
-          store.updateNodeData(props.id, (data) => deleteMethod(data, props.n))
-          socket.deleteMethod(props.id, props.n)
-        }
-      }}
-    />
-  )
-}
+export const nodeTypes: NodeTypes = { class: ClassNode }

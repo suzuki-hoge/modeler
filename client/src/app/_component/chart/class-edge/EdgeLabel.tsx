@@ -1,26 +1,26 @@
+import { memo } from 'react'
 import { EdgeLabelRenderer } from 'reactflow'
 
-import { Point } from '@/app/_component/chart/class-edge/line'
-
 interface Props {
-  pos: Point
+  x: number
+  y: number
   value: string
 }
 
-export const EdgeLabel = ({ pos, value }: Props) => {
+export const EdgeLabel = memo(function _EdgeLabel(props: Props) {
   return (
     <EdgeLabelRenderer>
       <div
         style={{
           position: 'absolute',
-          transform: `translate(-50%, -50%) translate(${pos.x}px,${pos.y}px)`,
+          transform: `translate(-50%, -50%) translate(${props.x}px,${props.y}px)`,
           fontSize: 12,
           pointerEvents: 'all',
         }}
         className='nodrag nopan'
       >
-        {value !== '1' && <span>{value}</span>}
+        {props.value !== '1' && <span>{props.value}</span>}
       </div>
     </EdgeLabelRenderer>
   )
-}
+})

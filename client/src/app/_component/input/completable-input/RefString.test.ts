@@ -5,11 +5,11 @@ import {
   innerToRef,
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
-import { NodeHeader2 } from '@/app/_store/node/type'
+import { NodeHeader } from '@/app/_object/node/type'
 
-const headers: NodeHeader2[] = [
-  { id: '123', icon: { preview: 'C', desc: 'Class', color: 'lightgreen' }, name: 'Foo' },
-  { id: '456', icon: { preview: 'C', desc: 'Class', color: 'lightgreen' }, name: 'Bar' },
+const headers: NodeHeader[] = [
+  { id: '123', iconId: 'abc', name: 'Foo' },
+  { id: '456', iconId: 'def', name: 'Bar' },
 ]
 
 test.each`

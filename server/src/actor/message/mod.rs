@@ -25,7 +25,7 @@ pub fn parse_f64(json: &Json, key: &str) -> Result<f64, String> {
     json.get(key).ok_or(format!("no such key: {key}"))?.as_f64().ok_or(format!("invalid format: {key}"))
 }
 
-pub fn parse_strings(json: &Json, key: &str) -> Result<Vec<String>, String> {
+pub fn _parse_strings(json: &Json, key: &str) -> Result<Vec<String>, String> {
     let values = json
         .get(key)
         .ok_or(format!("no such key: {key}"))?
@@ -39,7 +39,7 @@ pub fn parse_strings(json: &Json, key: &str) -> Result<Vec<String>, String> {
 mod tests {
     use serde_json::from_str as from_json_str;
 
-    use crate::actor::message::{parse_f64, parse_i64, parse_string, parse_strings, Json};
+    use crate::actor::message::{_parse_strings, parse_f64, parse_i64, parse_string, Json};
 
     #[test]
     fn parse_string_ok() {
@@ -117,7 +117,7 @@ mod tests {
     fn parse_strings_ok() {
         let json: Json = from_json_str(r#"{"values": ["abc", "xyz"]}"#).unwrap();
 
-        let act = parse_strings(&json, "values");
+        let act = _parse_strings(&json, "values");
 
         assert_eq!(Ok(vec![String::from("abc"), String::from("xyz")]), act);
     }
@@ -126,7 +126,7 @@ mod tests {
     fn parse_strings_missing_err() {
         let json: Json = from_json_str(r#"{}"#).unwrap();
 
-        let act = parse_strings(&json, "values");
+        let act = _parse_strings(&json, "values");
 
         assert_eq!(Err(String::from("no such key: values")), act);
     }
@@ -135,7 +135,7 @@ mod tests {
     fn parse_strings_format_err() {
         let json: Json = from_json_str(r#"{"values": "abc"}"#).unwrap();
 
-        let act = parse_strings(&json, "values");
+        let act = _parse_strings(&json, "values");
 
         assert_eq!(Err(String::from("invalid format: values")), act);
     }

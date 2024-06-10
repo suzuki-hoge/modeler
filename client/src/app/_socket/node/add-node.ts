@@ -3,7 +3,7 @@ import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Node } from 'reactflow'
 import z from 'zod'
 
-import { NodeData } from '@/app/_store/node/type'
+import { NodeData } from '@/app/_object/node/type'
 
 // types
 

@@ -2,29 +2,27 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
-import { LockIds } from '@/app/_store/state/lock'
-
 // types
 
 const type = 'lock'
 
 const lockRequest = z.object({
   type: z.string(),
-  objectIds: z.array(z.string()),
+  objectId: z.string(),
 })
 type LockRequest = z.infer<typeof lockRequest>
 
 const lockResponse = lockRequest
 type LockResponse = z.infer<typeof lockResponse>
 
-export type Lock = (objectIds: LockIds) => void
+export type Lock = (objectId: string) => void
 
 // send
 
 export function createLock(send: (request: LockRequest) => void, socket: () => WebSocketLike | null): Lock {
-  return (objectIds: LockIds) => {
+  return (objectId: string) => {
     if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectIds: objectIds.toArray() }
+      const request = { type, objectId }
       console.log(`--> ${JSON.stringify(request)}`)
       send(request)
     } else {

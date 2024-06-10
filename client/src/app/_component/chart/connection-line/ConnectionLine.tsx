@@ -1,7 +1,7 @@
 import { BaseEdge, ConnectionLineComponentProps, getStraightPath } from 'reactflow'
 import { internalsSymbol, useNodes } from 'reactflow'
 
-import { NodeData } from '@/app/_store/node/type'
+import { NodeData } from '@/app/_object/node/type'
 
 export const ConnectionLine = ({ fromNode, toX, toY }: ConnectionLineComponentProps) => {
   const handles = useNodes<NodeData>()

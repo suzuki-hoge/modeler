@@ -22,5 +22,6 @@ export const Readonly: Story = {
   args: {
     name: 'UserService',
     readonly: true,
+    onChange: console.log,
   },
 }

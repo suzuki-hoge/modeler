@@ -2,16 +2,15 @@ import { Set } from 'immutable'
 import { Edge, Node } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
-import { fetchInitialEdges } from '@/app/_store/edge/fetch'
-import { EdgeData } from '@/app/_store/edge/type'
-import { getInitialNodes } from '@/app/_store/node/fetch'
-import { NodeData } from '@/app/_store/node/type'
-import { DragHistory, initDragHistory } from '@/app/_store/state/drag'
-import { LockIds } from '@/app/_store/state/lock'
+import { fetchInitialEdges } from '@/app/_object/edge/fetch'
+import { EdgeData } from '@/app/_object/edge/type'
+import { getInitialNodes } from '@/app/_object/node/fetch'
+import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
+import { LockIds } from '@/app/_object/state/type'
 
-// state
-export type UpdateDragHistory = (dragHistory: DragHistory) => void
-export type UpdateLockIds = (lockIds: LockIds) => void
+// lock
+export type IsLocked = (id: string) => boolean
+export type UpdateLockIds = (updater: (lockIds: LockIds) => LockIds) => void
 
 // node
 export type GetNode = (id: string) => Node<NodeData>
@@ -26,9 +25,8 @@ export type UpdateEdge = (id: string, updater: (node: Edge<EdgeData>) => Edge<Ed
 
 export type Store = {
   // state
-  dragHistory: DragHistory
-  updateDragHistory: UpdateDragHistory
   lockIds: LockIds
+  isLocked: IsLocked
   updateLockIds: UpdateLockIds
 
   // node
@@ -43,13 +41,16 @@ export type Store = {
   getEdge: GetEdge
   updateEdges: UpdateEdges
   updateEdge: UpdateEdge
+
+  // share
+  nodeHeaders: NodeHeader[]
+  nodeIcons: NodeIcon[]
 }
 
 export const selector = (store: Store) => ({
   // state
-  dragHistory: store.dragHistory,
-  updateDragHistory: store.updateDragHistory,
   lockIds: store.lockIds,
+  isLocked: store.isLocked,
   updateLockIds: store.updateLockIds,
 
   // node
@@ -64,17 +65,18 @@ export const selector = (store: Store) => ({
   getEdge: store.getEdge,
   updateEdges: store.updateEdges,
   updateEdge: store.updateEdge,
+
+  // share
+  nodeHeaders: store.nodeHeaders,
+  nodeIcons: store.nodeIcons,
 })
 
 export const useStore = createWithEqualityFn<Store>((set, get) => ({
   // state
-  dragHistory: initDragHistory(),
-  updateDragHistory: (dragHistory) => {
-    set({ dragHistory })
-  },
-  lockIds: Set(),
-  updateLockIds: (lockIds) => {
-    set({ lockIds })
+  lockIds: Set(), // fixme: fetch
+  isLocked: (id) => get().lockIds.contains(id),
+  updateLockIds: (updater) => {
+    set({ lockIds: updater(get().lockIds) })
   },
 
   // node
@@ -109,4 +111,18 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
       edges: get().edges.map((edge) => (edge.id === id ? updater(edge) : edge)),
     })
   },
+
+  // share
+  nodeHeaders: [
+    { id: 'controller', iconId: 'controller', name: 'ItemController' },
+    { id: 'usecase', iconId: 'usecase', name: 'ItemUseCase' },
+    { id: 'store', iconId: 'store', name: 'ItemStore' },
+    { id: 'item', iconId: 'data', name: 'Item' },
+  ],
+  nodeIcons: [
+    { id: 'controller', preview: 'C', desc: 'Controller', color: 'lightgray' },
+    { id: 'usecase', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
+    { id: 'store', preview: 'S', desc: 'Store', color: 'lightgreen' },
+    { id: 'data', preview: 'D', desc: 'Data', color: 'lightpink' },
+  ],
 }))

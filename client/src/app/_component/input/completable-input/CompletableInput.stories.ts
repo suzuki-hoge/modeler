@@ -10,9 +10,32 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+const headers = [
+  { id: 'usecase', iconId: 'usecase', name: 'ItemUseCase' },
+  { id: 'store', iconId: 'store', name: 'ItemStore' },
+  { id: 'item', iconId: 'data', name: 'Item' },
+]
+const icons = [
+  { id: 'usecase', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
+  { id: 'store', preview: 'S', desc: 'Store', color: 'lightgreen' },
+  { id: 'data', preview: 'D', desc: 'Data', color: 'lightpink' },
+]
+
 export const Input: Story = {
   args: {
-    inner: 'foo(a: ref#123#, b: ref#456#)',
+    inner: 'foo(a: ref#usecase#, b: ref#store#): ref#item#',
+    headers,
+    icons,
+    readonly: false,
+    onChange: console.log,
+  },
+}
+
+export const Empty: Story = {
+  args: {
+    inner: '',
+    headers,
+    icons,
     readonly: false,
     onChange: console.log,
   },
@@ -20,7 +43,10 @@ export const Input: Story = {
 
 export const Readonly: Story = {
   args: {
-    inner: 'foo(a: ref#123#, b: ref#456#)',
+    inner: 'foo(a: ref#usecase#, b: ref#store#): ref#item#',
+    headers,
+    icons,
     readonly: true,
+    onChange: console.log,
   },
 }

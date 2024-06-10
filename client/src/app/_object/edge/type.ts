@@ -1,4 +1,4 @@
-import { ArrowType } from '@/app/_component/chart/marker/Arrows'
+export type ArrowType = 'simple' | 'generalization'
 
 export interface EdgeData {
   arrowType: ArrowType

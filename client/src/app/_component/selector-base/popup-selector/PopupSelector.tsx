@@ -10,6 +10,7 @@ type Option<Choice> = Choice
 
 export interface Props<Choice> {
   width: string
+  placeholder: string
   choices: Choice[]
   preview: (choice: Choice) => ReactNode
   search: (keyof Choice)[]
@@ -33,7 +34,7 @@ export function PopupSelector<Choice>(props: Props<Choice>) {
     <Select
       options={options}
       isSearchable
-      placeholder={'Select...'}
+      placeholder={props.placeholder}
       formatOptionLabel={props.preview}
       filterOption={(option, input) =>
         props.search

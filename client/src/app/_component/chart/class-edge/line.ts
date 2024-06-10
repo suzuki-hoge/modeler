@@ -1,22 +1,57 @@
-import { Node } from 'reactflow'
-
-import { NodeData } from '@/app/_store/node/type'
+import { getStraightPath } from 'reactflow'
 
 export type Line = { s: Point; d: Point }
 export type Point = { x: number; y: number }
 
-export function p(p: Point | null): string {
-  return p ? `(${p.x.toFixed(2)}, ${p.y.toFixed(2)})` : ''
-}
-export function l(l: Line): string {
-  return `${p(l.s)} -> ${p(l.d)}`
+export function getInnerProps(
+  sourceHandleX: number,
+  sourceHandleY: number,
+  sourceNodeX: number,
+  sourceNodeY: number,
+  sourceNodeW: number,
+  sourceNodeH: number,
+  targetHandleX: number,
+  targetHandleY: number,
+  targetNodeX: number,
+  targetNodeY: number,
+  targetNodeW: number,
+  targetNodeH: number,
+): { edgePath: string; palettePoint: Point; labelPoint: Point } | null {
+  const edge = { s: { x: sourceHandleX, y: sourceHandleY - 4 }, d: { x: targetHandleX, y: targetHandleY - 4 } }
+
+  // collision
+  const sourceCollision = getSideEdges(sourceNodeX, sourceNodeY, sourceNodeW, sourceNodeH)
+    .map((side) => findCollision(edge, side))
+    .filter((c) => c)[0]
+  const targetCollision = getSideEdges(targetNodeX, targetNodeY, targetNodeW, targetNodeH)
+    .map((side) => findCollision(edge, side))
+    .filter((c) => c)[0]
+
+  if (sourceCollision && targetCollision) {
+    const line = shorten({ s: sourceCollision, d: targetCollision }, 4)
+
+    if (line) {
+      const [edgePath, labelX, labelY] = getStraightPath({
+        sourceX: line.s.x,
+        sourceY: line.s.y,
+        targetX: line.d.x,
+        targetY: line.d.y,
+      })
+
+      const palettePoint = { x: labelX, y: labelY }
+      const labelPoint = moveToVertical(shift(line.d, line.s, 12), line, 12)
+
+      return { edgePath, palettePoint, labelPoint }
+    }
+  }
+  return null
 }
 
-export function getSideEdges(node: Pick<Node<NodeData>, 'position' | 'height' | 'width'>): Line[] {
-  const lt = { x: node.position.x, y: node.position.y }
-  const lb = { x: node.position.x, y: node.position.y + node.height! }
-  const rt = { x: node.position.x + node.width!, y: node.position.y }
-  const rb = { x: node.position.x + node.width!, y: node.position.y + node.height! }
+export function getSideEdges(x: number, y: number, w: number, h: number): Line[] {
+  const lt = { x: x, y: y }
+  const lb = { x: x, y: y + h }
+  const rt = { x: x + w, y: y }
+  const rb = { x: x + w, y: y + h }
 
   return [
     { s: lt, d: lb },

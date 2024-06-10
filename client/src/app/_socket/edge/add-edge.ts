@@ -3,7 +3,7 @@ import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Edge } from 'reactflow'
 import z from 'zod'
 
-import { EdgeData } from '@/app/_store/edge/type'
+import { EdgeData } from '@/app/_object/edge/type'
 
 // types
 
@@ -14,7 +14,7 @@ const addEdgeRequest = z.object({
   objectId: z.string(),
   src: z.string(),
   dst: z.string(),
-  arrowType: z.union([z.literal('v-arrow'), z.literal('filled-arrow')]),
+  arrowType: z.union([z.literal('simple'), z.literal('generalization')]),
   label: z.string(),
 })
 type AddEdgeRequest = z.infer<typeof addEdgeRequest>

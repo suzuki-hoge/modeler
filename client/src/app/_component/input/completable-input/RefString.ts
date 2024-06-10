@@ -1,7 +1,7 @@
 import * as Diff from 'diff'
 import { Change } from 'diff'
 
-import { NodeHeader2 } from '@/app/_store/node/type'
+import { NodeHeader } from '@/app/_object/node/type'
 
 const re_ref = /(ref#[^#]+#)/g
 const re_id = /ref#([^#]+)#/
@@ -11,7 +11,7 @@ export type RefString = {
   front: string
 }
 
-export function innerToRef(inner: string, headers: NodeHeader2[]): RefString {
+export function innerToRef(inner: string, headers: NodeHeader[]): RefString {
   const front = inner
     .split(re_ref)
     .filter((s) => s)
@@ -23,7 +23,7 @@ export function innerToRef(inner: string, headers: NodeHeader2[]): RefString {
   return { inner, front }
 }
 
-export function innerToParts(inner: string, headers: NodeHeader2[]): { value: string; ref: boolean }[] {
+export function innerToParts(inner: string, headers: NodeHeader[]): { value: string; ref: boolean }[] {
   return inner
     .split(re_ref)
     .filter((s) => s)
@@ -35,7 +35,7 @@ export function innerToParts(inner: string, headers: NodeHeader2[]): { value: st
     })
 }
 
-export function changedByInput(prev: RefString, front: string, headers: NodeHeader2[]): RefString {
+export function changedByInput(prev: RefString, front: string, headers: NodeHeader[]): RefString {
   const [changed, next] = apply(prev, front, headers)
   if (changed) {
     return changedByInput(next, front, headers)
@@ -44,7 +44,7 @@ export function changedByInput(prev: RefString, front: string, headers: NodeHead
   }
 }
 
-function apply(prev: RefString, front: string, headers: NodeHeader2[]): [boolean, RefString] {
+function apply(prev: RefString, front: string, headers: NodeHeader[]): [boolean, RefString] {
   const diffs = Diff.diffChars(prev.front, front)
   const firstInsertDiffI = diffs.findIndex((diff) => diff.added)
   const firstDeleteDiffI = diffs.findIndex((diff) => diff.removed)
@@ -230,7 +230,7 @@ interface RefPosition {
   frontE: number
 }
 
-export function findRefPositions(inner: string, headers: NodeHeader2[]): RefPosition[] {
+export function findRefPositions(inner: string, headers: NodeHeader[]): RefPosition[] {
   const result = []
   let totalRag = 0
 
@@ -253,7 +253,7 @@ export function findRefPositions(inner: string, headers: NodeHeader2[]): RefPosi
 
 export function changedBySelect(
   prev: RefString,
-  headers: NodeHeader2[],
+  headers: NodeHeader[],
   id: string,
   name: string,
   cursorFrontS: number,
