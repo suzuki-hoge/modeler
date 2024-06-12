@@ -8,7 +8,7 @@ import { DeleteIcon } from '@/app/_component/icon/delete-icon/DeleteIcon'
 import { ClassIcon } from '@/app/_component/input/class-icon/ClassIcon'
 import { ClassName } from '@/app/_component/input/class-name/ClassName'
 import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
-import { allocateEdgeId, createEdge } from '@/app/_object/edge/function'
+import { useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
 import {
   deleteMethod,
   deleteProperty,
@@ -136,30 +136,8 @@ export const ClassNode = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onPostNodeCreate = useCallback(
-    (node: Node<NodeData>) => {
-      // todo: project node + page node
-      store.updateNodes((nodes) => [...nodes, node])
-      socket.addNode(node)
-
-      const edge = createEdge(allocateEdgeId(), props.id, node.id, 'simple', '1')
-      store.updateEdges((edges) => [...edges, edge])
-      socket.addEdge(edge)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  )
-  const onPostNodeSelect = useCallback(
-    (id: string) => {
-      if (!store.isEdgeExists(props.id, id)) {
-        const edge = createEdge(allocateEdgeId(), props.id, id, 'simple', '1')
-        store.updateEdges((edges) => [...edges, edge])
-        socket.addEdge(edge)
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  )
+  const onPostNodeCreate = useOnPostNodeCreate(store, socket, props.id)
+  const onPostNodeSelect = useOnPostNodeSelect(store, socket, props.id)
 
   const handles = useMemo(() => <Handles />, [])
 
@@ -208,7 +186,7 @@ interface InnerProps {
   onDeleteMethods: Array<() => void>
   onInsertFirstMethod: () => void
   onPostNodeCreate: (node: Node<NodeData>) => void
-  onPostNodeSelect: (id: string) => void
+  onPostNodeSelect: (header: NodeHeader) => void
   children: ReactNode
 }
 
@@ -291,7 +269,7 @@ interface PropertyProps {
   onUpdateProperty: (inner: string) => void
   onDeleteProperty: () => void
   onPostNodeCreate: (node: Node<NodeData>) => void
-  onPostNodeSelect: (id: string) => void
+  onPostNodeSelect: (header: NodeHeader) => void
 }
 
 const Property = memo(function _Property(props: PropertyProps) {
@@ -322,7 +300,7 @@ interface MethodProps {
   onUpdateMethod: (inner: string) => void
   onDeleteMethod: () => void
   onPostNodeCreate: (node: Node<NodeData>) => void
-  onPostNodeSelect: (id: string) => void
+  onPostNodeSelect: (header: NodeHeader) => void
 }
 
 const Method = memo(function _Method(props: MethodProps) {

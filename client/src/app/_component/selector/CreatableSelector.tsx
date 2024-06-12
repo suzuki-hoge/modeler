@@ -15,6 +15,8 @@ type Option<Choice> =
     }
 
 export interface CreatableSelectorProps<Choice> {
+  x: number
+  y: number
   width: string
   placeholder: string
   choices: Choice[]
@@ -34,46 +36,48 @@ export function CreatableSelector<Choice>(props: CreatableSelectorProps<Choice>)
   })
 
   return (
-    <CreatableSelect
-      options={options}
-      isSearchable
-      placeholder={props.placeholder}
-      formatOptionLabel={(option) => (option.__isNew__ ? <span>create {option.value}</span> : props.preview(option))}
-      filterOption={(option, input) =>
-        option.data.__isNew__ ||
-        props.search
-          .map((key) => !option.data.__isNew__ && option.data[key])
-          .join('')
-          .toLowerCase()
-          .includes(input.toLowerCase())
-      }
-      styles={{
-        control: (base) => ({
-          ...base,
-          width: props.width,
-        }),
-        menu: (base) => ({
-          ...base,
-          width: props.width,
-        }),
-      }}
-      onChange={(option, meta) => {
-        if (meta.action === 'select-option' && option && !option.__isNew__) {
-          props.onSelect(option)
-        } else if (meta.action === 'create-option' && option && option.__isNew__) {
-          props.onCreate(option.value)
+    <div style={{ position: 'absolute', left: props.x, top: props.y }}>
+      <CreatableSelect
+        options={options}
+        isSearchable
+        placeholder={props.placeholder}
+        formatOptionLabel={(option) => (option.__isNew__ ? <span>create {option.value}</span> : props.preview(option))}
+        filterOption={(option, input) =>
+          option.data.__isNew__ ||
+          props.search
+            .map((key) => !option.data.__isNew__ && option.data[key])
+            .join('')
+            .toLowerCase()
+            .includes(input.toLowerCase())
         }
-        if (props?.onClose) props?.onClose()
-      }}
-      onMenuClose={() => {
-        if (props?.onClose) props?.onClose()
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
+        styles={{
+          control: (base) => ({
+            ...base,
+            width: props.width,
+          }),
+          menu: (base) => ({
+            ...base,
+            width: props.width,
+          }),
+        }}
+        onChange={(option, meta) => {
+          if (meta.action === 'select-option' && option && !option.__isNew__) {
+            props.onSelect(option)
+          } else if (meta.action === 'create-option' && option && option.__isNew__) {
+            props.onCreate(option.value)
+          }
           if (props?.onClose) props?.onClose()
-        }
-      }}
-      ref={ref}
-    />
+        }}
+        onMenuClose={() => {
+          if (props?.onClose) props?.onClose()
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            if (props?.onClose) props?.onClose()
+          }
+        }}
+        ref={ref}
+      />
+    </div>
   )
 }

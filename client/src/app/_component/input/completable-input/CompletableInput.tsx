@@ -23,7 +23,7 @@ interface Props {
   readonly: boolean
   onTextChange: (inner: string) => void
   onPostNodeCreate: (node: Node<NodeData>) => void
-  onPostNodeSelect: (id: string) => void
+  onPostNodeSelect: (header: NodeHeader) => void
 }
 
 interface Cursor {
@@ -67,6 +67,8 @@ export const CompletableInput = (props: Props) => {
           />
           <Popup popupState={popupState} closePopup={closePopup} focusBackRef={inputRef}>
             <ClassCreatableSelector
+              x={150}
+              y={150}
               headers={props.headers}
               icons={props.icons}
               newNodePos={{ x: 0, y: 0 }}
@@ -82,7 +84,7 @@ export const CompletableInput = (props: Props) => {
                   setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
                   return nextRefString
                 })
-                props.onPostNodeSelect(header.id)
+                props.onPostNodeSelect(header)
               }}
               onPostNodeCreate={(node) => {
                 setRefString((prev) => {

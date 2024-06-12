@@ -7,6 +7,8 @@ import { allocateNodeId, createNode, getIcon } from '@/app/_object/node/function
 import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 interface Props {
+  x: number
+  y: number
   headers: NodeHeader[]
   icons: NodeIcon[]
   newNodePos: XYPosition
@@ -18,6 +20,8 @@ interface Props {
 export const ClassCreatableSelector = (props: Props) => {
   return (
     <CreatableSelector
+      x={props.x}
+      y={props.y}
       width={`${8 + Math.max(...props.headers.map((header) => header.name.length))}ch`}
       placeholder={'class...'}
       choices={props.headers}

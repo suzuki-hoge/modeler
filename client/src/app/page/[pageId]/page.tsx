@@ -16,8 +16,9 @@ import {
 import { nodeTypes } from '@/app/_component/chart/class-node/ClassNode'
 import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
 import Arrows from '@/app/_component/chart/marker/Arrows'
+import { ClassCreatableSelector } from '@/app/_component/selector/ClassCreatableSelector'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
-import { useOnNodeDragStop, useOnNodesChange } from '@/app/_hook/node'
+import { useOnNodeDragStop, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
 import { useOnPaneClick } from '@/app/_hook/pane'
 import { handle, createSocket, SocketContext } from '@/app/_socket/socket'
 import { selector, useStore } from '@/app/_store/store'
@@ -43,7 +44,9 @@ const Inner = () => {
   const { onConnectStart, onConnectEnd } = useOnConnect(store, socket)
 
   // pane
-  const onPaneClick = useOnPaneClick(store, socket)
+  const selectorState = useOnPaneClick()
+  const onPostNodeCreate = useOnPostNodeCreate(store, socket)
+  const onPostNodeSelect = useOnPostNodeSelect(store, socket)
 
   return (
     <div id='page' style={{ width: '100vw', height: '100vh' }}>
@@ -68,12 +71,24 @@ const Inner = () => {
         zoomOnPinch={true}
         zoomOnScroll={false}
         selectionOnDrag={true}
-        onPaneClick={onPaneClick}
+        onPaneClick={selectorState.onPaneClick}
       >
         <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
         <Background />
       </ReactFlow>
       <Arrows />
+      {selectorState.active && (
+        <ClassCreatableSelector
+          x={selectorState.x}
+          y={selectorState.y}
+          headers={store.nodeHeaders}
+          icons={store.nodeIcons}
+          newNodePos={{ x: 0, y: 0 }}
+          onSelect={onPostNodeSelect}
+          onPostNodeCreate={onPostNodeCreate}
+          onClose={() => selectorState.setActive(false)}
+        />
+      )}
     </div>
   )
 }

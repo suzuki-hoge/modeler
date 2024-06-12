@@ -1,25 +1,26 @@
-import React from 'react'
-import { useReactFlow } from 'reactflow'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 
-import { Socket } from '@/app/_socket/socket'
-import { Store } from '@/app/_store/store'
+interface PaneClassCreatableSelectorState {
+  active: boolean
+  setActive: Dispatch<SetStateAction<boolean>>
+  x: number
+  y: number
+}
+type OnPaneClick = (event: React.MouseEvent<Element, MouseEvent>) => void
 
-export function useOnPaneClick(store: Store, socket: Socket): (event: React.MouseEvent<Element, MouseEvent>) => void {
-  const reactFlowInstance = useReactFlow()
-  // const { setShowClassSelector, setNewNodePos, setApplyToNewNode } = useContext(ClassSelectorVarsContext)!
+export function useOnPaneClick(): { onPaneClick: OnPaneClick } & PaneClassCreatableSelectorState {
+  const [active, setActive] = useState(false)
+  const [x, setX] = useState(200)
+  const [y, setY] = useState(200)
 
-  return (event) => {
+  const onPaneClick: OnPaneClick = (e) => {
     // Windows control or macOS Command
-    if ((event.ctrlKey && !event.metaKey) || (!event.ctrlKey && event.metaKey)) {
-      const pos = reactFlowInstance.screenToFlowPosition({ x: event.clientX, y: event.clientY })
-
-      console.log('click', pos)
-      // setShowClassSelector(true)
-      // setNewNodePos(pos)
-      // setApplyToNewNode(() => (node: Node<NodeData>) => {
-      //   socket.addNode(node)
-      //   store.updateNodes((nodes) => [...nodes, node])
-      // })
+    if ((e.ctrlKey && !e.metaKey) || (!e.ctrlKey && e.metaKey)) {
+      setActive(true)
+      setX(e.clientX)
+      setY(e.clientY)
     }
   }
+
+  return { onPaneClick, active, setActive, x, y }
 }
