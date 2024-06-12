@@ -1,36 +1,30 @@
 'use client'
 
-import React, { Dispatch, ReactNode, RefObject, SetStateAction, useEffect, useRef } from 'react'
+import React, { ReactNode, useEffect, useRef } from 'react'
 import Select from 'react-select'
 import SelectBase from 'react-select/base'
 
-import { PopupState } from '@/app/_hook/popup'
-
 type Option<Choice> = Choice
 
-export interface Props<Choice> {
+export interface SelectorProps<Choice> {
   width: string
   placeholder: string
   choices: Choice[]
   preview: (choice: Choice) => ReactNode
   search: (keyof Choice)[]
   onSelect: (choice: Choice) => void
-  popupState: PopupState
-  setPopupState: Dispatch<SetStateAction<PopupState>>
-  closePopup: () => void
-  focusBackRef?: RefObject<HTMLInputElement>
+  onClose?: () => void
 }
 
-export function PopupSelector<Choice>(props: Props<Choice>) {
+export function Selector<Choice>(props: SelectorProps<Choice>) {
   const options: Option<Choice>[] = props.choices
 
   const ref = useRef<SelectBase<Choice>>(null)
-
   useEffect(() => {
-    if (props.popupState) ref.current?.focus()
-  }, [props.popupState])
+    if (props?.onClose) ref.current?.focus()
+  })
 
-  return props.popupState.isEditing ? (
+  return (
     <Select
       options={options}
       isSearchable
@@ -57,22 +51,17 @@ export function PopupSelector<Choice>(props: Props<Choice>) {
         if (option) {
           props.onSelect(option)
         }
-        props.closePopup()
-        props.focusBackRef?.current?.focus()
+        if (props?.onClose) props?.onClose()
       }}
       onMenuClose={() => {
-        props.closePopup()
-        props.focusBackRef?.current?.focus()
+        if (props?.onClose) props?.onClose()
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
-          props.closePopup()
-          props.focusBackRef?.current?.focus()
+          if (props?.onClose) props?.onClose()
         }
       }}
       ref={ref}
     />
-  ) : (
-    <></>
   )
 }

@@ -1,5 +1,5 @@
 import React, { memo, ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
-import { NodeTypes } from 'reactflow'
+import { Node, NodeTypes } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import { Handles } from '@/app/_component/chart/class-node/Handles'
@@ -8,6 +8,7 @@ import { DeleteIcon } from '@/app/_component/icon/delete-icon/DeleteIcon'
 import { ClassIcon } from '@/app/_component/input/class-icon/ClassIcon'
 import { ClassName } from '@/app/_component/input/class-name/ClassName'
 import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
+import { allocateEdgeId, createEdge } from '@/app/_object/edge/function'
 import {
   deleteMethod,
   deleteProperty,
@@ -135,6 +136,30 @@ export const ClassNode = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
+  const onPostNodeCreate = useCallback(
+    (node: Node<NodeData>) => {
+      // todo: project node + page node
+      store.updateNodes((nodes) => [...nodes, node])
+      socket.addNode(node)
+
+      const edge = createEdge(allocateEdgeId(), props.id, node.id, 'simple', '1')
+      store.updateEdges((edges) => [...edges, edge])
+      socket.addEdge(edge)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  const onPostNodeSelect = useCallback(
+    (id: string) => {
+      if (!store.isEdgeExists(props.id, id)) {
+        const edge = createEdge(allocateEdgeId(), props.id, id, 'simple', '1')
+        store.updateEdges((edges) => [...edges, edge])
+        socket.addEdge(edge)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   const handles = useMemo(() => <Handles />, [])
 
@@ -156,6 +181,8 @@ export const ClassNode = (props: Props) => {
         onUpdateMethods={onUpdateMethods}
         onDeleteMethods={onDeleteMethods}
         onInsertFirstMethod={onInsertFirstMethod}
+        onPostNodeCreate={onPostNodeCreate}
+        onPostNodeSelect={onPostNodeSelect}
       >
         {handles}
       </ClassNodeInner>
@@ -180,6 +207,8 @@ interface InnerProps {
   onUpdateMethods: Array<(inner: string) => void>
   onDeleteMethods: Array<() => void>
   onInsertFirstMethod: () => void
+  onPostNodeCreate: (node: Node<NodeData>) => void
+  onPostNodeSelect: (id: string) => void
   children: ReactNode
 }
 
@@ -207,6 +236,8 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           onInsertProperty={props.onInsertProperties[i]}
           onUpdateProperty={props.onUpdateProperties[i]}
           onDeleteProperty={props.onDeleteProperties[i]}
+          onPostNodeCreate={props.onPostNodeCreate}
+          onPostNodeSelect={props.onPostNodeSelect}
         />
       ))}
       {props.data.properties.length === 0 && <EmptyLine onInsert={props.onInsertFirstProperty} />}
@@ -220,6 +251,8 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           onInsertMethod={props.onInsertMethods[i]}
           onUpdateMethod={props.onUpdateMethods[i]}
           onDeleteMethod={props.onDeleteMethods[i]}
+          onPostNodeCreate={props.onPostNodeCreate}
+          onPostNodeSelect={props.onPostNodeSelect}
         />
       ))}
       {props.data.methods.length === 0 && <EmptyLine onInsert={props.onInsertFirstMethod} />}
@@ -257,6 +290,8 @@ interface PropertyProps {
   onInsertProperty: () => void
   onUpdateProperty: (inner: string) => void
   onDeleteProperty: () => void
+  onPostNodeCreate: (node: Node<NodeData>) => void
+  onPostNodeSelect: (id: string) => void
 }
 
 const Property = memo(function _Property(props: PropertyProps) {
@@ -267,7 +302,9 @@ const Property = memo(function _Property(props: PropertyProps) {
         headers={props.headers}
         icons={props.icons}
         readonly={false}
-        onChange={props.onUpdateProperty}
+        onTextChange={props.onUpdateProperty}
+        onPostNodeCreate={props.onPostNodeCreate}
+        onPostNodeSelect={props.onPostNodeSelect}
       />
       <div className={styles.buttons}>
         <AddIcon onClick={props.onInsertProperty} />
@@ -284,6 +321,8 @@ interface MethodProps {
   onInsertMethod: () => void
   onUpdateMethod: (inner: string) => void
   onDeleteMethod: () => void
+  onPostNodeCreate: (node: Node<NodeData>) => void
+  onPostNodeSelect: (id: string) => void
 }
 
 const Method = memo(function _Method(props: MethodProps) {
@@ -294,7 +333,9 @@ const Method = memo(function _Method(props: MethodProps) {
         headers={props.headers}
         icons={props.icons}
         readonly={false}
-        onChange={props.onUpdateMethod}
+        onTextChange={props.onUpdateMethod}
+        onPostNodeCreate={props.onPostNodeCreate}
+        onPostNodeSelect={props.onPostNodeSelect}
       />
       <div className={styles.buttons}>
         <AddIcon onClick={props.onInsertMethod} />

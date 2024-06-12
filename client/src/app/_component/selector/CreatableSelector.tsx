@@ -1,6 +1,7 @@
 'use client'
 
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useEffect, useRef } from 'react'
+import SelectBase from 'react-select/base'
 import CreatableSelect from 'react-select/creatable'
 
 type Option<Choice> =
@@ -13,7 +14,7 @@ type Option<Choice> =
       __isNew__: true
     }
 
-export interface Props<Choice> {
+export interface CreatableSelectorProps<Choice> {
   width: string
   placeholder: string
   choices: Choice[]
@@ -21,10 +22,16 @@ export interface Props<Choice> {
   search: (keyof Choice)[]
   onSelect: (choice: Choice) => void
   onCreate: (value: string) => void
+  onClose?: () => void
 }
 
-export function CreatableSelector<Choice>(props: Props<Choice>) {
+export function CreatableSelector<Choice>(props: CreatableSelectorProps<Choice>) {
   const options: Option<Choice>[] = props.choices.map((choice) => ({ ...choice, __isNew__: false }))
+
+  const ref = useRef<SelectBase<Option<Choice>>>(null)
+  useEffect(() => {
+    if (props?.onClose) ref.current?.focus()
+  })
 
   return (
     <CreatableSelect
@@ -56,7 +63,17 @@ export function CreatableSelector<Choice>(props: Props<Choice>) {
         } else if (meta.action === 'create-option' && option && option.__isNew__) {
           props.onCreate(option.value)
         }
+        if (props?.onClose) props?.onClose()
       }}
+      onMenuClose={() => {
+        if (props?.onClose) props?.onClose()
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          if (props?.onClose) props?.onClose()
+        }
+      }}
+      ref={ref}
     />
   )
 }

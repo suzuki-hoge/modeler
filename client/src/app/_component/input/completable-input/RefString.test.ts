@@ -89,15 +89,17 @@ interface ChangedBySelectProps {
   id: string
   label: string
   cursor: number
-  exp: RefString
+  expRefString: RefString
+  expCursor: number
 }
 
 test.each`
-  prev   | id       | label    | cursor | exp
-  ${ref} | ${'456'} | ${'Bar'} | ${0}   | ${{ inner: 'ref#456#foo(a: ref#123#, b: ref#456#)', front: 'Barfoo(a: Foo, b: Bar)' }}
-  ${ref} | ${'456'} | ${'Bar'} | ${19}  | ${{ inner: 'foo(a: ref#123#, b: ref#456#)ref#456#', front: 'foo(a: Foo, b: Bar)Bar' }}
-  ${ref} | ${'456'} | ${'Bar'} | ${8}   | ${{ inner: 'foo(a: ref#456#, b: ref#456#)', front: 'foo(a: Bar, b: Bar)' }}
-`('changedBySelect', ({ prev, id, label, cursor, exp }: ChangedBySelectProps) => {
-  const act = changedBySelect(prev, headers, id, label, cursor)
-  expect(act).toStrictEqual(exp)
+  prev   | id       | label    | cursor | expRefString                                                                           | expCursor
+  ${ref} | ${'456'} | ${'Bar'} | ${0}   | ${{ inner: 'ref#456#foo(a: ref#123#, b: ref#456#)', front: 'Barfoo(a: Foo, b: Bar)' }} | ${3}
+  ${ref} | ${'456'} | ${'Bar'} | ${19}  | ${{ inner: 'foo(a: ref#123#, b: ref#456#)ref#456#', front: 'foo(a: Foo, b: Bar)Bar' }} | ${22}
+  ${ref} | ${'456'} | ${'Bar'} | ${8}   | ${{ inner: 'foo(a: ref#456#, b: ref#456#)', front: 'foo(a: Bar, b: Bar)' }}            | ${10}
+`('changedBySelect', ({ prev, id, label, cursor, expRefString, expCursor }: ChangedBySelectProps) => {
+  const [nextRefString, nextCursor] = changedBySelect(prev, headers, id, label, cursor)
+  expect(nextRefString).toStrictEqual(expRefString)
+  expect(nextCursor).toStrictEqual(expCursor)
 })

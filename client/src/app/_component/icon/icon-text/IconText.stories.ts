@@ -12,7 +12,7 @@ type Story = StoryObj<typeof meta>
 
 export const Icon: Story = {
   args: {
-    icon: 'C',
+    preview: 'C',
     color: 'lightcyan',
     desc: 'Controller',
   },
@@ -20,8 +20,8 @@ export const Icon: Story = {
 
 export const Class: Story = {
   args: {
-    icon: 'C',
-    color: 'lightcyan',
+    preview: 'C',
+    color: 'lightpink',
     desc: 'UserController',
   },
 }

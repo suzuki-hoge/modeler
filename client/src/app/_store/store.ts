@@ -20,6 +20,7 @@ export type UpdateNodeData = (id: string, updater: (data: NodeData) => NodeData)
 
 // edge
 export type GetEdge = (id: string) => Edge<EdgeData>
+export type IsEdgeExists = (srcNodeId: string, dstNodeId: string) => boolean
 export type UpdateEdges = (updater: (edges: Edge<EdgeData>[]) => Edge<EdgeData>[]) => void
 export type UpdateEdge = (id: string, updater: (node: Edge<EdgeData>) => Edge<EdgeData>) => void
 
@@ -39,6 +40,7 @@ export type Store = {
   // edge
   edges: Edge<EdgeData>[]
   getEdge: GetEdge
+  isEdgeExists: IsEdgeExists
   updateEdges: UpdateEdges
   updateEdge: UpdateEdge
 
@@ -63,6 +65,7 @@ export const selector = (store: Store) => ({
   // edge
   edges: store.edges,
   getEdge: store.getEdge,
+  isEdgeExists: store.isEdgeExists,
   updateEdges: store.updateEdges,
   updateEdge: store.updateEdge,
 
@@ -102,6 +105,9 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
   edges: fetchInitialEdges(),
   getEdge: (id) => {
     return get().edges.find((edge) => edge.id === id)!
+  },
+  isEdgeExists: (srcNodeId, dstNodeId) => {
+    return get().edges.some((edge) => edge.source === srcNodeId && edge.target === dstNodeId)
   },
   updateEdges: (updater) => {
     set({ edges: updater(get().edges) })

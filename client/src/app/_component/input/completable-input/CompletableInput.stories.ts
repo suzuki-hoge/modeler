@@ -27,7 +27,9 @@ export const Input: Story = {
     headers,
     icons,
     readonly: false,
-    onChange: console.log,
+    onTextChange: console.log,
+    onPostNodeCreate: console.log,
+    onPostNodeSelect: console.log,
   },
 }
 
@@ -37,7 +39,9 @@ export const Empty: Story = {
     headers,
     icons,
     readonly: false,
-    onChange: console.log,
+    onTextChange: console.log,
+    onPostNodeCreate: console.log,
+    onPostNodeSelect: console.log,
   },
 }
 
@@ -47,6 +51,8 @@ export const Readonly: Story = {
     headers,
     icons,
     readonly: true,
-    onChange: console.log,
+    onTextChange: console.log,
+    onPostNodeCreate: console.log,
+    onPostNodeSelect: console.log,
   },
 }

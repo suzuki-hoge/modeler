@@ -1,10 +1,10 @@
 'use client'
 
-import React, { Dispatch, ReactNode, RefObject, SetStateAction, useEffect, useRef } from 'react'
+import React, { ReactNode, RefObject, useEffect, useRef } from 'react'
 import SelectBase from 'react-select/base'
 import CreatableSelect from 'react-select/creatable'
 
-import { PopupState } from '@/app/_hook/popup'
+import { PopupState } from '@/app/_component/selector/Popup'
 
 type Option<Choice> =
   | (Choice & {
@@ -25,7 +25,6 @@ export interface Props<Choice> {
   onSelect: (choice: Choice) => void
   onCreate: (value: string) => void
   popupState: PopupState
-  setPopupState: Dispatch<SetStateAction<PopupState>>
   closePopup: () => void
   focusBackRef?: RefObject<HTMLInputElement>
 }

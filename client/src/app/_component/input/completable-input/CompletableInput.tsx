@@ -1,7 +1,7 @@
 'use client'
 import React, { ChangeEvent, Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Node } from 'reactflow'
 
-import { IconText } from '@/app/_component/icon/icon-text/IconText'
 import {
   changedByInput,
   changedBySelect,
@@ -10,10 +10,9 @@ import {
   innerToRef,
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
-import { PopupSelector } from '@/app/_component/selector-base/popup-selector/PopupSelector'
-import { usePopup } from '@/app/_hook/popup'
-import { getIcon } from '@/app/_object/node/function'
-import { NodeHeader, NodeIcon } from '@/app/_object/node/type'
+import { ClassCreatableSelector } from '@/app/_component/selector/ClassCreatableSelector'
+import { Popup, usePopup } from '@/app/_component/selector/Popup'
+import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 import styles from './completable-input.module.scss'
 
@@ -22,22 +21,33 @@ interface Props {
   headers: NodeHeader[]
   icons: NodeIcon[]
   readonly: boolean
-  onChange: (inner: string) => void
+  onTextChange: (inner: string) => void
+  onPostNodeCreate: (node: Node<NodeData>) => void
+  onPostNodeSelect: (id: string) => void
 }
 
+interface Cursor {
+  s: number
+  e: number
+  d?: 'forward' | 'backward' | 'none'
+}
 export const CompletableInput = (props: Props) => {
-  const [cursor, setCursor] = useState(0)
+  const [cursor, setCursor] = useState<Cursor>({ s: 0, e: 0, d: 'none' })
   const [refString, setRefString] = useState(innerToRef(props.inner, props.headers))
   const [isEditing, setIsEditing] = useState(false)
-  const { popupState, setPopupState, openPopup, closePopup } = usePopup()
+  const { popupState, openPopup, closePopup } = usePopup()
 
-  const ref = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => setRefString(innerToRef(props.inner, props.headers)), [props.inner, props.headers])
 
   useEffect(() => {
-    if (isEditing) ref.current?.focus()
+    if (isEditing) inputRef.current?.focus()
   }, [isEditing])
+
+  useEffect(() => {
+    inputRef.current?.setSelectionRange(cursor.s, cursor.e, cursor.d)
+  }, [cursor])
 
   return (
     <div className={styles.component}>
@@ -49,30 +59,47 @@ export const CompletableInput = (props: Props) => {
             setRefString={setRefString}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
-            cursor={cursor}
             setCursor={setCursor}
-            onChange={props.onChange}
+            onChange={props.onTextChange}
             openPopup={openPopup}
             closePopup={closePopup}
-            inputRef={ref}
+            inputRef={inputRef}
           />
-          <PopupSelector
-            width={`${4 + Math.max(...props.headers.map((header) => header.name.length))}rem`}
-            placeholder={'Select...'}
-            choices={props.headers}
-            preview={(header) => {
-              const icon = getIcon(header.iconId, props.icons)
-              return <IconText preview={icon.preview} color={icon.color} desc={header.name} />
-            }}
-            search={['name']}
-            onSelect={(header) => {
-              setRefString((prev) => changedBySelect(prev, props.headers, header.id, header.name, cursor))
-            }}
-            popupState={popupState}
-            setPopupState={setPopupState}
-            closePopup={closePopup}
-            focusBackRef={ref}
-          />
+          <Popup popupState={popupState} closePopup={closePopup} focusBackRef={inputRef}>
+            <ClassCreatableSelector
+              headers={props.headers}
+              icons={props.icons}
+              newNodePos={{ x: 0, y: 0 }}
+              onSelect={(header) => {
+                setRefString((prev) => {
+                  const [nextRefString, nextCursor] = changedBySelect(
+                    prev,
+                    props.headers,
+                    header.id,
+                    header.name,
+                    cursor.s,
+                  )
+                  setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
+                  return nextRefString
+                })
+                props.onPostNodeSelect(header.id)
+              }}
+              onPostNodeCreate={(node) => {
+                setRefString((prev) => {
+                  const [nextRefString, nextCursor] = changedBySelect(
+                    prev,
+                    props.headers,
+                    node.id,
+                    node.data.name,
+                    cursor.s,
+                  )
+                  setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
+                  return nextRefString
+                })
+                props.onPostNodeCreate(node)
+              }}
+            />
+          </Popup>
         </>
       )}
       {!isEditing && (
@@ -88,8 +115,7 @@ interface InputProps {
   setRefString: Dispatch<SetStateAction<RefString>>
   isEditing: boolean
   setIsEditing: Dispatch<SetStateAction<boolean>>
-  cursor: number
-  setCursor: Dispatch<SetStateAction<number>>
+  setCursor: Dispatch<SetStateAction<Cursor>>
   onChange: (inner: string) => void
   openPopup: () => void
   closePopup: () => void
@@ -118,9 +144,9 @@ const Input = (props: InputProps) => {
         }
       }}
       onSelect={(e: ChangeEvent<HTMLInputElement>) => {
-        const i = e.target.selectionStart!
-        props.setCursor(i)
-        const isInFrontRef = refPositions.findIndex(({ frontS, frontE }) => frontS < i && i <= frontE) !== -1
+        const s = e.target.selectionStart!
+        props.setCursor({ s, e: e.target.selectionEnd || s, d: e.target.selectionDirection || undefined })
+        const isInFrontRef = refPositions.findIndex(({ frontS, frontE }) => frontS < s && s <= frontE) !== -1
         if (isInFrontRef) {
           props.openPopup()
         } else {

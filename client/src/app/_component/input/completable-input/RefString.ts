@@ -257,7 +257,7 @@ export function changedBySelect(
   id: string,
   name: string,
   cursorFrontS: number,
-): RefString {
+): [RefString, number] {
   const refPositions = findRefPositions(prev.inner, headers)
 
   const brokenPos =
@@ -265,10 +265,13 @@ export function changedBySelect(
 
   if (brokenPos) {
     // break and insert
-    return {
-      inner: prev.inner.slice(0, brokenPos.innerS) + `ref#${id}#` + prev.inner.slice(brokenPos.innerE + 1),
-      front: prev.front.slice(0, brokenPos.frontS) + name + prev.front.slice(brokenPos.frontE + 1),
-    }
+    return [
+      {
+        inner: prev.inner.slice(0, brokenPos.innerS) + `ref#${id}#` + prev.inner.slice(brokenPos.innerE + 1),
+        front: prev.front.slice(0, brokenPos.frontS) + name + prev.front.slice(brokenPos.frontE + 1),
+      },
+      (prev.front.slice(0, brokenPos.frontS) + name).length,
+    ]
   } else {
     // insert
     const insertedInnerS =
@@ -276,10 +279,13 @@ export function changedBySelect(
         .filter(({ frontE }) => frontE <= cursorFrontS)
         .map(({ innerS, innerE, frontS, frontE }) => innerE - innerS - (frontE - frontS))
         .reduce((a, b) => a + b, 0) + cursorFrontS
-    return {
-      inner: prev.inner.slice(0, insertedInnerS) + `ref#${id}#` + prev.inner.slice(insertedInnerS),
-      front: prev.front.slice(0, cursorFrontS) + name + prev.front.slice(cursorFrontS),
-    }
+    return [
+      {
+        inner: prev.inner.slice(0, insertedInnerS) + `ref#${id}#` + prev.inner.slice(insertedInnerS),
+        front: prev.front.slice(0, cursorFrontS) + name + prev.front.slice(cursorFrontS),
+      },
+      (prev.front.slice(0, cursorFrontS) + name).length,
+    ]
   }
 }
 
