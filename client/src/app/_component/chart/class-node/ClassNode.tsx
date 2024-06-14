@@ -136,8 +136,8 @@ export const ClassNode = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onPostNodeCreate = useOnPostNodeCreate(store, socket, props.id)
-  const onPostNodeSelect = useOnPostNodeSelect(store, socket, props.id)
+  const onPostNodeCreate = useOnPostNodeCreate(store, socket, { id: props.id, arrowType: 'simple' }, () => {})
+  const onPostNodeSelect = useOnPostNodeSelect(store, socket, { id: props.id, arrowType: 'simple' }, () => {})
 
   const handles = useMemo(() => <Handles />, [])
 

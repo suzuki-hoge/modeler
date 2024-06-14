@@ -19,7 +19,7 @@ import Arrows from '@/app/_component/chart/marker/Arrows'
 import { ClassCreatableSelector } from '@/app/_component/selector/ClassCreatableSelector'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { useOnNodeDragStop, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
-import { useOnPaneClick } from '@/app/_hook/pane'
+import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { handle, createSocket, SocketContext } from '@/app/_socket/socket'
 import { selector, useStore } from '@/app/_store/store'
 
@@ -35,18 +35,21 @@ const Inner = () => {
     [socket.response],
   )
 
+  // pane
+  const selectorState = useSelectorState()
+  const onPaneClick = useOnPaneClick(selectorState)
+
   // node
   const onNodesChange = useOnNodesChange(store, socket)
   const onNodeDragStop = useOnNodeDragStop(socket)
 
   // edge
   const onEdgesChange = useOnEdgesChange(store, socket)
-  const { onConnectStart, onConnectEnd } = useOnConnect(store, socket)
+  const { onConnectStart, onConnectEnd, source, setSource } = useOnConnect(store, socket, selectorState)
 
-  // pane
-  const selectorState = useOnPaneClick()
-  const onPostNodeCreate = useOnPostNodeCreate(store, socket)
-  const onPostNodeSelect = useOnPostNodeSelect(store, socket)
+  // selector
+  const onPostNodeCreate = useOnPostNodeCreate(store, socket, source, setSource)
+  const onPostNodeSelect = useOnPostNodeSelect(store, socket, source, setSource)
 
   return (
     <div id='page' style={{ width: '100vw', height: '100vh' }}>
@@ -71,7 +74,7 @@ const Inner = () => {
         zoomOnPinch={true}
         zoomOnScroll={false}
         selectionOnDrag={true}
-        onPaneClick={selectorState.onPaneClick}
+        onPaneClick={onPaneClick}
       >
         <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
         <Background />
