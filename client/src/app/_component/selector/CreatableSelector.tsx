@@ -4,31 +4,43 @@ import React, { ReactNode, useEffect, useRef } from 'react'
 import SelectBase from 'react-select/base'
 import CreatableSelect from 'react-select/creatable'
 
-type Option<Choice> =
-  | (Choice & {
-      __isNew__: false
-    })
-  | {
-      label: string
-      value: string
-      __isNew__: true
-    }
+import { getDefault, sortOptions } from '@/app/_component/selector/function'
+
+type SelectOption<Choice> = Choice & {
+  value: string
+  __isNew__: false
+}
+interface CreateOption {
+  label: string
+  value: string
+  __isNew__: true
+}
+type Option<Choice> = SelectOption<Choice> | CreateOption
 
 export interface CreatableSelectorProps<Choice> {
-  x: number
-  y: number
+  x: string
+  y: string
   width: string
   placeholder: string
+  empty: string
   choices: Choice[]
+  defaultId?: string
   preview: (choice: Choice) => ReactNode
-  search: (keyof Choice)[]
+  searchKeys: (keyof Choice)[]
+  uniqueKey: keyof Choice
+  sortKey: keyof Choice
   onSelect: (choice: Choice) => void
   onCreate: (value: string) => void
   onClose?: () => void
 }
 
 export function CreatableSelector<Choice>(props: CreatableSelectorProps<Choice>) {
-  const options: Option<Choice>[] = props.choices.map((choice) => ({ ...choice, __isNew__: false }))
+  const selectOptions: SelectOption<Choice>[] = props.choices.map((choice) => ({
+    ...choice,
+    value: String(choice[props.uniqueKey]),
+    __isNew__: false,
+  }))
+  const options: Option<Choice>[] = sortOptions(selectOptions, props.sortKey, props.defaultId)
 
   const ref = useRef<SelectBase<Option<Choice>>>(null)
   useEffect(() => {
@@ -36,15 +48,18 @@ export function CreatableSelector<Choice>(props: CreatableSelectorProps<Choice>)
   })
 
   return (
-    <div style={{ position: 'absolute', left: props.x, top: props.y }}>
+    <div style={{ position: 'absolute', left: `calc(${props.x})`, top: `calc(${props.y})` }}>
       <CreatableSelect
         options={options}
+        defaultValue={getDefault(options, props.defaultId)}
         isSearchable
+        openMenuOnFocus={props.defaultId !== undefined}
         placeholder={props.placeholder}
+        noOptionsMessage={() => props.empty}
         formatOptionLabel={(option) => (option.__isNew__ ? <span>create {option.value}</span> : props.preview(option))}
         filterOption={(option, input) =>
           option.data.__isNew__ ||
-          props.search
+          props.searchKeys
             .map((key) => !option.data.__isNew__ && option.data[key])
             .join('')
             .toLowerCase()

@@ -4,10 +4,19 @@
   justify-content: center;
   border: 1px solid gray;
   border-radius: 50%;
-  font-size: 1rem;
   padding: 0;
-  width: 2rem;
-  height: 2rem;
   cursor: pointer;
   user-select: none;
+}
+
+.small {
+  font-size: 0.6rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.medium {
+  font-size: 0.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }

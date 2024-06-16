@@ -16,7 +16,7 @@ import {
 import { nodeTypes } from '@/app/_component/chart/class-node/ClassNode'
 import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
 import Arrows from '@/app/_component/chart/marker/Arrows'
-import { ClassCreatableSelector } from '@/app/_component/selector/ClassCreatableSelector'
+import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { useOnNodeDragStop, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
@@ -59,6 +59,7 @@ const Inner = () => {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
+        onNodeDragStart={(e) => e.preventDefault()}
         connectionLineStyle={connectionLineStyle}
         connectionLineType={connectionLineType}
         connectionLineComponent={ConnectionLine}
@@ -82,8 +83,8 @@ const Inner = () => {
       <Arrows />
       {selectorState.active && (
         <ClassCreatableSelector
-          x={selectorState.x}
-          y={selectorState.y}
+          x={`${selectorState.x}px`}
+          y={`${selectorState.y}px`}
           headers={store.nodeHeaders}
           icons={store.nodeIcons}
           newNodePos={{ x: 0, y: 0 }}

@@ -44,7 +44,7 @@ export const EdgePalette = (props: Props) => {
             placeholder={'...'}
             choices={[{ value: '1' }, { value: '0..1' }, { value: '0..*' }, { value: '1..*' }]}
             preview={(label) => <span>{label.value}</span>}
-            search={['value']}
+            searchKeys={['value']}
             onSelect={(label) => props.onChangeLabel(label.value)}
             onCreate={(value) => props.onChangeLabel(value)}
           />

@@ -2,6 +2,7 @@
 import React, { ChangeEvent, Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react'
 import { Node } from 'reactflow'
 
+import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
 import {
   changedByInput,
   changedBySelect,
@@ -10,11 +11,16 @@ import {
   innerToRef,
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
-import { ClassCreatableSelector } from '@/app/_component/selector/ClassCreatableSelector'
 import { Popup, usePopup } from '@/app/_component/selector/Popup'
 import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 import styles from './completable-input.module.scss'
+
+interface Cursor {
+  s: number
+  e: number
+  d?: 'forward' | 'backward' | 'none'
+}
 
 interface Props {
   inner: string
@@ -26,18 +32,17 @@ interface Props {
   onPostNodeSelect: (header: NodeHeader) => void
 }
 
-interface Cursor {
-  s: number
-  e: number
-  d?: 'forward' | 'backward' | 'none'
-}
 export const CompletableInput = (props: Props) => {
   const [cursor, setCursor] = useState<Cursor>({ s: 0, e: 0, d: 'none' })
   const [refString, setRefString] = useState(innerToRef(props.inner, props.headers))
   const [isEditing, setIsEditing] = useState(false)
+  const [popupNodeId, setPopupNodeId] = useState<string | undefined>(undefined)
   const { popupState, openPopup, closePopup } = usePopup()
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const x = `${inputRef.current?.offsetLeft || 0}px + ${Math.max(0, cursor.s - 4)}ch`
+  const y = (inputRef.current?.offsetTop || 0) + (inputRef.current?.offsetHeight || 0) + 'px'
 
   useEffect(() => setRefString(innerToRef(props.inner, props.headers)), [props.inner, props.headers])
 
@@ -59,6 +64,7 @@ export const CompletableInput = (props: Props) => {
             setRefString={setRefString}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
+            setPopupNodeId={setPopupNodeId}
             setCursor={setCursor}
             onChange={props.onTextChange}
             openPopup={openPopup}
@@ -67,9 +73,10 @@ export const CompletableInput = (props: Props) => {
           />
           <Popup popupState={popupState} closePopup={closePopup} focusBackRef={inputRef}>
             <ClassCreatableSelector
-              x={150}
-              y={150}
+              x={x}
+              y={y}
               headers={props.headers}
+              defaultId={popupNodeId}
               icons={props.icons}
               newNodePos={{ x: 0, y: 0 }}
               onSelect={(header) => {
@@ -117,6 +124,7 @@ interface InputProps {
   setRefString: Dispatch<SetStateAction<RefString>>
   isEditing: boolean
   setIsEditing: Dispatch<SetStateAction<boolean>>
+  setPopupNodeId: Dispatch<SetStateAction<string | undefined>>
   setCursor: Dispatch<SetStateAction<Cursor>>
   onChange: (inner: string) => void
   openPopup: () => void
@@ -125,8 +133,6 @@ interface InputProps {
 }
 
 const Input = (props: InputProps) => {
-  const refPositions = findRefPositions(props.refString.inner, props.headers)
-
   return (
     <input
       className={styles.input}
@@ -148,11 +154,16 @@ const Input = (props: InputProps) => {
       onSelect={(e: ChangeEvent<HTMLInputElement>) => {
         const s = e.target.selectionStart!
         props.setCursor({ s, e: e.target.selectionEnd || s, d: e.target.selectionDirection || undefined })
-        const isInFrontRef = refPositions.findIndex(({ frontS, frontE }) => frontS < s && s <= frontE) !== -1
-        if (isInFrontRef) {
+
+        const refPositions = findRefPositions(props.refString.inner, props.headers)
+        const ref = refPositions.find(({ frontS, frontE }) => frontS < s && s <= frontE)
+
+        if (ref) {
           props.openPopup()
+          props.setPopupNodeId(ref.header.id)
         } else {
           props.closePopup()
+          props.setPopupNodeId(undefined)
         }
       }}
       ref={props.inputRef}

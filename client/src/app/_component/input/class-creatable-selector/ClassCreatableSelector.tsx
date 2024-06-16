@@ -7,9 +7,10 @@ import { allocateNodeId, createNode, getIcon } from '@/app/_object/node/function
 import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 interface Props {
-  x: number
-  y: number
+  x: string
+  y: string
   headers: NodeHeader[]
+  defaultId?: string
   icons: NodeIcon[]
   newNodePos: XYPosition
   onSelect: (choice: NodeHeader) => void
@@ -22,14 +23,18 @@ export const ClassCreatableSelector = (props: Props) => {
     <CreatableSelector
       x={props.x}
       y={props.y}
-      width={`${8 + Math.max(...props.headers.map((header) => header.name.length))}ch`}
+      width={`${12 + Math.max(...props.headers.map((header) => header.name.length))}ch`}
       placeholder={'class...'}
+      empty={'no classes'}
       choices={props.headers}
+      defaultId={props.defaultId}
       preview={(header) => {
         const icon = getIcon(header.iconId, props.icons)
         return <IconText preview={icon.preview} color={icon.color} desc={header.name} />
       }}
-      search={['name']}
+      searchKeys={['name']}
+      uniqueKey={'id'}
+      sortKey={'name'}
       onSelect={props.onSelect}
       onCreate={(value) => {
         const { x, y } = props.newNodePos

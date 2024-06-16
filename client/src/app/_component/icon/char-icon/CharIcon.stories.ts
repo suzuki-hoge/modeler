@@ -10,10 +10,22 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Icon: Story = {
+export const Small: Story = {
   args: {
     char: 'UC',
     color: 'lightcyan',
+    variant: 'small',
+    onClick: () => {
+      console.log('click')
+    },
+  },
+}
+
+export const Medium: Story = {
+  args: {
+    char: 'UC',
+    color: 'lightcyan',
+    variant: 'medium',
     onClick: () => {
       console.log('click')
     },

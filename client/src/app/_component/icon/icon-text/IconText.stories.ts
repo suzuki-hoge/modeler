@@ -10,18 +10,18 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Icon: Story = {
-  args: {
-    preview: 'C',
-    color: 'lightcyan',
-    desc: 'Controller',
-  },
-}
-
 export const Class: Story = {
   args: {
     preview: 'C',
+    color: 'lightcyan',
+    desc: 'Item',
+  },
+}
+
+export const UseCase: Story = {
+  args: {
+    preview: 'UC',
     color: 'lightpink',
-    desc: 'UserController',
+    desc: 'ItemUseCase',
   },
 }

@@ -15,7 +15,7 @@ interface Props {
 export const IconText = (props: Props) => {
   return (
     <div className={styles.component}>
-      <CharIcon char={props.preview} color={props.color} />
+      <CharIcon char={props.preview} color={props.color} variant={'small'} />
       <span>{props.desc}</span>
     </div>
   )

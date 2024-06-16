@@ -224,6 +224,7 @@ function applyDelete(
 }
 
 interface RefPosition {
+  header: NodeHeader
   innerS: number
   innerE: number
   frontS: number
@@ -238,9 +239,10 @@ export function findRefPositions(inner: string, headers: NodeHeader[]): RefPosit
   while ((m = re_ref.exec(inner))) {
     const ref = m[0]
     const id = ref.match(re_id)![1]
-    const name = headers.find((header) => header.id === id)?.name || '???'
-    const rag = ref.length - name.length
+    const header = headers.find((header) => header.id === id) || { id: 'default', name: '???', iconId: 'default' }
+    const rag = ref.length - header.name.length
     result.push({
+      header: header,
       innerS: m.index,
       innerE: m.index + m[0].length - 1,
       frontS: m.index - totalRag,
