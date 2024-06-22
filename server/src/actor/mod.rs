@@ -10,7 +10,7 @@ use actix_web_actors::ws::start;
 
 use crate::actor::server::Server;
 use crate::actor::session::{create_session_id, Session};
-use crate::data::{PageId, User};
+use crate::data::{PageId, ProjectId, User};
 
 mod message;
 mod server;
@@ -21,15 +21,16 @@ type SessionId = String;
 pub async fn start_session(
     request: HttpRequest,
     payload: Payload,
-    path: Path<(PageId, User)>,
+    path: Path<(ProjectId, PageId, User)>,
     server_address: Data<Addr<Server>>,
 ) -> Result<HttpResponse, Error> {
-    let path = path.into_inner();
+    let (project_id, page_id, user) = path.into_inner();
     start(
         Session {
             session_id: create_session_id(),
-            user: path.1,
-            page_id: path.0,
+            user,
+            project_id,
+            page_id,
             server_address: server_address.get_ref().clone(),
             last_heartbeat: Instant::now(),
         },

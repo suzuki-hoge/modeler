@@ -105,7 +105,7 @@ const user = faker.person.firstName()
 
 export default function Page(props: Props) {
   const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket<unknown>(
-    `ws://127.0.0.1:8080/ws/${props.params.pageId}/${user}`,
+    `ws://127.0.0.1:8080/ws/1/${props.params.pageId}/${user}`,
   )
 
   return (

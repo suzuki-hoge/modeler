@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(Data::new(server.clone()))
-            .service(resource("/ws/{page_id}/{user}").to(start_session))
+            .service(resource("/ws/{project_id}/{page_id}/{user}").to(start_session))
             .route("/{project_id}/pages", web::get().to(project_controller::get_pages))
             .route("/{project_id}/icons", web::get().to(project_controller::get_icons))
             .route("/{project_id}/nodes", web::get().to(project_controller::get_nodes))

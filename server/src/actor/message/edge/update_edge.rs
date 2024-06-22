@@ -42,7 +42,7 @@ impl Handler<UpdateEdgeRequest> for Server {
 
         let response =
             UpdateEdgeResponse::new(request.object_id, request.src, request.dst, request.arrow_type, request.label);
-        self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
+        self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 

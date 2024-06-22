@@ -33,7 +33,7 @@ impl Handler<DeleteEdgeRequest> for Server {
         println!("accept delete-edge request");
 
         let response = DeleteEdgeResponse::new(request.object_id);
-        self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
+        self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 

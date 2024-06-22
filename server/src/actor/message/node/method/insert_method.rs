@@ -37,7 +37,7 @@ impl Handler<InsertMethodRequest> for Server {
         println!("accept insert-method request");
 
         let response = InsertMethodResponse::new(request.object_id, request.method, request.n);
-        self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
+        self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 

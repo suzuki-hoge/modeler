@@ -2,16 +2,17 @@ use actix::{Context, Handler, Message as ActixMessage, Recipient};
 use serde::Serialize;
 use serde_json::to_string as to_json_string;
 
-use crate::actor::server::{Server, Sessions};
+use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::{PageId, SessionId};
-use crate::data::User;
+use crate::data::{ProjectId, User};
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct ConnectRequest {
     pub session_id: SessionId,
     pub user: User,
+    pub project_id: ProjectId,
     pub page_id: PageId,
     pub session_address: Recipient<Response>,
 }
@@ -21,13 +22,16 @@ impl Handler<ConnectRequest> for Server {
 
     fn handle(&mut self, request: ConnectRequest, _: &mut Context<Self>) {
         println!("accept connect request");
-        let sessions: &mut Sessions = self.pages.entry(request.page_id.clone()).or_default();
-        sessions.insert(request.session_id.clone(), request.session_address);
-
-        self.users.insert(request.session_id.clone(), request.user.clone());
+        self.connect(
+            request.session_id.clone(),
+            request.user.clone(),
+            request.project_id.clone(),
+            request.page_id.clone(),
+            request.session_address,
+        );
 
         let response = ConnectResponse::new(request.session_id.clone(), request.user);
-        self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
+        self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 

@@ -37,7 +37,7 @@ impl Handler<UpdateMethodRequest> for Server {
         println!("accept update-method request");
 
         let response = UpdateMethodResponse::new(request.object_id, request.method, request.n);
-        self.respond_to_session(&request.page_id, response.into(), Some(&request.session_id));
+        self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 

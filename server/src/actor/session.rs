@@ -29,6 +29,7 @@ use crate::actor::message::state::unlock::UnlockRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
 use crate::actor::{PageId, SessionId};
+use crate::data::ProjectId;
 
 pub fn create_session_id() -> SessionId {
     Uuid::new_v4().to_string().split('-').next().unwrap().to_string()
@@ -41,6 +42,7 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 pub struct Session {
     pub session_id: SessionId,
     pub user: String,
+    pub project_id: ProjectId,
     pub page_id: PageId,
     pub server_address: Addr<Server>,
     pub last_heartbeat: Instant,
@@ -137,6 +139,7 @@ impl Actor for Session {
             .send(ConnectRequest {
                 session_id: self.session_id.clone(),
                 user: self.user.clone(),
+                project_id: self.project_id.clone(),
                 page_id: self.page_id.clone(),
                 session_address: session_address.recipient(),
             })
