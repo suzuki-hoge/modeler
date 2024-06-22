@@ -18,7 +18,7 @@ import { ConnectionLine } from '@/app/_component/chart/connection-line/Connectio
 import Arrows from '@/app/_component/chart/marker/Arrows'
 import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
-import { useOnNodeDragStop, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
+import { useOnNodeDrag, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { handle, createSocket, SocketContext } from '@/app/_socket/socket'
 import { selector, useStore } from '@/app/_store/store'
@@ -41,7 +41,7 @@ const Inner = () => {
 
   // node
   const onNodesChange = useOnNodesChange(store, socket)
-  const onNodeDragStop = useOnNodeDragStop(socket)
+  const { onNodeDragStart, onNodeDragStop } = useOnNodeDrag(socket)
 
   // edge
   const onEdgesChange = useOnEdgesChange(store, socket)
@@ -59,11 +59,11 @@ const Inner = () => {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
-        onNodeDragStart={(e) => e.preventDefault()}
         connectionLineStyle={connectionLineStyle}
         connectionLineType={connectionLineType}
         connectionLineComponent={ConnectionLine}
         onNodesChange={onNodesChange}
+        onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onEdgesChange={onEdgesChange}
         onConnectStart={onConnectStart}

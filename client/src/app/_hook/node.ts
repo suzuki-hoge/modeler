@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback } from 'react'
+import { Dispatch, SetStateAction, useCallback, useState } from 'react'
 import { applyNodeChanges, Node, NodeDragHandler, OnNodesChange } from 'reactflow'
 
 import { DragSource } from '@/app/_hook/edge'
@@ -19,10 +19,21 @@ export function useOnNodesChange(store: Store, socket: Socket): OnNodesChange {
   }
 }
 
-export function useOnNodeDragStop(socket: Socket): NodeDragHandler {
-  return (_event, _node, nodes) => {
-    nodes.forEach((node) => socket.moveNode(node.id, node.position.x, node.position.y))
+export function useOnNodeDrag(socket: Socket): { onNodeDragStart: NodeDragHandler; onNodeDragStop: NodeDragHandler } {
+  const [startX, setStartX] = useState(0)
+  const [startY, setStartY] = useState(0)
+
+  const onNodeDragStart: NodeDragHandler = (_event, node) => {
+    setStartX(node.position.x)
+    setStartY(node.position.y)
   }
+  const onNodeDragStop: NodeDragHandler = (_event, node, nodes) => {
+    if (startX !== node.position.x || startY !== node.position.y) {
+      nodes.forEach((node) => socket.moveNode(node.id, node.position.x, node.position.y))
+    }
+  }
+
+  return { onNodeDragStart, onNodeDragStop }
 }
 
 export function useOnPostNodeCreate(

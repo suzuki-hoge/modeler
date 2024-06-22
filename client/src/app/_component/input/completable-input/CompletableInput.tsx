@@ -166,6 +166,10 @@ const Input = (props: InputProps) => {
           props.setPopupNodeId(undefined)
         }
       }}
+      onBlur={() => {
+        props.onChange(props.refString.inner)
+        props.setIsEditing(false)
+      }}
       ref={props.inputRef}
     />
   )

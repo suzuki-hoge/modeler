@@ -32,6 +32,10 @@ export const ClassName = (props: Props) => {
               setIsEditing(false)
             }
           }}
+          onBlur={() => {
+            props.onChange(tmp)
+            setIsEditing(false)
+          }}
           ref={ref}
         />
       )}
