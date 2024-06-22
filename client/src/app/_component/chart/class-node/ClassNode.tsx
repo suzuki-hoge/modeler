@@ -1,4 +1,4 @@
-import React, { memo, ReactNode, useCallback, useContext, useEffect, useMemo } from 'react'
+import React, { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 import { Node, NodeTypes } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
@@ -139,8 +139,6 @@ export const ClassNode = (props: Props) => {
   const onPostNodeCreate = useOnPostNodeCreate(store, socket, { id: props.id, arrowType: 'simple' }, () => {})
   const onPostNodeSelect = useOnPostNodeSelect(store, socket, { id: props.id, arrowType: 'simple' }, () => {})
 
-  const handles = useMemo(() => <Handles />, [])
-
   return (
     <>
       <ClassNodeInner
@@ -161,9 +159,8 @@ export const ClassNode = (props: Props) => {
         onInsertFirstMethod={onInsertFirstMethod}
         onPostNodeCreate={onPostNodeCreate}
         onPostNodeSelect={onPostNodeSelect}
-      >
-        {handles}
-      </ClassNodeInner>
+      />
+      <Handles visible={props.selected} icon={'simple'} />
     </>
   )
 }
@@ -187,7 +184,6 @@ interface InnerProps {
   onInsertFirstMethod: () => void
   onPostNodeCreate: (node: Node<NodeData>) => void
   onPostNodeSelect: (header: NodeHeader) => void
-  children: ReactNode
 }
 
 export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
@@ -234,7 +230,6 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
         />
       ))}
       {props.data.methods.length === 0 && <EmptyLine onInsert={props.onInsertFirstMethod} />}
-      {props.children}
     </div>
   )
 })

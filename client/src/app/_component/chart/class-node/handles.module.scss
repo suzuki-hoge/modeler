@@ -1,105 +1,66 @@
-.dot {
-  width: 24px;
-  height: 24px;
-  opacity: 0;
+@mixin handle {
+  position: absolute;
+  width: 0.8rem;
+  height: 0.8rem;
+  background-color: transparent;
+  border: none;
   z-index: 1;
 }
 
-.arrow {
-  opacity: 0;
+@mixin arrow {
+  position: absolute;
+  background-color: lightcyan;
+  border-radius: 50%;
+  border: 1px solid gray;
+  font-size: 0.8rem;
   z-index: 0;
 }
 
-.dot:hover + .arrow {
-  opacity: 1;
-  transition: opacity 0.4s;
+.topHandle {
+  @include handle;
+  top: -20px;
 }
 
-div.t1 {
-  position: absolute;
-  top: -24px;
-  left: calc(50% - 12px);
-}
-svg.t1 {
-  position: absolute;
+.topArrow {
+  @include arrow;
   top: -20px;
-  left: calc(50% - 12px - 8px);
-}
-div.t2 {
-  position: absolute;
-  top: -24px;
-  left: calc(50% + 12px);
-}
-svg.t2 {
-  position: absolute;
-  top: -20px;
-  left: calc(50% + 12px - 8px);
+  left: calc(50% - 8px);
 }
 
-div.r1 {
-  position: absolute;
-  top: calc(50% - 12px);
-  right: -24px;
-}
-svg.r1 {
-  position: absolute;
-  top: calc(50% - 12px - 8px);
-  right: -20px;
-}
-div.r2 {
-  position: absolute;
-  top: calc(50% + 12px);
-  right: -24px;
-}
-svg.r2 {
-  position: absolute;
-  top: calc(50% + 12px - 8px);
+.rightHandle {
+  @include handle;
   right: -20px;
 }
 
-div.b1 {
-  position: absolute;
-  bottom: -24px;
-  left: calc(50% + 12px);
-}
-svg.b1 {
-  position: absolute;
-  bottom: -20px;
-  left: calc(50% + 12px - 8px);
-}
-div.b2 {
-  position: absolute;
-  bottom: -24px;
-  left: calc(50% - 12px);
-}
-svg.b2 {
-  position: absolute;
-  bottom: -20px;
-  left: calc(50% - 12px - 8px);
+.rightArrow {
+  @include arrow;
+  right: -20px;
+  top: calc(50% - 8px);
 }
 
-div.l1 {
-  position: absolute;
-  top: calc(50% + 12px);
-  left: -24px;
+.bottomHandle {
+  @include handle;
+  bottom: -20px;
 }
-svg.l1 {
-  position: absolute;
-  top: calc(50% + 12px - 8px);
-  left: -20px;
+
+.bottomArrow {
+  @include arrow;
+  bottom: -20px;
+  right: calc(50% - 8px);
 }
-div.l2 {
-  position: absolute;
-  top: calc(50% - 12px);
-  left: -24px;
-}
-svg.l2 {
-  position: absolute;
-  top: calc(50% - 12px - 8px);
+
+.leftHandle {
+  @include handle;
   left: -20px;
 }
 
-.center {
+.leftArrow {
+  @include arrow;
+  left: -20px;
+  top: calc(50% - 8px);
+}
+
+.centerHandle {
   z-index: -1;
   top: calc(50% - 4px);
 }
