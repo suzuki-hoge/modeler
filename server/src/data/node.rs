@@ -1,16 +1,25 @@
-use crate::data::ObjectId;
+use crate::data::{ObjectId, Position};
 use serde::Serialize;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectNode {
     pub object_id: ObjectId,
+    pub r#type: String,
     pub data: NodeData,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PageNode {
+    pub object_id: ObjectId,
+    pub position: Position,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NodeData {
-    pub icon: String,
+    pub icon_id: String,
     pub name: String,
     pub properties: Vec<String>,
     pub methods: Vec<String>,
@@ -18,8 +27,9 @@ pub struct NodeData {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NodeHeader {
-    pub id: ObjectId,
-    pub icon: String,
-    pub name: String,
+pub struct NodeIcon {
+    pub id: String,
+    pub preview: String,
+    pub desc: String,
+    pub color: String,
 }

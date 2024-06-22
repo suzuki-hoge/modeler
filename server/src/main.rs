@@ -1,5 +1,5 @@
 use crate::actor::{start_server, start_session};
-use crate::controller::node::node_controller::{get_node, get_node_headers};
+use crate::controller::node::{page_controller, project_controller};
 use actix_cors::Cors;
 use actix_web::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use actix_web::{
@@ -28,10 +28,13 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .app_data(Data::new(server.clone()))
             .service(resource("/ws/{page_id}/{user}").to(start_session))
-            .route("/node/headers/{project_id}/{sleep}", web::get().to(get_node_headers))
-            .route("/node/{project_id}/{object_id}/{sleep}", web::get().to(get_node))
+            .route("/{project_id}/pages", web::get().to(project_controller::get_pages))
+            .route("/{project_id}/icons", web::get().to(project_controller::get_icons))
+            .route("/{project_id}/nodes", web::get().to(project_controller::get_nodes))
+            .route("/{project_id}/edges", web::get().to(project_controller::get_edges))
+            .route("/{project_id}/{page_id}/nodes", web::get().to(page_controller::get_nodes))
+            .route("/{project_id}/{page_id}/edges", web::get().to(page_controller::get_edges))
     })
-    .workers(2)
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
