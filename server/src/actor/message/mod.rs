@@ -1,7 +1,6 @@
 pub mod connection;
-pub mod edge;
-pub mod node;
-pub mod state;
+pub mod project;
+pub mod page;
 
 use std::collections::HashMap;
 

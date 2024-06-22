@@ -46,7 +46,7 @@ export function useOnPostNodeCreate(
     (node) => {
       // todo: project node + page node
       store.updateNodes((nodes) => [...nodes, node])
-      socket.addNode(node)
+      socket.createNode(node)
 
       if (source) {
         const edge = createEdge(allocateEdgeId(), source.id, node.id, 'simple', '1')

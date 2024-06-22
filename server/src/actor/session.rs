@@ -10,22 +10,22 @@ use uuid::Uuid;
 
 use crate::actor::message::connection::connect::ConnectRequest;
 use crate::actor::message::connection::disconnect::DisconnectRequest;
-use crate::actor::message::edge::add_edge::AddEdgeRequest;
-use crate::actor::message::edge::delete_edge::DeleteEdgeRequest;
-use crate::actor::message::edge::update_edge::UpdateEdgeRequest;
-use crate::actor::message::node::add_node::AddNodeRequest;
-use crate::actor::message::node::delete_node::DeleteNodeRequest;
-use crate::actor::message::node::header::update_icon_id::UpdateIconIdRequest;
-use crate::actor::message::node::header::update_name::UpdateNameRequest;
-use crate::actor::message::node::method::delete_method::DeleteMethodRequest;
-use crate::actor::message::node::method::insert_method::InsertMethodRequest;
-use crate::actor::message::node::method::update_method::UpdateMethodRequest;
-use crate::actor::message::node::move_node::MoveNodeRequest;
-use crate::actor::message::node::property::delete_property::DeletePropertyRequest;
-use crate::actor::message::node::property::insert_property::InsertPropertyRequest;
-use crate::actor::message::node::property::update_property::UpdatePropertyRequest;
-use crate::actor::message::state::lock::LockRequest;
-use crate::actor::message::state::unlock::UnlockRequest;
+use crate::actor::message::project::edge::add_edge::AddEdgeRequest;
+use crate::actor::message::project::edge::delete_edge::DeleteEdgeRequest;
+use crate::actor::message::project::edge::update_edge::UpdateEdgeRequest;
+use crate::actor::message::project::node::create_node::CreateNodeRequest;
+use crate::actor::message::project::node::delete_node::DeleteNodeRequest;
+use crate::actor::message::project::node::header::update_icon_id::UpdateIconIdRequest;
+use crate::actor::message::project::node::header::update_name::UpdateNameRequest;
+use crate::actor::message::project::node::method::delete_method::DeleteMethodRequest;
+use crate::actor::message::project::node::method::insert_method::InsertMethodRequest;
+use crate::actor::message::project::node::method::update_method::UpdateMethodRequest;
+use crate::actor::message::project::node::move_node::MoveNodeRequest;
+use crate::actor::message::project::node::property::delete_property::DeletePropertyRequest;
+use crate::actor::message::project::node::property::insert_property::InsertPropertyRequest;
+use crate::actor::message::project::node::property::update_property::UpdatePropertyRequest;
+use crate::actor::message::page::state::lock::LockRequest;
+use crate::actor::message::page::state::unlock::UnlockRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
 use crate::actor::{PageId, SessionId};
@@ -73,8 +73,8 @@ impl Session {
             Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
 
             // node
-            Some("add-node") => {
-                self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+            Some("create-node") => {
+                self.server_address.do_send(CreateNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("move-node") => {
                 self.server_address.do_send(MoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
@@ -121,7 +121,7 @@ impl Session {
                 self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
 
-            Some(s) => Err(format!("unexpected typ: {s}"))?,
+            Some(s) => Err(format!("unexpected type: {s}"))?,
             None => Err(String::from("type missing"))?,
         };
         Ok(())

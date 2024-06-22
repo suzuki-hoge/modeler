@@ -19,8 +19,8 @@ import { createAddEdge, AddEdge } from '@/app/_socket/edge/add-edge'
 import { handleDeleteEdge } from '@/app/_socket/edge/delete-edge'
 import { createDeleteEdge, DeleteEdge } from '@/app/_socket/edge/delete-edge'
 import { createUpdateEdge, handleUpdateEdge, UpdateEdge } from '@/app/_socket/edge/update-edge'
-import { handleAddNode } from '@/app/_socket/node/add-node'
-import { createAddNode, AddNode } from '@/app/_socket/node/add-node'
+import { createCreateNode, CreateNode } from '@/app/_socket/node/create-node'
+import { handleCreateNode } from '@/app/_socket/node/create-node'
 import { handleDeleteNode } from '@/app/_socket/node/delete-node'
 import { createDeleteNode, DeleteNode } from '@/app/_socket/node/delete-node'
 import { createUpdateIconId, handleUpdateIconId, UpdateIconId } from '@/app/_socket/node/header/update-icon-id'
@@ -54,7 +54,7 @@ export type Socket = {
   unlock: Unlock
 
   // node
-  addNode: AddNode
+  createNode: CreateNode
   moveNode: MoveNode
   deleteNode: DeleteNode
 
@@ -84,7 +84,7 @@ export function createSocket(send: SendJsonMessage, response: unknown, socket: (
     unlock: createUnlock(send, socket),
 
     // node
-    addNode: createAddNode(send, socket),
+    createNode: createCreateNode(send, socket),
     moveNode: createMoveNode(send, socket),
     deleteNode: createDeleteNode(send, socket),
 
@@ -121,7 +121,7 @@ export function handle(response: unknown, store: Store) {
     })
 
     // node
-    handleAddNode(response, (response) =>
+    handleCreateNode(response, (response) =>
       store.updateNodes((nodes) => [...nodes, createNode(response.objectId, response.x, response.y, response.name)]),
     )
     handleMoveNode(response, (response) =>

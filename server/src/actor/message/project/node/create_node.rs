@@ -10,57 +10,60 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct AddNodeRequest {
+pub struct CreateNodeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
     pub x: f64,
     pub y: f64,
+    pub icon_id: String,
     pub name: String,
 }
 
-impl AddNodeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<AddNodeRequest, String> {
+impl CreateNodeRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<CreateNodeRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "objectId")?,
             x: parse_f64(&json, "x")?,
             y: parse_f64(&json, "y")?,
+            icon_id: parse_string(&json, "iconId")?,
             name: parse_string(&json, "name")?,
         })
     }
 }
 
-impl Handler<AddNodeRequest> for Server {
+impl Handler<CreateNodeRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: AddNodeRequest, _: &mut Context<Self>) {
-        println!("accept add-node request");
+    fn handle(&mut self, request: CreateNodeRequest, _: &mut Context<Self>) {
+        println!("accept create-node request");
 
-        let response = AddNodeResponse::new(request.object_id, request.x, request.y, request.name);
+        let response = CreateNodeResponse::new(request.object_id, request.x, request.y, request.icon_id, request.name);
         self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AddNodeResponse {
+pub struct CreateNodeResponse {
     r#type: String,
     object_id: ObjectId,
     x: f64,
     y: f64,
+    icon_id: String,
     name: String,
 }
 
-impl AddNodeResponse {
-    fn new(object_id: ObjectId, x: f64, y: f64, name: String) -> Self {
-        Self { r#type: String::from("add-node"), object_id, x, y, name }
+impl CreateNodeResponse {
+    fn new(object_id: ObjectId, x: f64, y: f64, icon_id: String, name: String) -> Self {
+        Self { r#type: String::from("create-node"), object_id, x, y, icon_id, name }
     }
 }
 
-impl From<AddNodeResponse> for Response {
-    fn from(value: AddNodeResponse) -> Self {
+impl From<CreateNodeResponse> for Response {
+    fn from(value: CreateNodeResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

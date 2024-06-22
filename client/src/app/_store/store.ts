@@ -126,6 +126,7 @@ export const useStore = createWithEqualityFn<Store>((set, get) => ({
     { id: 'item', iconId: 'data', name: 'Item' },
   ],
   nodeIcons: [
+    { id: 'default', preview: 'C', desc: 'Class', color: 'lightgray' },
     { id: 'controller', preview: 'C', desc: 'Controller', color: 'lightgray' },
     { id: 'usecase', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
     { id: 'store', preview: 'S', desc: 'Store', color: 'lightgreen' },
