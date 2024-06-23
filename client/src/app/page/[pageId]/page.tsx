@@ -20,19 +20,23 @@ import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-s
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { useOnNodeDrag, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
-import { handle, createSocket, SocketContext } from '@/app/_socket/socket'
-import { selector, useStore } from '@/app/_store/store'
+import { createPageSocket, PageSocketContext } from '@/app/_socket/page-socket'
+import { createProjectSocket, handleProjectMessage, ProjectSocketContext } from '@/app/_socket/project-socket'
+import { pageSelector, usePageStore } from '@/app/_store/page-store'
+import { projectSelector, useProjectStore } from '@/app/_store/project-store'
 
 const Inner = () => {
   // store
-  const store = useStore(selector, shallow)
+  const projectStore = useProjectStore(projectSelector, shallow)
+  const pageStore = usePageStore(pageSelector, shallow)
 
   // socket
-  const socket = useContext(SocketContext)!
+  const projectSocket = useContext(ProjectSocketContext)!
+  const pageSocket = useContext(PageSocketContext)!
   useEffect(
-    () => handle(socket.response, store),
+    () => handleProjectMessage(projectSocket.response, projectStore),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [socket.response],
+    [projectSocket.response],
   )
 
   // pane
@@ -40,22 +44,22 @@ const Inner = () => {
   const onPaneClick = useOnPaneClick(selectorState)
 
   // node
-  const onNodesChange = useOnNodesChange(store, socket)
-  const { onNodeDragStart, onNodeDragStop } = useOnNodeDrag(socket)
+  const onNodesChange = useOnNodesChange(pageStore, pageSocket)
+  const { onNodeDragStart, onNodeDragStop } = useOnNodeDrag(pageSocket)
 
   // edge
-  const onEdgesChange = useOnEdgesChange(store, socket)
-  const { onConnectStart, onConnectEnd, source, setSource } = useOnConnect(store, socket, selectorState)
+  const onEdgesChange = useOnEdgesChange(projectStore, projectSocket)
+  const { onConnectStart, onConnectEnd, source, setSource } = useOnConnect(projectStore, projectSocket, selectorState)
 
   // selector
-  const onPostNodeCreate = useOnPostNodeCreate(store, socket, source, setSource)
-  const onPostNodeSelect = useOnPostNodeSelect(store, socket, source, setSource)
+  const onPostNodeCreate = useOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
+  const onPostNodeSelect = useOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
 
   return (
     <div id='page' style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
-        nodes={store.nodes}
-        edges={store.edges}
+        nodes={projectStore.nodes}
+        edges={projectStore.edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
@@ -85,8 +89,8 @@ const Inner = () => {
         <ClassCreatableSelector
           x={`${selectorState.x}px`}
           y={`${selectorState.y}px`}
-          headers={store.nodeHeaders}
-          icons={store.nodeIcons}
+          headers={projectStore.nodeHeaders}
+          icons={projectStore.nodeIcons}
           newNodePos={{ x: 0, y: 0 }}
           onSelect={onPostNodeSelect}
           onPostNodeCreate={onPostNodeCreate}
@@ -110,9 +114,11 @@ export default function Page(props: Props) {
 
   return (
     <ReactFlowProvider>
-      <SocketContext.Provider value={createSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
-        <Inner />
-      </SocketContext.Provider>
+      <ProjectSocketContext.Provider value={createProjectSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
+        <PageSocketContext.Provider value={createPageSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
+          <Inner />
+        </PageSocketContext.Provider>
+      </ProjectSocketContext.Provider>
     </ReactFlowProvider>
   )
 }

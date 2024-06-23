@@ -33,7 +33,7 @@ impl Handler<DeleteNodeRequest> for Server {
         println!("accept delete-node request");
 
         let response = DeleteNodeResponse::new(request.object_id);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 

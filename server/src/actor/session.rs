@@ -10,7 +10,14 @@ use uuid::Uuid;
 
 use crate::actor::message::connection::connect::ConnectRequest;
 use crate::actor::message::connection::disconnect::DisconnectRequest;
-use crate::actor::message::project::edge::add_edge::AddEdgeRequest;
+use crate::actor::message::page::edge::add_edge::AddEdgeRequest;
+use crate::actor::message::page::edge::remove_edge::RemoveEdgeRequest;
+use crate::actor::message::page::node::add_node::AddNodeRequest;
+use crate::actor::message::page::node::move_node::MoveNodeRequest;
+use crate::actor::message::page::node::remove_node::RemoveNodeRequest;
+use crate::actor::message::page::state::lock::LockRequest;
+use crate::actor::message::page::state::unlock::UnlockRequest;
+use crate::actor::message::project::edge::create_edge::CreateEdgeRequest;
 use crate::actor::message::project::edge::delete_edge::DeleteEdgeRequest;
 use crate::actor::message::project::edge::update_edge::UpdateEdgeRequest;
 use crate::actor::message::project::node::create_node::CreateNodeRequest;
@@ -20,12 +27,9 @@ use crate::actor::message::project::node::header::update_name::UpdateNameRequest
 use crate::actor::message::project::node::method::delete_method::DeleteMethodRequest;
 use crate::actor::message::project::node::method::insert_method::InsertMethodRequest;
 use crate::actor::message::project::node::method::update_method::UpdateMethodRequest;
-use crate::actor::message::project::node::move_node::MoveNodeRequest;
 use crate::actor::message::project::node::property::delete_property::DeletePropertyRequest;
 use crate::actor::message::project::node::property::insert_property::InsertPropertyRequest;
 use crate::actor::message::project::node::property::update_property::UpdatePropertyRequest;
-use crate::actor::message::page::state::lock::LockRequest;
-use crate::actor::message::page::state::unlock::UnlockRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
 use crate::actor::{PageId, SessionId};
@@ -68,16 +72,10 @@ impl Session {
 
     fn handle_json(&mut self, json: Json) -> Result<(), String> {
         match json.get("type").and_then(|v| v.as_str()) {
-            // state
-            Some("lock") => self.server_address.do_send(LockRequest::parse(&self.session_id, &self.page_id, json)?),
-            Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
-
+            // project
             // node
             Some("create-node") => {
                 self.server_address.do_send(CreateNodeRequest::parse(&self.session_id, &self.page_id, json)?)
-            }
-            Some("move-node") => {
-                self.server_address.do_send(MoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("delete-node") => {
                 self.server_address.do_send(DeleteNodeRequest::parse(&self.session_id, &self.page_id, json)?)
@@ -111,8 +109,8 @@ impl Session {
             }
 
             // edge
-            Some("add-edge") => {
-                self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            Some("create-edge") => {
+                self.server_address.do_send(CreateEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
             Some("update-edge") => {
                 self.server_address.do_send(UpdateEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
@@ -120,6 +118,30 @@ impl Session {
             Some("delete-edge") => {
                 self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
+
+            // page
+            // node
+            Some("add-node") => {
+                self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("remove-node") => {
+                self.server_address.do_send(RemoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("move-node") => {
+                self.server_address.do_send(MoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+
+            // edge
+            Some("add-edge") => {
+                self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+            Some("remove-edge") => {
+                self.server_address.do_send(RemoveEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+            }
+
+            // state
+            Some("lock") => self.server_address.do_send(LockRequest::parse(&self.session_id, &self.page_id, json)?),
+            Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
 
             Some(s) => Err(format!("unexpected type: {s}"))?,
             None => Err(String::from("type missing"))?,

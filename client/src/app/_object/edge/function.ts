@@ -1,12 +1,18 @@
 import { Edge } from 'reactflow'
 
-import { ArrowType, EdgeData } from '@/app/_object/edge/type'
+import { ArrowType, PageEdgeData, ProjectEdgeData } from '@/app/_object/edge/type'
 
 export function allocateEdgeId(): string {
   return crypto.randomUUID()
 }
 
-export function createEdge(id: string, src: string, dst: string, arrowType: ArrowType, label: string): Edge<EdgeData> {
+export function createEdge(
+  id: string,
+  src: string,
+  dst: string,
+  arrowType: ArrowType,
+  label: string,
+): Edge<ProjectEdgeData> {
   return {
     id,
     source: src,
@@ -18,13 +24,26 @@ export function createEdge(id: string, src: string, dst: string, arrowType: Arro
   }
 }
 
+export function extractPageEdge(edge: Edge<ProjectEdgeData>): Edge<PageEdgeData> {
+  return {
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
+    markerEnd: edge.markerEnd,
+    data: {},
+  }
+}
+
 interface Change {
   src?: string
   dst?: string
   arrowType?: ArrowType
   label?: string
 }
-export function updateEdge(edge: Edge<EdgeData>, change: Change): Edge<EdgeData> {
+
+export function updateEdge(edge: Edge<ProjectEdgeData>, change: Change): Edge<ProjectEdgeData> {
   if (change.src) edge.source = change.src
   if (change.dst) edge.target = change.dst
   if (change.arrowType) {

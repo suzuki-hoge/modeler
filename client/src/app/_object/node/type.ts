@@ -1,9 +1,11 @@
-export interface NodeData {
+export interface ProjectNodeData {
   iconId: string
   name: string
   properties: string[]
   methods: string[]
 }
+
+export type PageNodeData = Record<string, never>
 
 export interface NodeHeader {
   id: string

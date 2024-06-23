@@ -1,25 +1,34 @@
 import { Dispatch, SetStateAction, useCallback, useState } from 'react'
-import { applyNodeChanges, Node, NodeDragHandler, OnNodesChange } from 'reactflow'
+import { Node, NodeDragHandler, OnNodesChange } from 'reactflow'
 
 import { DragSource } from '@/app/_hook/edge'
-import { allocateEdgeId, createEdge } from '@/app/_object/edge/function'
-import { NodeData, NodeHeader } from '@/app/_object/node/type'
-import { Socket } from '@/app/_socket/socket'
-import { Store } from '@/app/_store/store'
+import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
+import { extractPageNode } from '@/app/_object/node/function'
+import { NodeHeader, ProjectNodeData } from '@/app/_object/node/type'
+import { PageSocket } from '@/app/_socket/page-socket'
+import { ProjectSocket } from '@/app/_socket/project-socket'
+import { PageStore } from '@/app/_store/page-store'
+import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnNodesChange(store: Store, socket: Socket): OnNodesChange {
+export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesChange {
   return (changes) => {
+    console.log(changes)
     for (const change of changes) {
       if (change.type === 'remove') {
-        socket.deleteNode(change.id)
+        socket.removeNode(change.id)
+        store.removeNode(change.id)
+      } else if (change.type === 'position' && change.dragging && change.position) {
+        socket.moveNode(change.id, change.position.x, change.position.y)
+        store.moveNode(change.id, change.position.x, change.position.y)
       }
     }
-
-    store.updateNodes((nodes) => applyNodeChanges(changes, nodes))
   }
 }
 
-export function useOnNodeDrag(socket: Socket): { onNodeDragStart: NodeDragHandler; onNodeDragStop: NodeDragHandler } {
+export function useOnNodeDrag(socket: PageSocket): {
+  onNodeDragStart: NodeDragHandler
+  onNodeDragStop: NodeDragHandler
+} {
   const [startX, setStartX] = useState(0)
   const [startY, setStartY] = useState(0)
 
@@ -37,21 +46,26 @@ export function useOnNodeDrag(socket: Socket): { onNodeDragStart: NodeDragHandle
 }
 
 export function useOnPostNodeCreate(
-  store: Store,
-  socket: Socket,
+  projectStore: ProjectStore,
+  projectSocket: ProjectSocket,
+  pageStore: PageStore,
+  pageSocket: PageSocket,
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
-): (node: Node<NodeData>) => void {
+): (node: Node<ProjectNodeData>) => void {
   return useCallback(
     (node) => {
-      // todo: project node + page node
-      store.updateNodes((nodes) => [...nodes, node])
-      socket.createNode(node)
+      projectStore.createNode(node)
+      projectSocket.createNode(node)
+      pageStore.addNode(extractPageNode(node))
+      pageSocket.addNode(extractPageNode(node))
 
       if (source) {
         const edge = createEdge(allocateEdgeId(), source.id, node.id, 'simple', '1')
-        store.updateEdges((edges) => [...edges, edge])
-        socket.addEdge(edge)
+        projectStore.createEdge(edge)
+        projectSocket.createEdge(edge)
+        pageStore.addEdge(extractPageEdge(edge))
+        pageSocket.addEdge(extractPageEdge(edge))
       }
 
       setSource(null)
@@ -62,17 +76,27 @@ export function useOnPostNodeCreate(
 }
 
 export function useOnPostNodeSelect(
-  store: Store,
-  socket: Socket,
+  projectStore: ProjectStore,
+  projectSocket: ProjectSocket,
+  pageStore: PageStore,
+  pageSocket: PageSocket,
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
 ): (header: NodeHeader) => void {
   return useCallback(
     (header) => {
-      if (source && !store.isEdgeExists(source.id, header.id)) {
-        const edge = createEdge(allocateEdgeId(), source.id, header.id, 'simple', '1')
-        store.updateEdges((edges) => [...edges, edge])
-        socket.addEdge(edge)
+      if (source) {
+        const projectEdge = projectStore.findEdge(source.id, header.id)
+        if (projectEdge) {
+          pageStore.addEdge(extractPageEdge(projectEdge))
+          pageSocket.addEdge(extractPageEdge(projectEdge))
+        } else {
+          const edge = createEdge(allocateEdgeId(), source.id, header.id, 'simple', '1')
+          projectStore.createEdge(edge)
+          projectSocket.createEdge(edge)
+          pageStore.addEdge(extractPageEdge(edge))
+          pageSocket.addEdge(extractPageEdge(edge))
+        }
       }
 
       setSource(null)

@@ -10,14 +10,14 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct DeleteEdgeRequest {
+pub struct RemoveEdgeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
 }
 
-impl DeleteEdgeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<DeleteEdgeRequest, String> {
+impl RemoveEdgeRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<RemoveEdgeRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
@@ -26,32 +26,32 @@ impl DeleteEdgeRequest {
     }
 }
 
-impl Handler<DeleteEdgeRequest> for Server {
+impl Handler<RemoveEdgeRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: DeleteEdgeRequest, _: &mut Context<Self>) {
-        println!("accept delete-edge request");
+    fn handle(&mut self, request: RemoveEdgeRequest, _: &mut Context<Self>) {
+        println!("accept remove-edge request");
 
-        let response = DeleteEdgeResponse::new(request.object_id);
-        self.send_to_project(&request.page_id, response.into(), &request.session_id);
+        let response = RemoveEdgeResponse::new(request.object_id);
+        self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DeleteEdgeResponse {
+pub struct RemoveEdgeResponse {
     r#type: String,
     object_id: ObjectId,
 }
 
-impl DeleteEdgeResponse {
+impl RemoveEdgeResponse {
     fn new(object_id: ObjectId) -> Self {
-        Self { r#type: String::from("delete-edge"), object_id }
+        Self { r#type: String::from("remove-edge"), object_id }
     }
 }
 
-impl From<DeleteEdgeResponse> for Response {
-    fn from(value: DeleteEdgeResponse) -> Self {
+impl From<RemoveEdgeResponse> for Response {
+    fn from(value: RemoveEdgeResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

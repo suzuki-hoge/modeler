@@ -3,8 +3,8 @@ import { Node, XYPosition } from 'reactflow'
 
 import { IconText } from '@/app/_component/icon/icon-text/IconText'
 import { CreatableSelector } from '@/app/_component/selector/CreatableSelector'
-import { allocateNodeId, createNode, getIcon } from '@/app/_object/node/function'
-import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
+import { allocateNodeId, createProjectNode, getIcon } from '@/app/_object/node/function'
+import { ProjectNodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 interface Props {
   x: string
@@ -14,7 +14,7 @@ interface Props {
   icons: NodeIcon[]
   newNodePos: XYPosition
   onSelect: (choice: NodeHeader) => void
-  onPostNodeCreate: (node: Node<NodeData>) => void
+  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
   onClose?: () => void
 }
 
@@ -38,7 +38,7 @@ export const ClassCreatableSelector = (props: Props) => {
       onSelect={props.onSelect}
       onCreate={(value) => {
         const { x, y } = props.newNodePos
-        const node = createNode(allocateNodeId(), x, y, value)
+        const node = createProjectNode(allocateNodeId(), x, y, value)
         props.onPostNodeCreate(node)
       }}
       onClose={props.onClose}

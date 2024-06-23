@@ -10,7 +10,7 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct UpdateEdgeRequest {
+pub struct CreateEdgeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
@@ -20,8 +20,8 @@ pub struct UpdateEdgeRequest {
     pub label: String,
 }
 
-impl UpdateEdgeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateEdgeRequest, String> {
+impl CreateEdgeRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<CreateEdgeRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
@@ -34,21 +34,21 @@ impl UpdateEdgeRequest {
     }
 }
 
-impl Handler<UpdateEdgeRequest> for Server {
+impl Handler<CreateEdgeRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: UpdateEdgeRequest, _: &mut Context<Self>) {
-        println!("accept update-edge request");
+    fn handle(&mut self, request: CreateEdgeRequest, _: &mut Context<Self>) {
+        println!("accept create-edge request");
 
         let response =
-            UpdateEdgeResponse::new(request.object_id, request.src, request.dst, request.arrow_type, request.label);
+            CreateEdgeResponse::new(request.object_id, request.src, request.dst, request.arrow_type, request.label);
         self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateEdgeResponse {
+pub struct CreateEdgeResponse {
     r#type: String,
     object_id: ObjectId,
     src: ObjectId,
@@ -57,14 +57,14 @@ pub struct UpdateEdgeResponse {
     label: String,
 }
 
-impl UpdateEdgeResponse {
+impl CreateEdgeResponse {
     fn new(object_id: ObjectId, src: ObjectId, dst: ObjectId, arrow_type: String, label: String) -> Self {
-        Self { r#type: String::from("update-edge"), object_id, src, dst, arrow_type, label }
+        Self { r#type: String::from("create-edge"), object_id, src, dst, arrow_type, label }
     }
 }
 
-impl From<UpdateEdgeResponse> for Response {
-    fn from(value: UpdateEdgeResponse) -> Self {
+impl From<CreateEdgeResponse> for Response {
+    fn from(value: CreateEdgeResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

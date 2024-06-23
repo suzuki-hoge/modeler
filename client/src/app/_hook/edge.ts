@@ -1,22 +1,21 @@
 import { Set } from 'immutable'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { applyEdgeChanges, OnConnectEnd, OnConnectStart, OnEdgesChange } from 'reactflow'
+import { OnConnectEnd, OnConnectStart, OnEdgesChange } from 'reactflow'
 
 import { SelectorState } from '@/app/_hook/pane'
 import { allocateEdgeId, createEdge } from '@/app/_object/edge/function'
 import { ArrowType } from '@/app/_object/edge/type'
-import { Socket } from '@/app/_socket/socket'
-import { Store } from '@/app/_store/store'
+import { ProjectSocket } from '@/app/_socket/project-socket'
+import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnEdgesChange(store: Store, socket: Socket): OnEdgesChange {
+export function useOnEdgesChange(store: ProjectStore, socket: ProjectSocket): OnEdgesChange {
   return (changes) => {
     for (const change of changes) {
       if (change.type === 'remove') {
         socket.deleteEdge(change.id)
+        store.deleteEdge(change.id)
       }
     }
-
-    store.updateEdges((edges) => applyEdgeChanges(changes, edges))
   }
 }
 
@@ -32,7 +31,7 @@ interface OnConnect {
   setSource: Dispatch<SetStateAction<DragSource | null>>
 }
 
-export function useOnConnect(store: Store, socket: Socket, selectorState: SelectorState): OnConnect {
+export function useOnConnect(store: ProjectStore, socket: ProjectSocket, selectorState: SelectorState): OnConnect {
   const [source, setSource] = useState<DragSource | null>(null)
 
   const onConnectStart: OnConnectStart = (_, p) => {
@@ -58,8 +57,8 @@ export function useOnConnect(store: Store, socket: Socket, selectorState: Select
       sourceNodeIds.forEach((sourceNodeId) => {
         const edge = createEdge(allocateEdgeId(), sourceNodeId, targetNodeIds[0], source!.arrowType, '1')
 
-        socket.addEdge(edge)
-        store.updateEdges((edges) => [...edges, edge])
+        socket.createEdge(edge)
+        store.createEdge(edge)
       })
     } else {
       // do nothing

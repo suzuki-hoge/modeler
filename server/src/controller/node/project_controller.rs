@@ -23,6 +23,12 @@ pub async fn get_icons(path: Path<ProjectId>) -> impl Responder {
 
     let icons = vec![
         NodeIcon {
+            id: String::from("default"),
+            preview: String::from("C"),
+            desc: String::from("Class"),
+            color: String::from("lightgray"),
+        },
+        NodeIcon {
             id: String::from("fb951145-bea1-4934-b44f-bdaa63c79763"),
             preview: String::from("C"),
             desc: String::from("Controller"),

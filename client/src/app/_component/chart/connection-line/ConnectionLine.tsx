@@ -1,10 +1,10 @@
 import { BaseEdge, ConnectionLineComponentProps, getStraightPath } from 'reactflow'
 import { internalsSymbol, useNodes } from 'reactflow'
 
-import { NodeData } from '@/app/_object/node/type'
+import { ProjectNodeData } from '@/app/_object/node/type'
 
 export const ConnectionLine = ({ fromNode, toX, toY }: ConnectionLineComponentProps) => {
-  const handles = useNodes<NodeData>()
+  const handles = useNodes<ProjectNodeData>()
     .filter((node) => node.selected || fromNode?.id === node.id)
     .map((node) => ({
       node,

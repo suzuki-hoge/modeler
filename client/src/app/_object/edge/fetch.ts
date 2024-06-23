@@ -1,8 +1,8 @@
 import { Edge } from 'reactflow'
 
-import { EdgeData } from '@/app/_object/edge/type'
+import { ProjectEdgeData } from '@/app/_object/edge/type'
 
-export function fetchInitialEdges(): Edge<EdgeData>[] {
+export function fetchInitialEdges(): Edge<ProjectEdgeData>[] {
   return [
     {
       id: '92870696-c091-41c8-b5e7-28a1beaebc85',

@@ -3,13 +3,13 @@ import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Edge } from 'reactflow'
 import z from 'zod'
 
-import { EdgeData } from '@/app/_object/edge/type'
+import { ProjectEdgeData } from '@/app/_object/edge/type'
 
 // types
 
-const type = 'update-edge'
+const type = 'create-edge'
 
-const updateEdgeRequest = z.object({
+const createEdgeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
   src: z.string(),
@@ -17,20 +17,20 @@ const updateEdgeRequest = z.object({
   arrowType: z.union([z.literal('simple'), z.literal('generalization')]),
   label: z.string(),
 })
-type UpdateEdgeRequest = z.infer<typeof updateEdgeRequest>
+type CreateEdgeRequest = z.infer<typeof createEdgeRequest>
 
-const updateEdgeResponse = updateEdgeRequest
-type UpdateEdgeResponse = z.infer<typeof updateEdgeResponse>
+const createEdgeResponse = createEdgeRequest
+type CreateEdgeResponse = z.infer<typeof createEdgeResponse>
 
-export type UpdateEdge = (edge: Edge<EdgeData>) => void
+export type CreateEdge = (edge: Edge<ProjectEdgeData>) => void
 
 // send
 
-export function createUpdateEdge(
-  send: (request: UpdateEdgeRequest) => void,
+export function createCreateEdge(
+  send: (request: CreateEdgeRequest) => void,
   socket: () => WebSocketLike | null,
-): UpdateEdge {
-  return (edge: Edge<EdgeData>) => {
+): CreateEdge {
+  return (edge: Edge<ProjectEdgeData>) => {
     if (socket()?.readyState === ReadyState.OPEN) {
       const request = {
         type,
@@ -50,14 +50,14 @@ export function createUpdateEdge(
 
 // handle
 
-export function handleUpdateEdge(response: unknown, handler: (response: UpdateEdgeResponse) => void) {
-  if (isUpdateEdgeResponse(response)) {
+export function handleCreateEdge(response: unknown, handler: (response: CreateEdgeResponse) => void) {
+  if (isCreateEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
     handler(response)
   }
 }
 
-function isUpdateEdgeResponse(value: unknown): value is UpdateEdgeResponse {
-  const json = updateEdgeResponse.safeParse(value)
+function isCreateEdgeResponse(value: unknown): value is CreateEdgeResponse {
+  const json = createEdgeResponse.safeParse(value)
   return json.success && json.data.type === type
 }

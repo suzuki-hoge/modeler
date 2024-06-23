@@ -12,7 +12,7 @@ import {
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
 import { Popup, usePopup } from '@/app/_component/selector/Popup'
-import { NodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
+import { ProjectNodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 import styles from './completable-input.module.scss'
 
@@ -28,7 +28,7 @@ interface Props {
   icons: NodeIcon[]
   readonly: boolean
   onTextChange: (inner: string) => void
-  onPostNodeCreate: (node: Node<NodeData>) => void
+  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
   onPostNodeSelect: (header: NodeHeader) => void
 }
 

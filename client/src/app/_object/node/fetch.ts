@@ -1,8 +1,8 @@
 import { Node } from 'reactflow'
 
-import { NodeData } from '@/app/_object/node/type'
+import { ProjectNodeData } from '@/app/_object/node/type'
 
-export function getInitialNodes(): Node<NodeData>[] {
+export function getInitialNodes(): Node<ProjectNodeData>[] {
   return [
     {
       id: 'controller',

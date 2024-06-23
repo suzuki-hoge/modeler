@@ -35,7 +35,7 @@ impl Handler<DeletePropertyRequest> for Server {
         println!("accept delete-property request");
 
         let response = DeletePropertyResponse::new(request.object_id, request.n);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 

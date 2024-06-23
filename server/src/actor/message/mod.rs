@@ -1,6 +1,6 @@
 pub mod connection;
-pub mod project;
 pub mod page;
+pub mod project;
 
 use std::collections::HashMap;
 

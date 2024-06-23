@@ -14,10 +14,6 @@ pub struct AddEdgeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
-    pub src: ObjectId,
-    pub dst: ObjectId,
-    pub arrow_type: String,
-    pub label: String,
 }
 
 impl AddEdgeRequest {
@@ -26,10 +22,6 @@ impl AddEdgeRequest {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "objectId")?,
-            src: parse_string(&json, "src")?,
-            dst: parse_string(&json, "dst")?,
-            arrow_type: parse_string(&json, "arrowType")?,
-            label: parse_string(&json, "label")?,
         })
     }
 }
@@ -40,8 +32,7 @@ impl Handler<AddEdgeRequest> for Server {
     fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
         println!("accept add-edge request");
 
-        let response =
-            AddEdgeResponse::new(request.object_id, request.src, request.dst, request.arrow_type, request.label);
+        let response = AddEdgeResponse::new(request.object_id);
         self.send_to_page(&request.page_id, response.into(), &request.session_id);
     }
 }
@@ -51,15 +42,11 @@ impl Handler<AddEdgeRequest> for Server {
 pub struct AddEdgeResponse {
     r#type: String,
     object_id: ObjectId,
-    src: ObjectId,
-    dst: ObjectId,
-    arrow_type: String,
-    label: String,
 }
 
 impl AddEdgeResponse {
-    fn new(object_id: ObjectId, src: ObjectId, dst: ObjectId, arrow_type: String, label: String) -> Self {
-        Self { r#type: String::from("add-edge"), object_id, src, dst, arrow_type, label }
+    fn new(object_id: ObjectId) -> Self {
+        Self { r#type: String::from("add-edge"), object_id }
     }
 }
 

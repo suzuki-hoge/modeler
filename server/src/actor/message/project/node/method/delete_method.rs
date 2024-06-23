@@ -35,7 +35,7 @@ impl Handler<DeleteMethodRequest> for Server {
         println!("accept delete-method request");
 
         let response = DeleteMethodResponse::new(request.object_id, request.n);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 

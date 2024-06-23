@@ -37,7 +37,7 @@ impl Handler<UpdatePropertyRequest> for Server {
         println!("accept update-property request");
 
         let response = UpdatePropertyResponse::new(request.object_id, request.property, request.n);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 
