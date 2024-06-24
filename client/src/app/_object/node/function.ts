@@ -1,6 +1,6 @@
 import { Node } from 'reactflow'
 
-import { NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
+import { NodeHeader, NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
 
 export function allocateNodeId(): string {
   return crypto.randomUUID()
@@ -21,6 +21,10 @@ export function createProjectNode(id: string, name: string): Node<ProjectNodeDat
 
 export function extractPageNode(node: Node<ProjectNodeData>): Node<PageNodeData> {
   return { id: node.id, position: node.position, data: {} }
+}
+
+export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
+  return { id: node.id, iconId: node.data.iconId, name: node.data.name }
 }
 
 export function insertProperty(data: ProjectNodeData, property: string, n: number): ProjectNodeData {

@@ -20,6 +20,8 @@ import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-s
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { useOnNodeDrag, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
+import { usePageEdges, useProjectEdges } from '@/app/_object/edge/fetch'
+import { useNodeIcons, usePageNodes, useProjectNodes } from '@/app/_object/node/fetch'
 import { createPageSocket, PageSocketContext } from '@/app/_socket/page-socket'
 import { createProjectSocket, handleProjectMessage, ProjectSocketContext } from '@/app/_socket/project-socket'
 import { pageSelector, usePageStore } from '@/app/_store/page-store'
@@ -54,6 +56,24 @@ const Inner = () => {
   // selector
   const onPostNodeCreate = useOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
   const onPostNodeSelect = useOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
+
+  // init
+  const [icons, isValidating1] = useNodeIcons('1')
+  const [projectNodes, isValidating2] = useProjectNodes('1')
+  const [projectEdges, isValidating3] = useProjectEdges('1')
+  const [pageNodes, isValidating4] = usePageNodes('1', '1')
+  const [pageEdges, isValidating5] = usePageEdges('1', '1')
+  useEffect(
+    () => {
+      if (!isValidating1) projectStore.putNodeIcons(icons!)
+      if (!isValidating2) projectStore.putNodes(projectNodes!)
+      if (!isValidating3) projectStore.putEdges(projectEdges!)
+      if (!isValidating4) pageStore.putNodes(pageNodes!)
+      if (!isValidating5) pageStore.putEdges(pageEdges!)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isValidating1, isValidating2, isValidating3, isValidating4, isValidating5],
+  )
 
   return (
     <div id='page' style={{ width: '100vw', height: '100vh' }}>

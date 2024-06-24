@@ -5,7 +5,7 @@ use crate::data::ObjectId;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectEdge {
-    pub object_id: ObjectId,
+    pub id: ObjectId,
     pub r#type: String,
     pub source: String,
     pub source_handle: String,
@@ -18,7 +18,7 @@ pub struct ProjectEdge {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PageEdge {
-    pub object_id: ObjectId,
+    pub id: ObjectId,
 }
 
 #[derive(Serialize)]

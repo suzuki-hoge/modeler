@@ -3,7 +3,7 @@ import { createWithEqualityFn } from 'zustand/traditional'
 
 import { fetchInitialEdges } from '@/app/_object/edge/fetch'
 import { ProjectEdgeData } from '@/app/_object/edge/type'
-import { getInitialNodes } from '@/app/_object/node/fetch'
+import { extractNodeHeader } from '@/app/_object/node/function'
 import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
 
 // node
@@ -18,6 +18,12 @@ type FindEdge = (srcNodeId: string, dstNodeId: string) => Edge<ProjectEdgeData> 
 type CreateEdge = (edge: Edge<ProjectEdgeData>) => void
 type UpdateEdge = (id: string, updater: (edge: Edge<ProjectEdgeData>) => Edge<ProjectEdgeData>) => void
 type DeleteEdge = (is: string) => void
+
+// init
+type PutNodes = (nodes: Node<ProjectNodeData>[]) => void
+type PutNodeHeaders = (nodeHeaders: NodeHeader[]) => void
+type PutNodeIcons = (nodeIcons: NodeIcon[]) => void
+type PutEdges = (edges: Edge<ProjectEdgeData>[]) => void
 
 export type ProjectStore = {
   // node
@@ -36,6 +42,12 @@ export type ProjectStore = {
   createEdge: CreateEdge
   deleteEdge: DeleteEdge
   updateEdge: UpdateEdge
+
+  // init
+  putNodes: PutNodes
+  putNodeHeaders: PutNodeHeaders
+  putNodeIcons: PutNodeIcons
+  putEdges: PutEdges
 }
 
 export const projectSelector = (store: ProjectStore) => ({
@@ -55,34 +67,36 @@ export const projectSelector = (store: ProjectStore) => ({
   createEdge: store.createEdge,
   deleteEdge: store.deleteEdge,
   updateEdge: store.updateEdge,
+
+  // init
+  putNodes: store.putNodes,
+  putNodeHeaders: store.putNodeHeaders,
+  putNodeIcons: store.putNodeIcons,
+  putEdges: store.putEdges,
 })
 
 export const useProjectStore = createWithEqualityFn<ProjectStore>((set, get) => ({
   // node
-  nodes: getInitialNodes(),
-  nodeHeaders: [
-    { id: 'controller', iconId: 'controller', name: 'ItemController' },
-    { id: 'usecase', iconId: 'usecase', name: 'ItemUseCase' },
-    { id: 'store', iconId: 'store', name: 'ItemStore' },
-    { id: 'item', iconId: 'data', name: 'Item' },
-  ],
-  nodeIcons: [
-    { id: 'default', preview: 'C', desc: 'Class', color: 'lightgray' },
-    { id: 'controller', preview: 'C', desc: 'Controller', color: 'lightgray' },
-    { id: 'usecase', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
-    { id: 'store', preview: 'S', desc: 'Store', color: 'lightgreen' },
-    { id: 'data', preview: 'D', desc: 'Data', color: 'lightpink' },
-  ],
+  nodes: [],
+  nodeHeaders: [],
+  nodeIcons: [],
   getNode: (id) => {
     return get().nodes.find((node) => node.id === id)!
   },
   createNode: (node) => {
-    set({ nodes: [...get().nodes, node] })
+    set({
+      nodes: [...get().nodes, node],
+      nodeHeaders: [...get().nodeHeaders, extractNodeHeader(node)],
+    })
   },
   deleteNode: (id) => {
-    set({ nodes: get().nodes.filter((node) => node.id !== id) })
+    set({
+      nodes: get().nodes.filter((node) => node.id !== id),
+      nodeHeaders: get().nodeHeaders.filter((header) => header.id !== id),
+    })
   },
   updateNodeData: (id, updater) => {
+    // fixme: callback to value
     set({
       nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ data: updater(node.data) } } : node)),
     })
@@ -105,4 +119,10 @@ export const useProjectStore = createWithEqualityFn<ProjectStore>((set, get) => 
   updateEdge: (id, updater) => {
     set({ edges: get().edges.map((edge) => (edge.id === id ? updater(edge) : edge)) })
   },
+
+  // init
+  putNodes: (nodes) => set({ nodes }),
+  putNodeHeaders: (nodeHeaders) => set({ nodeHeaders }),
+  putNodeIcons: (nodeIcons) => set({ nodeIcons }),
+  putEdges: (edges) => set({ edges }),
 }))

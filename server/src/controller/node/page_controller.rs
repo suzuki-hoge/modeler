@@ -12,11 +12,11 @@ pub async fn get_nodes(path: Path<(ProjectId, PageId)>) -> impl Responder {
     if &_page_id == "1" {
         let nodes = vec![
             PageNode {
-                object_id: String::from("fd76cca4-9f6d-4c2d-b1e7-8db4953cb0d8"),
+                id: String::from("fd76cca4-9f6d-4c2d-b1e7-8db4953cb0d8"),
                 position: Position { x: 0.0, y: 0.0 },
             },
             PageNode {
-                object_id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
+                id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
                 position: Position { x: 0.0, y: 80.0 },
             },
         ];
@@ -25,11 +25,11 @@ pub async fn get_nodes(path: Path<(ProjectId, PageId)>) -> impl Responder {
     } else {
         let nodes = vec![
             PageNode {
-                object_id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
+                id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
                 position: Position { x: 0.0, y: 0.0 },
             },
             PageNode {
-                object_id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797"),
+                id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797"),
                 position: Position { x: 50.0, y: 80.0 },
             },
         ];
@@ -42,11 +42,11 @@ pub async fn get_edges(path: Path<(ProjectId, PageId)>) -> impl Responder {
     let (_project_id, _page_id) = path.into_inner();
 
     if &_page_id == "1" {
-        let edges = vec![PageEdge { object_id: String::from("1b9db214-d3b7-4433-8f2d-266d1dd50504") }];
+        let edges = vec![PageEdge { id: String::from("1b9db214-d3b7-4433-8f2d-266d1dd50504") }];
 
         to_json_string(&edges).unwrap()
     } else {
-        let edges = vec![PageEdge { object_id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797") }];
+        let edges = vec![PageEdge { id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797") }];
 
         to_json_string(&edges).unwrap()
     }

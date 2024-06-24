@@ -20,6 +20,10 @@ type IsLocked = (id: string) => boolean
 type Lock = (id: string) => void
 type Unlock = (id: string) => void
 
+// init
+type PutNodes = (nodes: Node<PageNodeData>[]) => void
+type PutEdges = (edges: Edge<PageEdgeData>[]) => void
+
 export type PageStore = {
   // node
   nodes: Node<PageNodeData>[]
@@ -37,6 +41,10 @@ export type PageStore = {
   isLocked: IsLocked
   lock: Lock
   unlock: Unlock
+
+  // init
+  putNodes: PutNodes
+  putEdges: PutEdges
 }
 
 export const pageSelector = (store: PageStore) => ({
@@ -56,6 +64,10 @@ export const pageSelector = (store: PageStore) => ({
   isLocked: store.isLocked,
   lock: store.lock,
   unlock: store.unlock,
+
+  // init
+  putNodes: store.putNodes,
+  putEdges: store.putEdges,
 })
 
 export const usePageStore = createWithEqualityFn<PageStore>((set, get) => ({
@@ -91,4 +103,8 @@ export const usePageStore = createWithEqualityFn<PageStore>((set, get) => ({
   unlock: (id) => {
     set({ lockIds: get().lockIds.delete(id) })
   },
+
+  // init
+  putNodes: (nodes) => set({ nodes }),
+  putEdges: (edges) => set({ edges }),
 }))

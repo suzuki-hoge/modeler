@@ -62,7 +62,7 @@ pub async fn get_nodes(path: Path<ProjectId>) -> impl Responder {
 
     let nodes = vec![
         ProjectNode {
-            object_id: String::from("fd76cca4-9f6d-4c2d-b1e7-8db4953cb0d8"),
+            id: String::from("fd76cca4-9f6d-4c2d-b1e7-8db4953cb0d8"),
             r#type: String::from("class"),
             data: NodeData {
                 icon_id: String::from("fb951145-bea1-4934-b44f-bdaa63c79763"),
@@ -72,7 +72,7 @@ pub async fn get_nodes(path: Path<ProjectId>) -> impl Responder {
             },
         },
         ProjectNode {
-            object_id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
+            id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
             r#type: String::from("class"),
             data: NodeData {
                 icon_id: String::from("50c9f120-6d07-4bb2-a935-bc674e18d137"),
@@ -82,7 +82,7 @@ pub async fn get_nodes(path: Path<ProjectId>) -> impl Responder {
             },
         },
         ProjectNode {
-            object_id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797"),
+            id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797"),
             r#type: String::from("class"),
             data: NodeData {
                 icon_id: String::from("5cc0cdfc-fd4f-405c-b383-1d54f3f1c4b7"),
@@ -101,7 +101,7 @@ pub async fn get_edges(path: Path<ProjectId>) -> impl Responder {
 
     let edges = vec![
         ProjectEdge {
-            object_id: String::from("1b9db214-d3b7-4433-8f2d-266d1dd50504"),
+            id: String::from("1b9db214-d3b7-4433-8f2d-266d1dd50504"),
             r#type: String::from("class"),
             source: String::from("fd76cca4-9f6d-4c2d-b1e7-8db4953cb0d8"),
             source_handle: String::from("center"),
@@ -111,7 +111,7 @@ pub async fn get_edges(path: Path<ProjectId>) -> impl Responder {
             data: EdgeData { arrow_type: String::from("simple"), label: String::from("1") },
         },
         ProjectEdge {
-            object_id: String::from("f0d57124-7843-452e-9782-ae81ba4c3ea7"),
+            id: String::from("f0d57124-7843-452e-9782-ae81ba4c3ea7"),
             r#type: String::from("class"),
             source: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
             source_handle: String::from("center"),

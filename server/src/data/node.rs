@@ -4,7 +4,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectNode {
-    pub object_id: ObjectId,
+    pub id: ObjectId,
     pub r#type: String,
     pub data: NodeData,
 }
@@ -12,7 +12,7 @@ pub struct ProjectNode {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PageNode {
-    pub object_id: ObjectId,
+    pub id: ObjectId,
     pub position: Position,
 }
 
