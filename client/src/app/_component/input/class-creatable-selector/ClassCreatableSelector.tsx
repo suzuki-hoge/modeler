@@ -13,8 +13,8 @@ interface Props {
   defaultId?: string
   icons: NodeIcon[]
   newNodePos: XYPosition
-  onSelect: (choice: NodeHeader) => void
-  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
+  onSelect: (choice: NodeHeader, x: number, y: number) => void
+  onPostNodeCreate: (projectNode: Node<ProjectNodeData>, x: number, y: number) => void
   onClose?: () => void
 }
 
@@ -35,11 +35,10 @@ export const ClassCreatableSelector = (props: Props) => {
       searchKeys={['name']}
       uniqueKey={'id'}
       sortKey={'name'}
-      onSelect={props.onSelect}
+      onSelect={(header) => props.onSelect(header, props.newNodePos.x, props.newNodePos.y)}
       onCreate={(value) => {
-        const { x, y } = props.newNodePos
-        const node = createProjectNode(allocateNodeId(), x, y, value)
-        props.onPostNodeCreate(node)
+        const node = createProjectNode(allocateNodeId(), value)
+        props.onPostNodeCreate(node, props.newNodePos.x, props.newNodePos.y)
       }}
       onClose={props.onClose}
     />

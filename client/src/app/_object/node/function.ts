@@ -19,12 +19,16 @@ export function createProjectNode(id: string, name: string): Node<ProjectNodeDat
   }
 }
 
-export function extractPageNode(node: Node<ProjectNodeData>): Node<PageNodeData> {
-  return { id: node.id, position: node.position, data: {} }
+export function extractPageNode(node: Node<ProjectNodeData>, x: number, y: number): Node<PageNodeData> {
+  return { id: node.id, type: 'class', position: { x, y }, data: {} }
 }
 
 export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
   return { id: node.id, iconId: node.data.iconId, name: node.data.name }
+}
+
+export function expandToPageNode(header: NodeHeader, x: number, y: number): Node<PageNodeData> {
+  return { id: header.id, type: 'class', position: { x, y }, data: {} }
 }
 
 export function insertProperty(data: ProjectNodeData, property: string, n: number): ProjectNodeData {

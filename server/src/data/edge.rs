@@ -19,6 +19,7 @@ pub struct ProjectEdge {
 #[serde(rename_all = "camelCase")]
 pub struct PageEdge {
     pub id: ObjectId,
+    pub r#type: String,
 }
 
 #[derive(Serialize)]

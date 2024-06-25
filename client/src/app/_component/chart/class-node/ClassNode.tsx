@@ -27,7 +27,6 @@ import styles from './class-node.module.scss'
 
 interface Props {
   id: string
-  data: ProjectNodeData
   selected: boolean
 }
 
@@ -37,20 +36,21 @@ export const ClassNode = (props: Props) => {
   const projectSocket = useContext(ProjectSocketContext)!
   const pageSocket = useContext(PageSocketContext)!
 
+  const node = projectStore.getNode(props.id)
+
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
 
-  const isSelected = props.selected
   useEffect(
     () => {
-      if (isSelected) {
+      if (props.selected) {
         pageSocket.lock(props.id)
       } else {
         pageSocket.unlock(props.id)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isSelected],
+    [props.selected],
   )
   const isLocked = pageStore.isLocked(props.id)
 
@@ -72,30 +72,30 @@ export const ClassNode = (props: Props) => {
   )
   const onInsertProperties = useMemo(
     () =>
-      props.data.properties.map((_, n) => () => {
+      node.data.properties.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', n))
         projectSocket.insertProperty(props.id, '', n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data.properties],
+    [node.data.properties],
   )
   const onUpdateProperties = useMemo(
     () =>
-      props.data.properties.map((_, n) => (inner: string) => {
+      node.data.properties.map((_, n) => (inner: string) => {
         projectStore.updateNodeData(props.id, (data) => updateProperty(data, inner, n))
         projectSocket.updateProperty(props.id, inner, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data.properties],
+    [node.data.properties],
   )
   const onDeleteProperties = useMemo(
     () =>
-      props.data.properties.map((_, n) => () => {
+      node.data.properties.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => deleteProperty(data, n))
         projectSocket.deleteProperty(props.id, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data.properties],
+    [node.data.properties],
   )
   const onInsertFirstProperty = useCallback(
     () => {
@@ -107,30 +107,30 @@ export const ClassNode = (props: Props) => {
   )
   const onInsertMethods = useMemo(
     () =>
-      props.data.methods.map((_, n) => () => {
+      node.data.methods.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', n))
         projectSocket.insertMethod(props.id, '', n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data.methods],
+    [node.data.methods],
   )
   const onUpdateMethods = useMemo(
     () =>
-      props.data.methods.map((_, n) => (inner: string) => {
+      node.data.methods.map((_, n) => (inner: string) => {
         projectStore.updateNodeData(props.id, (data) => updateMethod(data, inner, n))
         projectSocket.updateMethod(props.id, inner, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data.methods],
+    [node.data.methods],
   )
   const onDeleteMethods = useMemo(
     () =>
-      props.data.methods.map((_, n) => () => {
+      node.data.methods.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => deleteMethod(data, n))
         projectSocket.deleteMethod(props.id, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.data.methods],
+    [node.data.methods],
   )
   const onInsertFirstMethod = useCallback(
     () => {
@@ -160,8 +160,9 @@ export const ClassNode = (props: Props) => {
   return (
     <>
       <ClassNodeInner
-        {...props}
-        isSelected={isSelected}
+        id={props.id}
+        data={node.data}
+        isSelected={props.selected}
         isLocked={isLocked}
         headers={headers}
         icons={icons}

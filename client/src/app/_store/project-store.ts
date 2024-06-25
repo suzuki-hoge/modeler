@@ -21,7 +21,6 @@ type DeleteEdge = (is: string) => void
 
 // init
 type PutNodes = (nodes: Node<ProjectNodeData>[]) => void
-type PutNodeHeaders = (nodeHeaders: NodeHeader[]) => void
 type PutNodeIcons = (nodeIcons: NodeIcon[]) => void
 type PutEdges = (edges: Edge<ProjectEdgeData>[]) => void
 
@@ -45,7 +44,6 @@ export type ProjectStore = {
 
   // init
   putNodes: PutNodes
-  putNodeHeaders: PutNodeHeaders
   putNodeIcons: PutNodeIcons
   putEdges: PutEdges
 }
@@ -70,7 +68,6 @@ export const projectSelector = (store: ProjectStore) => ({
 
   // init
   putNodes: store.putNodes,
-  putNodeHeaders: store.putNodeHeaders,
   putNodeIcons: store.putNodeIcons,
   putEdges: store.putEdges,
 })
@@ -80,49 +77,35 @@ export const useProjectStore = createWithEqualityFn<ProjectStore>((set, get) => 
   nodes: [],
   nodeHeaders: [],
   nodeIcons: [],
-  getNode: (id) => {
-    return get().nodes.find((node) => node.id === id)!
-  },
-  createNode: (node) => {
+  getNode: (id) => get().nodes.find((node) => node.id === id)!,
+  createNode: (node) =>
     set({
       nodes: [...get().nodes, node],
       nodeHeaders: [...get().nodeHeaders, extractNodeHeader(node)],
-    })
-  },
-  deleteNode: (id) => {
+    }),
+  deleteNode: (id) =>
     set({
       nodes: get().nodes.filter((node) => node.id !== id),
       nodeHeaders: get().nodeHeaders.filter((header) => header.id !== id),
-    })
-  },
-  updateNodeData: (id, updater) => {
-    // fixme: callback to value
+    }),
+  updateNodeData: (id, updater) =>
     set({
       nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ data: updater(node.data) } } : node)),
-    })
-  },
-
+    }),
   // edge
   edges: fetchInitialEdges(),
-  getEdge: (id) => {
-    return get().edges.find((edge) => edge.id === id)!
-  },
-  findEdge: (srcNodeId, dstNodeId) => {
-    return get().edges.find((edge) => edge.source === srcNodeId && edge.target === dstNodeId)
-  },
-  createEdge: (edge) => {
-    set({ edges: [...get().edges, edge] })
-  },
-  deleteEdge: (id) => {
-    set({ edges: get().edges.filter((edge) => edge.id !== id) })
-  },
-  updateEdge: (id, updater) => {
-    set({ edges: get().edges.map((edge) => (edge.id === id ? updater(edge) : edge)) })
-  },
-
+  getEdge: (id) => get().edges.find((edge) => edge.id === id)!,
+  findEdge: (srcNodeId, dstNodeId) =>
+    get().edges.find((edge) => edge.source === srcNodeId && edge.target === dstNodeId),
+  createEdge: (edge) => set({ edges: [...get().edges, edge] }),
+  deleteEdge: (id) => set({ edges: get().edges.filter((edge) => edge.id !== id) }),
+  updateEdge: (id, updater) => set({ edges: get().edges.map((edge) => (edge.id === id ? updater(edge) : edge)) }),
   // init
-  putNodes: (nodes) => set({ nodes }),
-  putNodeHeaders: (nodeHeaders) => set({ nodeHeaders }),
+  putNodes: (nodes) =>
+    set({
+      nodes,
+      nodeHeaders: nodes.map(extractNodeHeader),
+    }),
   putNodeIcons: (nodeIcons) => set({ nodeIcons }),
   putEdges: (edges) => set({ edges }),
 }))

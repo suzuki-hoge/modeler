@@ -10,6 +10,7 @@ import { LockIds } from '@/app/_object/state/type'
 type AddNode = (node: Node<PageNodeData>) => void
 type RemoveNode = (id: string) => void
 type MoveNode = (id: string, x: number, y: number) => void
+type SelectNode = (id: string, selected: boolean) => void
 
 // edge
 type AddEdge = (edge: Edge<PageEdgeData>) => void
@@ -30,6 +31,7 @@ export type PageStore = {
   addNode: AddNode
   removeNode: RemoveNode
   moveNode: MoveNode
+  selectNode: SelectNode
 
   // edge
   edges: Edge<PageEdgeData>[]
@@ -53,6 +55,7 @@ export const pageSelector = (store: PageStore) => ({
   addNode: store.addNode,
   removeNode: store.removeNode,
   moveNode: store.moveNode,
+  selectNode: store.selectNode,
 
   // edge
   edges: store.edges,
@@ -73,37 +76,26 @@ export const pageSelector = (store: PageStore) => ({
 export const usePageStore = createWithEqualityFn<PageStore>((set, get) => ({
   // node
   nodes: [],
-  addNode: (node) => {
-    set({ nodes: [...get().nodes, node] })
-  },
-  removeNode: (id) => {
-    set({ nodes: get().nodes.filter((node) => node.id !== id) })
-  },
-  moveNode: (id, x, y) => {
+  addNode: (node) => set({ nodes: [...get().nodes, node] }),
+  removeNode: (id) => set({ nodes: get().nodes.filter((node) => node.id !== id) }),
+  moveNode: (id, x, y) =>
     set({
       nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ position: { x, y } } } : node)),
-    })
-  },
+    }),
+  selectNode: (id, selected) =>
+    set({
+      nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ selected } } : node)),
+    }),
 
   // edge
   edges: [],
-  addEdge: (edge) => {
-    set({ edges: [...get().edges, edge] })
-  },
-  removeEdge: (id) => {
-    set({ edges: get().edges.filter((edge) => edge.id !== id) })
-  },
-
+  addEdge: (edge) => set({ edges: [...get().edges, edge] }),
+  removeEdge: (id) => set({ edges: get().edges.filter((edge) => edge.id !== id) }),
   // state
   lockIds: Set(),
   isLocked: (id) => get().lockIds.contains(id),
-  lock: (id) => {
-    set({ lockIds: get().lockIds.add(id) })
-  },
-  unlock: (id) => {
-    set({ lockIds: get().lockIds.delete(id) })
-  },
-
+  lock: (id) => set({ lockIds: get().lockIds.add(id) }),
+  unlock: (id) => set({ lockIds: get().lockIds.delete(id) }),
   // init
   putNodes: (nodes) => set({ nodes }),
   putEdges: (edges) => set({ edges }),

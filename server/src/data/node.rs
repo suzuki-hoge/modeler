@@ -13,6 +13,7 @@ pub struct ProjectNode {
 #[serde(rename_all = "camelCase")]
 pub struct PageNode {
     pub id: ObjectId,
+    pub r#type: String,
     pub position: Position,
 }
 

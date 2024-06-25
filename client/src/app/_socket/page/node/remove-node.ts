@@ -4,7 +4,7 @@ import z from 'zod'
 
 // types
 
-const type = 'remove-edge'
+const type = 'remove-node'
 
 const removeNodeRequest = z.object({
   type: z.string(),

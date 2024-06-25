@@ -66,20 +66,44 @@ const Inner = () => {
   useEffect(
     () => {
       if (!isValidating1) projectStore.putNodeIcons(icons!)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [icons],
+  )
+  useEffect(
+    () => {
       if (!isValidating2) projectStore.putNodes(projectNodes!)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [projectNodes],
+  )
+  useEffect(
+    () => {
       if (!isValidating3) projectStore.putEdges(projectEdges!)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [projectEdges],
+  )
+  useEffect(
+    () => {
       if (!isValidating4) pageStore.putNodes(pageNodes!)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pageNodes],
+  )
+  useEffect(
+    () => {
       if (!isValidating5) pageStore.putEdges(pageEdges!)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidating1, isValidating2, isValidating3, isValidating4, isValidating5],
+    [pageEdges],
   )
 
   return (
     <div id='page' style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
-        nodes={projectStore.nodes}
-        edges={projectStore.edges}
+        nodes={pageStore.nodes}
+        edges={pageStore.edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
@@ -102,6 +126,19 @@ const Inner = () => {
         onPaneClick={onPaneClick}
       >
         <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
+        <Panel position='bottom-left'>
+          {projectStore.nodes.map((x) => (
+            <p key={x.id} style={{ margin: 0 }}>
+              {x.id}: {x.data.name}
+            </p>
+          ))}
+          <hr />
+          {pageStore.nodes.map((x) => (
+            <p key={x.id} style={{ margin: 0 }}>
+              {x.id}: {JSON.stringify(x.position)}
+            </p>
+          ))}
+        </Panel>
         <Background />
       </ReactFlow>
       <Arrows />
