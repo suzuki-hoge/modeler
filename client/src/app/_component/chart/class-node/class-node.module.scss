@@ -27,10 +27,20 @@
   align-items: center;
   height: 1.2rem;
 
-  .buttons {
+  .activeButtons {
     display: flex;
     flex-direction: row;
     align-items: center;
     margin-left: 0.5rem;
+  }
+
+  .inactiveButtons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-left: 0.5rem;
+    opacity: 0;
+    cursor: grab;
+    pointer-events: none;
   }
 }

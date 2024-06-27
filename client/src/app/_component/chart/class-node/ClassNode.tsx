@@ -223,6 +223,7 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
       {props.data.properties.map((property, i) => (
         <Property
           key={i}
+          isSelected={props.isSelected}
           inner={property}
           headers={props.headers}
           icons={props.icons}
@@ -233,11 +234,14 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           onPostNodeSelect={props.onPostNodeSelect}
         />
       ))}
-      {props.data.properties.length === 0 && <EmptyLine onInsert={props.onInsertFirstProperty} />}
+      {props.data.properties.length === 0 && (
+        <EmptyLine isSelected={props.isSelected} onInsert={props.onInsertFirstProperty} />
+      )}
       <hr />
       {props.data.methods.map((method, i) => (
         <Method
           key={i}
+          isSelected={props.isSelected}
           inner={method}
           headers={props.headers}
           icons={props.icons}
@@ -248,7 +252,9 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           onPostNodeSelect={props.onPostNodeSelect}
         />
       ))}
-      {props.data.methods.length === 0 && <EmptyLine onInsert={props.onInsertFirstMethod} />}
+      {props.data.methods.length === 0 && (
+        <EmptyLine isSelected={props.isSelected} onInsert={props.onInsertFirstMethod} />
+      )}
     </div>
   )
 })
@@ -276,6 +282,7 @@ const Header = memo(function _Header(props: HeaderProps) {
 })
 
 interface PropertyProps {
+  isSelected: boolean
   inner: string
   headers: NodeHeader[]
   icons: NodeIcon[]
@@ -298,7 +305,7 @@ const Property = memo(function _Property(props: PropertyProps) {
         onPostNodeCreate={props.onPostNodeCreate}
         onPostNodeSelect={props.onPostNodeSelect}
       />
-      <div className={styles.buttons}>
+      <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={props.onInsertProperty} />
         <DeleteIcon onClick={props.onDeleteProperty} />
       </div>
@@ -307,6 +314,7 @@ const Property = memo(function _Property(props: PropertyProps) {
 })
 
 interface MethodProps {
+  isSelected: boolean
   inner: string
   headers: NodeHeader[]
   icons: NodeIcon[]
@@ -329,7 +337,7 @@ const Method = memo(function _Method(props: MethodProps) {
         onPostNodeCreate={props.onPostNodeCreate}
         onPostNodeSelect={props.onPostNodeSelect}
       />
-      <div className={styles.buttons}>
+      <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={props.onInsertMethod} />
         <DeleteIcon onClick={props.onDeleteMethod} />
       </div>
@@ -338,6 +346,7 @@ const Method = memo(function _Method(props: MethodProps) {
 })
 
 interface EmptyLineProps {
+  isSelected: boolean
   onInsert: () => void
 }
 
@@ -345,7 +354,7 @@ const EmptyLine = memo(function _EmptyLine(props: EmptyLineProps) {
   return (
     <div className={styles.line}>
       <div></div>
-      <div className={styles.buttons}>
+      <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={props.onInsert} />
       </div>
     </div>
