@@ -3,17 +3,22 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import { OnConnectEnd, OnConnectStart, OnEdgesChange } from 'reactflow'
 
 import { SelectorState } from '@/app/_hook/pane'
-import { allocateEdgeId, createEdge } from '@/app/_object/edge/function'
+import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
 import { ArrowType } from '@/app/_object/edge/type'
+import { PageSocket } from '@/app/_socket/page-socket'
 import { ProjectSocket } from '@/app/_socket/project-socket'
+import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnEdgesChange(store: ProjectStore, socket: ProjectSocket): OnEdgesChange {
+export function useOnEdgesChange(store: PageStore, socket: PageSocket): OnEdgesChange {
   return (changes) => {
     for (const change of changes) {
+      console.log('edge change', change)
       if (change.type === 'remove') {
-        socket.deleteEdge(change.id)
-        store.deleteEdge(change.id)
+        socket.removeNode(change.id)
+        store.removeNode(change.id)
+      } else {
+        store.applyEdgeChange(change)
       }
     }
   }
@@ -31,7 +36,13 @@ interface OnConnect {
   setSource: Dispatch<SetStateAction<DragSource | null>>
 }
 
-export function useOnConnect(store: ProjectStore, socket: ProjectSocket, selectorState: SelectorState): OnConnect {
+export function useOnConnect(
+  projectStore: ProjectStore,
+  projectSocket: ProjectSocket,
+  pageStore: PageStore,
+  pageSocket: PageSocket,
+  selectorState: SelectorState,
+): OnConnect {
   const [source, setSource] = useState<DragSource | null>(null)
 
   const onConnectStart: OnConnectStart = (_, p) => {
@@ -40,7 +51,10 @@ export function useOnConnect(store: ProjectStore, socket: ProjectSocket, selecto
 
   const onConnectEnd: OnConnectEnd = (e) => {
     const event = e as MouseEvent
-    const sourceNodeIds = Set([...store.nodes.filter((node) => node.selected).map((node) => node.id), source!.id])
+    const sourceNodeIds = Set([
+      ...projectStore.nodes.filter((node) => node.selected).map((node) => node.id),
+      source!.id,
+    ])
 
     const targetNodeIds = document
       .elementsFromPoint(event.clientX, event.clientY)
@@ -55,10 +69,24 @@ export function useOnConnect(store: ProjectStore, socket: ProjectSocket, selecto
     } else if (source?.id !== targetNodeIds[0]) {
       // connect
       sourceNodeIds.forEach((sourceNodeId) => {
-        const edge = createEdge(allocateEdgeId(), sourceNodeId, targetNodeIds[0], source!.arrowType, '1')
+        const projectEdge = projectStore.findEdge(sourceNodeId, targetNodeIds[0])
 
-        socket.createEdge(edge)
-        store.createEdge(edge)
+        if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
+          const pageEdge = extractPageEdge(projectEdge)
+
+          pageStore.addEdge(pageEdge)
+          pageSocket.addEdge(pageEdge)
+        } else {
+          const projectEdge = createEdge(allocateEdgeId(), sourceNodeId, targetNodeIds[0], source!.arrowType, '1')
+
+          projectStore.createEdge(projectEdge)
+          projectSocket.createEdge(projectEdge)
+
+          const pageEdge = extractPageEdge(projectEdge)
+
+          pageStore.addEdge(pageEdge)
+          pageSocket.addEdge(pageEdge)
+        }
       })
     } else {
       // do nothing

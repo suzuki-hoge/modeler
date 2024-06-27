@@ -8,9 +8,7 @@ pub struct ProjectEdge {
     pub id: ObjectId,
     pub r#type: String,
     pub source: String,
-    pub source_handle: String,
     pub target: String,
-    pub target_handle: String,
     pub marker_end: String,
     pub data: EdgeData,
 }
@@ -20,6 +18,8 @@ pub struct ProjectEdge {
 pub struct PageEdge {
     pub id: ObjectId,
     pub r#type: String,
+    pub source: String,
+    pub target: String,
 }
 
 #[derive(Serialize)]

@@ -50,8 +50,14 @@ const Inner = () => {
   const { onNodeDragStart, onNodeDragStop } = useOnNodeDrag(pageSocket)
 
   // edge
-  const onEdgesChange = useOnEdgesChange(projectStore, projectSocket)
-  const { onConnectStart, onConnectEnd, source, setSource } = useOnConnect(projectStore, projectSocket, selectorState)
+  const onEdgesChange = useOnEdgesChange(pageStore, pageSocket)
+  const { onConnectStart, onConnectEnd, source, setSource } = useOnConnect(
+    projectStore,
+    projectSocket,
+    pageStore,
+    pageSocket,
+    selectorState,
+  )
 
   // selector
   const onPostNodeCreate = useOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
@@ -99,6 +105,10 @@ const Inner = () => {
     [pageEdges],
   )
 
+  if (isValidating1 || isValidating2 || isValidating3 || isValidating4 || isValidating5) {
+    return <p>Loading...</p>
+  }
+
   return (
     <div id='page' style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
@@ -129,13 +139,35 @@ const Inner = () => {
         <Panel position='bottom-left'>
           {projectStore.nodes.map((x) => (
             <p key={x.id} style={{ margin: 0 }}>
-              {x.id}: {x.data.name}
+              {x.id.split('-')[0]}
+              {': '}
+              {x.data.name}
             </p>
           ))}
           <hr />
           {pageStore.nodes.map((x) => (
             <p key={x.id} style={{ margin: 0 }}>
-              {x.id}: {JSON.stringify(x.position)}
+              {projectStore.getNode(x.id).data.name}
+              {': '}
+              {JSON.stringify(x.position)}
+            </p>
+          ))}
+          <hr />
+          {projectStore.edges.map((x) => (
+            <p key={x.id} style={{ margin: 0 }}>
+              {x.id.split('-')[0]}
+              {': '}
+              {projectStore.getNode(x.source).data.name}
+              {' → '}
+              {projectStore.getNode(x.target).data.name}
+            </p>
+          ))}
+          <hr />
+          {pageStore.edges.map((x) => (
+            <p key={x.id} style={{ margin: 0 }}>
+              {projectStore.getNode(x.source).data.name}
+              {' → '}
+              {projectStore.getNode(x.target).data.name}
             </p>
           ))}
         </Panel>

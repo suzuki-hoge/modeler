@@ -6,46 +6,54 @@ import { EdgeLabel } from '@/app/_component/chart/class-edge/EdgeLabel'
 import { EdgePalette } from '@/app/_component/chart/class-edge/EdgePalette'
 import { getInnerProps } from '@/app/_component/chart/class-edge/line'
 import { updateEdge } from '@/app/_object/edge/function'
-import { ArrowType, ProjectEdgeData } from '@/app/_object/edge/type'
+import { ArrowType, PageEdgeData } from '@/app/_object/edge/type'
 import { ProjectSocketContext } from '@/app/_socket/project-socket'
+import { pageSelector, usePageStore } from '@/app/_store/page-store'
 import { projectSelector, useProjectStore } from '@/app/_store/project-store'
 
-export const ClassEdge = (props: EdgeProps<ProjectEdgeData>) => {
+export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
   const projectStore = useProjectStore(projectSelector, shallow)
+  const pageStore = usePageStore(pageSelector, shallow)
   const projectSocket = useContext(ProjectSocketContext)!
 
-  const sourceNode = projectStore.getNode(props.source)
-  const targetNode = projectStore.getNode(props.target)
+  const projectEdge = projectStore.getEdge(props.id)
+
+  const sourcePageNode = pageStore.getNode(projectEdge.source)
+  const targetPageNode = pageStore.getNode(projectEdge.target)
+  console.log(
+    `ClassEdge ( ${props.id.split('-')[0]} )`,
+    `${sourcePageNode.id.split('-')[0]} -> ${targetPageNode.id.split('-')[0]}`,
+  )
 
   const innerProps = useMemo(
     () =>
       getInnerProps(
         props.sourceX,
         props.sourceY,
-        sourceNode.position.x,
-        sourceNode.position.y,
-        sourceNode.width!,
-        sourceNode.height!,
+        sourcePageNode.position.x,
+        sourcePageNode.position.y,
+        sourcePageNode.width!,
+        sourcePageNode.height!,
         props.targetX,
         props.targetY,
-        targetNode.position.x,
-        targetNode.position.y,
-        targetNode.width!,
-        targetNode.height!,
+        targetPageNode.position.x,
+        targetPageNode.position.y,
+        targetPageNode.width!,
+        targetPageNode.height!,
       ),
     [
       props.sourceX,
       props.sourceY,
-      sourceNode.position.x,
-      sourceNode.position.y,
-      sourceNode.width,
-      sourceNode.height,
+      sourcePageNode.position.x,
+      sourcePageNode.position.y,
+      sourcePageNode.width,
+      sourcePageNode.height,
       props.targetX,
       props.targetY,
-      targetNode.position.x,
-      targetNode.position.y,
-      targetNode.width,
-      targetNode.height,
+      targetPageNode.position.x,
+      targetPageNode.position.y,
+      targetPageNode.width,
+      targetPageNode.height,
     ],
   )
   const onRotate = useCallback(
@@ -84,8 +92,8 @@ export const ClassEdge = (props: EdgeProps<ProjectEdgeData>) => {
     return (
       <ClassEdgeInner
         id={props.id}
-        arrowType={props.data!.arrowType}
-        label={props.data!.label}
+        arrowType={projectEdge.data!.arrowType}
+        label={projectEdge.data!.label}
         selected={props.selected || false}
         edgePath={innerProps.edgePath}
         palettePointX={innerProps.palettePoint.x}

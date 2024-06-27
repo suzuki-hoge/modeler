@@ -1,7 +1,6 @@
 import { Edge, Node } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
-import { fetchInitialEdges } from '@/app/_object/edge/fetch'
 import { ProjectEdgeData } from '@/app/_object/edge/type'
 import { extractNodeHeader } from '@/app/_object/node/function'
 import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
@@ -93,7 +92,7 @@ export const useProjectStore = createWithEqualityFn<ProjectStore>((set, get) => 
       nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ data: updater(node.data) } } : node)),
     }),
   // edge
-  edges: fetchInitialEdges(),
+  edges: [],
   getEdge: (id) => get().edges.find((edge) => edge.id === id)!,
   findEdge: (srcNodeId, dstNodeId) =>
     get().edges.find((edge) => edge.source === srcNodeId && edge.target === dstNodeId),

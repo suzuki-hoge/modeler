@@ -20,8 +20,8 @@ export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesC
       } else if (change.type === 'position' && change.dragging && change.position) {
         // send move message on drag stop
         store.moveNode(change.id, change.position.x, change.position.y)
-      } else if (change.type === 'select') {
-        store.selectNode(change.id, change.selected)
+      } else {
+        store.applyNodeChange(change)
       }
     }
   }
@@ -146,7 +146,6 @@ function newEdgeDrawn(
 }
 
 function paneClicked(pageStore: PageStore, pageSocket: PageSocket, pageNode: Node<PageNodeData>) {
-  // put page node
   pageStore.addNode(pageNode)
   pageSocket.addNode(pageNode)
 }
