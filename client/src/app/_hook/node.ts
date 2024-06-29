@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useCallback, useState } from 'react'
-import { Edge, Node, NodeDragHandler, OnNodesChange } from 'reactflow'
+import { Edge, Node, NodeDragHandler, OnNodesChange, XYPosition } from 'reactflow'
 
 import { DragSource } from '@/app/_hook/edge'
 import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
@@ -34,9 +34,10 @@ export function useOnNodeDrag(socket: PageSocket): {
   const [startX, setStartX] = useState(0)
   const [startY, setStartY] = useState(0)
 
-  const onNodeDragStart: NodeDragHandler = (_event, node) => {
+  const onNodeDragStart: NodeDragHandler = (event, node) => {
     setStartX(node.position.x)
     setStartY(node.position.y)
+    event.preventDefault()
   }
   const onNodeDragStop: NodeDragHandler = (_event, node, nodes) => {
     if (startX !== node.position.x || startY !== node.position.y) {
@@ -54,10 +55,10 @@ export function useOnPostNodeCreate(
   pageSocket: PageSocket,
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
-): (projectNode: Node<ProjectNodeData>, x: number, y: number) => void {
+): (projectNode: Node<ProjectNodeData>, position: XYPosition) => void {
   return useCallback(
-    (projectNode, x, y) => {
-      const pageNode = extractPageNode(projectNode, x, y)
+    (projectNode, position) => {
+      const pageNode = extractPageNode(projectNode, position)
 
       projectStore.createNode(projectNode)
       projectSocket.createNode(projectNode)
@@ -73,6 +74,7 @@ export function useOnPostNodeCreate(
         paneClicked(pageStore, pageSocket, pageNode)
       }
 
+      // reset drag start
       setSource(null)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,14 +89,16 @@ export function useOnPostNodeSelect(
   pageSocket: PageSocket,
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
-): (header: NodeHeader, x: number, y: number) => void {
+): (header: NodeHeader, position: XYPosition) => void {
   return useCallback(
-    (header, x, y) => {
-      const pageNode = expandToPageNode(header, x, y)
+    (header, position) => {
+      if (pageStore.isNodeExists(header.id)) return
+
+      const pageNode = expandToPageNode(header, position)
 
       if (source) {
         const projectEdge = projectStore.findEdge(source.id, header.id)
-        if (projectEdge) {
+        if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
           edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
         } else {
           newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, header.id)

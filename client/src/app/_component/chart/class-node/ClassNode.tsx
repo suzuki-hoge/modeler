@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useContext, useEffect, useMemo } from 'react'
-import { Node, NodeTypes } from 'reactflow'
+import { Node, NodeTypes, XYPosition } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import { Handles } from '@/app/_component/chart/class-node/Handles'
@@ -28,6 +28,8 @@ import styles from './class-node.module.scss'
 interface Props {
   id: string
   selected: boolean
+  xPos: number
+  yPos: number
 }
 
 export const ClassNode = (props: Props) => {
@@ -36,7 +38,8 @@ export const ClassNode = (props: Props) => {
   const projectSocket = useContext(ProjectSocketContext)!
   const pageSocket = useContext(PageSocketContext)!
 
-  const node = projectStore.getNode(props.id)
+  const projectNode = projectStore.getNode(props.id)
+  const pageNode = pageStore.getNode(props.id)
 
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
@@ -72,30 +75,30 @@ export const ClassNode = (props: Props) => {
   )
   const onInsertProperties = useMemo(
     () =>
-      node.data.properties.map((_, n) => () => {
+      projectNode.data.properties.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', n))
         projectSocket.insertProperty(props.id, '', n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [node.data.properties],
+    [projectNode.data.properties],
   )
   const onUpdateProperties = useMemo(
     () =>
-      node.data.properties.map((_, n) => (inner: string) => {
+      projectNode.data.properties.map((_, n) => (inner: string) => {
         projectStore.updateNodeData(props.id, (data) => updateProperty(data, inner, n))
         projectSocket.updateProperty(props.id, inner, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [node.data.properties],
+    [projectNode.data.properties],
   )
   const onDeleteProperties = useMemo(
     () =>
-      node.data.properties.map((_, n) => () => {
+      projectNode.data.properties.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => deleteProperty(data, n))
         projectSocket.deleteProperty(props.id, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [node.data.properties],
+    [projectNode.data.properties],
   )
   const onInsertFirstProperty = useCallback(
     () => {
@@ -107,30 +110,30 @@ export const ClassNode = (props: Props) => {
   )
   const onInsertMethods = useMemo(
     () =>
-      node.data.methods.map((_, n) => () => {
+      projectNode.data.methods.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', n))
         projectSocket.insertMethod(props.id, '', n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [node.data.methods],
+    [projectNode.data.methods],
   )
   const onUpdateMethods = useMemo(
     () =>
-      node.data.methods.map((_, n) => (inner: string) => {
+      projectNode.data.methods.map((_, n) => (inner: string) => {
         projectStore.updateNodeData(props.id, (data) => updateMethod(data, inner, n))
         projectSocket.updateMethod(props.id, inner, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [node.data.methods],
+    [projectNode.data.methods],
   )
   const onDeleteMethods = useMemo(
     () =>
-      node.data.methods.map((_, n) => () => {
+      projectNode.data.methods.map((_, n) => () => {
         projectStore.updateNodeData(props.id, (data) => deleteMethod(data, n))
         projectSocket.deleteMethod(props.id, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [node.data.methods],
+    [projectNode.data.methods],
   )
   const onInsertFirstMethod = useCallback(
     () => {
@@ -161,7 +164,7 @@ export const ClassNode = (props: Props) => {
     <>
       <ClassNodeInner
         id={props.id}
-        data={node.data}
+        data={projectNode.data}
         isSelected={props.selected}
         isLocked={isLocked}
         headers={headers}
@@ -176,6 +179,7 @@ export const ClassNode = (props: Props) => {
         onUpdateMethods={onUpdateMethods}
         onDeleteMethods={onDeleteMethods}
         onInsertFirstMethod={onInsertFirstMethod}
+        newNodePosition={{ x: pageNode.position.x, y: pageNode.position.y + (pageNode.height || 0) + 30 }}
         onPostNodeCreate={onPostNodeCreate}
         onPostNodeSelect={onPostNodeSelect}
       />
@@ -201,8 +205,9 @@ interface InnerProps {
   onUpdateMethods: Array<(inner: string) => void>
   onDeleteMethods: Array<() => void>
   onInsertFirstMethod: () => void
-  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
-  onPostNodeSelect: (header: NodeHeader) => void
+  newNodePosition: XYPosition
+  onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
+  onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
 }
 
 export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
@@ -230,6 +235,7 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           onInsertProperty={props.onInsertProperties[i]}
           onUpdateProperty={props.onUpdateProperties[i]}
           onDeleteProperty={props.onDeleteProperties[i]}
+          newNodePosition={props.newNodePosition}
           onPostNodeCreate={props.onPostNodeCreate}
           onPostNodeSelect={props.onPostNodeSelect}
         />
@@ -248,6 +254,7 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           onInsertMethod={props.onInsertMethods[i]}
           onUpdateMethod={props.onUpdateMethods[i]}
           onDeleteMethod={props.onDeleteMethods[i]}
+          newNodePosition={props.newNodePosition}
           onPostNodeCreate={props.onPostNodeCreate}
           onPostNodeSelect={props.onPostNodeSelect}
         />
@@ -289,8 +296,9 @@ interface PropertyProps {
   onInsertProperty: () => void
   onUpdateProperty: (inner: string) => void
   onDeleteProperty: () => void
-  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
-  onPostNodeSelect: (header: NodeHeader) => void
+  newNodePosition: XYPosition
+  onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
+  onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
 }
 
 const Property = memo(function _Property(props: PropertyProps) {
@@ -302,6 +310,7 @@ const Property = memo(function _Property(props: PropertyProps) {
         icons={props.icons}
         readonly={false}
         onTextChange={props.onUpdateProperty}
+        newNodePosition={props.newNodePosition}
         onPostNodeCreate={props.onPostNodeCreate}
         onPostNodeSelect={props.onPostNodeSelect}
       />
@@ -321,8 +330,9 @@ interface MethodProps {
   onInsertMethod: () => void
   onUpdateMethod: (inner: string) => void
   onDeleteMethod: () => void
-  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
-  onPostNodeSelect: (header: NodeHeader) => void
+  newNodePosition: XYPosition
+  onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
+  onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
 }
 
 const Method = memo(function _Method(props: MethodProps) {
@@ -334,6 +344,7 @@ const Method = memo(function _Method(props: MethodProps) {
         icons={props.icons}
         readonly={false}
         onTextChange={props.onUpdateMethod}
+        newNodePosition={props.newNodePosition}
         onPostNodeCreate={props.onPostNodeCreate}
         onPostNodeSelect={props.onPostNodeSelect}
       />

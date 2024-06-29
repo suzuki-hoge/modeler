@@ -1,6 +1,6 @@
 'use client'
 import React, { ChangeEvent, Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react'
-import { Node } from 'reactflow'
+import { Node, XYPosition } from 'reactflow'
 
 import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
 import {
@@ -11,7 +11,7 @@ import {
   innerToRef,
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
-import { Popup, usePopup } from '@/app/_component/selector/Popup'
+import { Popup, PopupState, usePopup } from '@/app/_component/selector/Popup'
 import { ProjectNodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
 
 import styles from './completable-input.module.scss'
@@ -28,8 +28,9 @@ interface Props {
   icons: NodeIcon[]
   readonly: boolean
   onTextChange: (inner: string) => void
-  onPostNodeCreate: (node: Node<ProjectNodeData>) => void
-  onPostNodeSelect: (header: NodeHeader) => void
+  newNodePosition: XYPosition
+  onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
+  onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
 }
 
 export const CompletableInput = (props: Props) => {
@@ -67,6 +68,7 @@ export const CompletableInput = (props: Props) => {
             setPopupNodeId={setPopupNodeId}
             setCursor={setCursor}
             onChange={props.onTextChange}
+            popupState={popupState}
             openPopup={openPopup}
             closePopup={closePopup}
             inputRef={inputRef}
@@ -78,8 +80,8 @@ export const CompletableInput = (props: Props) => {
               headers={props.headers}
               defaultId={popupNodeId}
               icons={props.icons}
-              newNodePos={{ x: 0, y: 0 }}
-              onSelect={(header) => {
+              newNodePosition={props.newNodePosition}
+              onSelect={(header, position) => {
                 setRefString((prev) => {
                   const [nextRefString, nextCursor] = changedBySelect(
                     prev,
@@ -91,9 +93,9 @@ export const CompletableInput = (props: Props) => {
                   setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
                   return nextRefString
                 })
-                props.onPostNodeSelect(header)
+                props.onPostNodeSelect(header, position)
               }}
-              onPostNodeCreate={(node) => {
+              onPostNodeCreate={(node, position) => {
                 setRefString((prev) => {
                   const [nextRefString, nextCursor] = changedBySelect(
                     prev,
@@ -105,7 +107,7 @@ export const CompletableInput = (props: Props) => {
                   setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
                   return nextRefString
                 })
-                props.onPostNodeCreate(node)
+                props.onPostNodeCreate(node, position)
               }}
             />
           </Popup>
@@ -127,6 +129,7 @@ interface InputProps {
   setPopupNodeId: Dispatch<SetStateAction<string | undefined>>
   setCursor: Dispatch<SetStateAction<Cursor>>
   onChange: (inner: string) => void
+  popupState: PopupState
   openPopup: () => void
   closePopup: () => void
   inputRef: RefObject<HTMLInputElement> | null
@@ -167,8 +170,10 @@ const Input = (props: InputProps) => {
         }
       }}
       onBlur={() => {
-        props.onChange(props.refString.inner)
-        props.setIsEditing(false)
+        if (!props.popupState.isEditing) {
+          props.onChange(props.refString.inner)
+          props.setIsEditing(false)
+        }
       }}
       ref={props.inputRef}
     />

@@ -1,6 +1,6 @@
 import { Set } from 'immutable'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { OnConnectEnd, OnConnectStart, OnEdgesChange } from 'reactflow'
+import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'reactflow'
 
 import { SelectorState } from '@/app/_hook/pane'
 import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
@@ -44,6 +44,7 @@ export function useOnConnect(
   selectorState: SelectorState,
 ): OnConnect {
   const [source, setSource] = useState<DragSource | null>(null)
+  const rf = useReactFlow()
 
   const onConnectStart: OnConnectStart = (_, p) => {
     setSource({ id: p.nodeId!, arrowType: p.handleId?.startsWith('simple') ? 'simple' : 'generalization' })
@@ -63,9 +64,10 @@ export function useOnConnect(
 
     if (targetNodeIds.length === 0) {
       // create new node
+      const screen = { x: event.clientX, y: event.clientY }
+      const flow = rf.screenToFlowPosition(screen)
       selectorState.setActive(true)
-      selectorState.setX(event.clientX)
-      selectorState.setY(event.clientY)
+      selectorState.setPosition({ screen, flow })
     } else if (source?.id !== targetNodeIds[0]) {
       // connect
       sourceNodeIds.forEach((sourceNodeId) => {

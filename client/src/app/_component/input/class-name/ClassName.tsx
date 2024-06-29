@@ -24,6 +24,7 @@ export const ClassName = (props: Props) => {
       {isEditing && !props.readonly && (
         <input
           className={styles.input}
+          style={{ width: `${tmp.length}ch` }}
           value={tmp}
           onChange={(e) => setTmp(e.target.value)}
           onKeyDown={(e) => {

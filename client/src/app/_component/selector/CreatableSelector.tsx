@@ -48,7 +48,7 @@ export function CreatableSelector<Choice>(props: CreatableSelectorProps<Choice>)
   })
 
   return (
-    <div style={{ position: 'absolute', left: `calc(${props.x})`, top: `calc(${props.y})` }}>
+    <div style={{ position: 'absolute', left: `calc(${props.x})`, top: `calc(${props.y})`, zIndex: 10 }}>
       <CreatableSelect
         options={options}
         defaultValue={getDefault(options, props.defaultId)}

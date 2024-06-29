@@ -36,7 +36,7 @@ export function Selector<Choice>(props: SelectorProps<Choice>) {
   })
 
   return (
-    <div style={{ position: 'absolute', left: `calc(${props.x})`, top: `calc(${props.y})` }}>
+    <div style={{ position: 'absolute', left: `calc(${props.x})`, top: `calc(${props.y})`, zIndex: 10 }}>
       <Select
         options={sortOptions(options, props.sortKey, props.defaultId)}
         defaultValue={getDefault(options, props.defaultId)}

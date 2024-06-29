@@ -7,6 +7,7 @@ import { PageNodeData } from '@/app/_object/node/type'
 import { LockIds } from '@/app/_object/state/type'
 
 // node
+type IsNodeExists = (id: string) => boolean
 type GetNode = (id: string) => Node<PageNodeData>
 type AddNode = (node: Node<PageNodeData>) => void
 type RemoveNode = (id: string) => void
@@ -31,6 +32,7 @@ type PutEdges = (edges: Edge<PageEdgeData>[]) => void
 export type PageStore = {
   // node
   nodes: Node<PageNodeData>[]
+  isNodeExists: IsNodeExists
   getNode: GetNode
   addNode: AddNode
   removeNode: RemoveNode
@@ -58,6 +60,7 @@ export type PageStore = {
 export const pageSelector = (store: PageStore) => ({
   // node
   nodes: store.nodes,
+  isNodeExists: store.isNodeExists,
   getNode: store.getNode,
   addNode: store.addNode,
   removeNode: store.removeNode,
@@ -85,6 +88,7 @@ export const pageSelector = (store: PageStore) => ({
 export const usePageStore = createWithEqualityFn<PageStore>((set, get) => ({
   // node
   nodes: [],
+  isNodeExists: (id) => get().nodes.some((node) => node.id === id),
   getNode: (id) => get().nodes.find((node) => node.id === id)!,
   addNode: (node) => set({ nodes: [...get().nodes, node] }),
   removeNode: (id) => set({ nodes: get().nodes.filter((node) => node.id !== id) }),

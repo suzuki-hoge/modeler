@@ -20,10 +20,6 @@ export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
 
   const sourcePageNode = pageStore.getNode(projectEdge.source)
   const targetPageNode = pageStore.getNode(projectEdge.target)
-  console.log(
-    `ClassEdge ( ${props.id.split('-')[0]} )`,
-    `${sourcePageNode.id.split('-')[0]} -> ${targetPageNode.id.split('-')[0]}`,
-  )
 
   const innerProps = useMemo(
     () =>
