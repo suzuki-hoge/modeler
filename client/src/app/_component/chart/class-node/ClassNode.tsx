@@ -54,7 +54,7 @@ export const ClassNode = (props: Props) => {
     () => {
       if (props.selected) {
         pageSocket.lock(props.id)
-      } else if (pageStore.isLocked(props.id)) {
+      } else {
         pageSocket.unlock(props.id)
       }
     },
