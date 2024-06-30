@@ -8,6 +8,7 @@ use crate::data::page::Page;
 use crate::data::ProjectId;
 
 pub async fn get_pages(path: Path<ProjectId>) -> impl Responder {
+    println!("project/pages");
     let _project_id = path.into_inner();
 
     let pages = vec![
@@ -19,6 +20,7 @@ pub async fn get_pages(path: Path<ProjectId>) -> impl Responder {
 }
 
 pub async fn get_icons(path: Path<ProjectId>) -> impl Responder {
+    println!("project/icons");
     let _project_id = path.into_inner();
 
     let icons = vec![
@@ -58,6 +60,7 @@ pub async fn get_icons(path: Path<ProjectId>) -> impl Responder {
 }
 
 pub async fn get_nodes(path: Path<ProjectId>) -> impl Responder {
+    println!("project/nodes");
     let _project_id = path.into_inner();
 
     let nodes = vec![
@@ -97,6 +100,7 @@ pub async fn get_nodes(path: Path<ProjectId>) -> impl Responder {
 }
 
 pub async fn get_edges(path: Path<ProjectId>) -> impl Responder {
+    println!("project/edges");
     let _project_id = path.into_inner();
 
     let edges = vec![

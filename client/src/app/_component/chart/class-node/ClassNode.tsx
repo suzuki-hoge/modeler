@@ -8,7 +8,7 @@ import { DeleteIcon } from '@/app/_component/icon/delete-icon/DeleteIcon'
 import { ClassIcon } from '@/app/_component/input/class-icon/ClassIcon'
 import { ClassName } from '@/app/_component/input/class-name/ClassName'
 import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
-import { useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
+import { createOnPostNodeCreate, createOnPostNodeSelect } from '@/app/_hook/node'
 import {
   deleteMethod,
   deleteProperty,
@@ -44,11 +44,17 @@ export const ClassNode = (props: Props) => {
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
 
+  const data = useMemo(() => projectNode.data, [projectNode.data])
+  const newNodePosition = useMemo(
+    () => ({ x: pageNode.position.x, y: pageNode.position.y + (pageNode.height || 0) + 30 }),
+    [pageNode.position, pageNode.height],
+  )
+
   useEffect(
     () => {
       if (props.selected) {
         pageSocket.lock(props.id)
-      } else {
+      } else if (pageStore.isLocked(props.id)) {
         pageSocket.unlock(props.id)
       }
     },
@@ -143,30 +149,40 @@ export const ClassNode = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onPostNodeCreate = useOnPostNodeCreate(
-    projectStore,
-    projectSocket,
-    pageStore,
-    pageSocket,
-    { id: props.id, arrowType: 'simple' },
-    () => {},
+  const onPostNodeCreate = useCallback(
+    () =>
+      createOnPostNodeCreate(
+        projectStore,
+        projectSocket,
+        pageStore,
+        pageSocket,
+        { id: props.id, arrowType: 'simple' },
+        () => {},
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   )
-  const onPostNodeSelect = useOnPostNodeSelect(
-    projectStore,
-    projectSocket,
-    pageStore,
-    pageSocket,
-    { id: props.id, arrowType: 'simple' },
-    () => {},
+  const onPostNodeSelect = useCallback(
+    () =>
+      createOnPostNodeSelect(
+        projectStore,
+        projectSocket,
+        pageStore,
+        pageSocket,
+        { id: props.id, arrowType: 'simple' },
+        () => {},
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   )
 
   return (
     <>
       <ClassNodeInner
         id={props.id}
-        data={projectNode.data}
         isSelected={props.selected}
         isLocked={isLocked}
+        data={data}
         headers={headers}
         icons={icons}
         onChangeName={onChangeName}
@@ -179,7 +195,7 @@ export const ClassNode = (props: Props) => {
         onUpdateMethods={onUpdateMethods}
         onDeleteMethods={onDeleteMethods}
         onInsertFirstMethod={onInsertFirstMethod}
-        newNodePosition={{ x: pageNode.position.x, y: pageNode.position.y + (pageNode.height || 0) + 30 }}
+        newNodePosition={newNodePosition}
         onPostNodeCreate={onPostNodeCreate}
         onPostNodeSelect={onPostNodeSelect}
       />

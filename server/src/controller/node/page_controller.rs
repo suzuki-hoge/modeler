@@ -7,6 +7,7 @@ use crate::data::node::PageNode;
 use crate::data::{PageId, Position, ProjectId};
 
 pub async fn get_nodes(path: Path<(ProjectId, PageId)>) -> impl Responder {
+    println!("page/nodes");
     let (_project_id, _page_id) = path.into_inner();
 
     if &_page_id == "1" {
@@ -43,6 +44,7 @@ pub async fn get_nodes(path: Path<(ProjectId, PageId)>) -> impl Responder {
 }
 
 pub async fn get_edges(path: Path<(ProjectId, PageId)>) -> impl Responder {
+    println!("page/edges");
     let (_project_id, _page_id) = path.into_inner();
 
     if &_page_id == "1" {

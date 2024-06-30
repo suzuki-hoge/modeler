@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useState } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import { Edge, Node, NodeDragHandler, OnNodesChange, XYPosition } from 'reactflow'
 
 import { DragSource } from '@/app/_hook/edge'
@@ -48,7 +48,7 @@ export function useOnNodeDrag(socket: PageSocket): {
   return { onNodeDragStart, onNodeDragStop }
 }
 
-export function useOnPostNodeCreate(
+export function createOnPostNodeCreate(
   projectStore: ProjectStore,
   projectSocket: ProjectSocket,
   pageStore: PageStore,
@@ -56,33 +56,29 @@ export function useOnPostNodeCreate(
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
 ): (projectNode: Node<ProjectNodeData>, position: XYPosition) => void {
-  return useCallback(
-    (projectNode, position) => {
-      const pageNode = extractPageNode(projectNode, position)
+  return (projectNode, position) => {
+    const pageNode = extractPageNode(projectNode, position)
 
-      projectStore.createNode(projectNode)
-      projectSocket.createNode(projectNode)
+    projectStore.createNode(projectNode)
+    projectSocket.createNode(projectNode)
 
-      if (source) {
-        const projectEdge = projectStore.findEdge(source.id, projectNode.id)
-        if (projectEdge) {
-          edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
-        } else {
-          newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, projectNode.id)
-        }
+    if (source) {
+      const projectEdge = projectStore.findEdge(source.id, projectNode.id)
+      if (projectEdge) {
+        edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
       } else {
-        paneClicked(pageStore, pageSocket, pageNode)
+        newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, projectNode.id)
       }
+    } else {
+      paneClicked(pageStore, pageSocket, pageNode)
+    }
 
-      // reset drag start
-      setSource(null)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [source],
-  )
+    // reset drag start
+    setSource(null)
+  }
 }
 
-export function useOnPostNodeSelect(
+export function createOnPostNodeSelect(
   projectStore: ProjectStore,
   projectSocket: ProjectSocket,
   pageStore: PageStore,
@@ -90,29 +86,25 @@ export function useOnPostNodeSelect(
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
 ): (header: NodeHeader, position: XYPosition) => void {
-  return useCallback(
-    (header, position) => {
-      if (pageStore.isNodeExists(header.id)) return
+  return (header, position) => {
+    if (pageStore.isNodeExists(header.id)) return
 
-      const pageNode = expandToPageNode(header, position)
+    const pageNode = expandToPageNode(header, position)
 
-      if (source) {
-        const projectEdge = projectStore.findEdge(source.id, header.id)
-        if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
-          edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
-        } else {
-          newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, header.id)
-        }
+    if (source) {
+      const projectEdge = projectStore.findEdge(source.id, header.id)
+      if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
+        edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
       } else {
-        paneClicked(pageStore, pageSocket, pageNode)
+        newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, header.id)
       }
+    } else {
+      paneClicked(pageStore, pageSocket, pageNode)
+    }
 
-      // reset drag start
-      setSource(null)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [source],
-  )
+    // reset drag start
+    setSource(null)
+  }
 }
 
 function edgeDrawn(

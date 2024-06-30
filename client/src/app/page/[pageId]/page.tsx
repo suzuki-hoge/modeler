@@ -18,7 +18,7 @@ import { ConnectionLine } from '@/app/_component/chart/connection-line/Connectio
 import Arrows from '@/app/_component/chart/marker/Arrows'
 import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
-import { useOnNodeDrag, useOnNodesChange, useOnPostNodeCreate, useOnPostNodeSelect } from '@/app/_hook/node'
+import { createOnPostNodeCreate, createOnPostNodeSelect, useOnNodeDrag, useOnNodesChange } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { usePageEdges, useProjectEdges } from '@/app/_object/edge/fetch'
 import { useNodeIcons, usePageNodes, useProjectNodes } from '@/app/_object/node/fetch'
@@ -63,8 +63,8 @@ const Inner = () => {
   )
 
   // selector
-  const onPostNodeCreate = useOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
-  const onPostNodeSelect = useOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
+  const onPostNodeCreate = createOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
+  const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
 
   // init
   const [icons, isValidating1] = useNodeIcons('1')
