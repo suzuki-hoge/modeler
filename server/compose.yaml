@@ -1,0 +1,21 @@
+services:
+  db:
+    build: ./docker/db
+    ports:
+      - 33306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: modeler
+      MYSQL_USER: app
+      MYSQL_PASSWORD: password
+
+  diesel:
+    build: ./docker/diesel
+    volumes:
+      - type: bind
+        source: .
+        target: /work
+    environment:
+      DATABASE_URL: mysql://app:password@db:3306/modeler
+    working_dir: /work
+    tty: true
