@@ -4,9 +4,9 @@ use actix::{Actor, Context, Recipient};
 
 use crate::actor::session::Response;
 use crate::actor::SessionId;
-use crate::data::User;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
+use crate::data::User;
 
 pub type Sessions = HashMap<SessionId, Recipient<Response>>;
 

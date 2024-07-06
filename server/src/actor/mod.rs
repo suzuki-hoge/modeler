@@ -3,16 +3,16 @@ use std::time::Instant;
 use actix::{Actor, Addr};
 use actix_web::web::Path;
 use actix_web::{
-    Error,
-    HttpRequest, HttpResponse, web::{Data, Payload},
+    web::{Data, Payload},
+    Error, HttpRequest, HttpResponse,
 };
 use actix_web_actors::ws::start;
 
 use crate::actor::server::Server;
 use crate::actor::session::{create_session_id, Session};
-use crate::data::User;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
+use crate::data::User;
 
 mod message;
 mod server;

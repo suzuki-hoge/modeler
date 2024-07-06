@@ -17,7 +17,10 @@ diesel::table! {
         id -> Varchar,
         #[max_length = 36]
         page_id -> Varchar,
-        position -> Json,
+        #[sql_name = "type"]
+        #[max_length = 36]
+        type_ -> Varchar,
+        position -> Text,
     }
 }
 
@@ -36,7 +39,10 @@ diesel::table! {
         id -> Varchar,
         #[max_length = 36]
         project_id -> Varchar,
-        data -> Json,
+        #[sql_name = "type"]
+        #[max_length = 36]
+        type_ -> Varchar,
+        data -> Text,
     }
 }
 
@@ -44,9 +50,4 @@ diesel::joinable!(page -> project (project_id));
 diesel::joinable!(page_node -> page (page_id));
 diesel::joinable!(project_node -> project (project_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    page,
-    page_node,
-    project,
-    project_node,
-);
+diesel::allow_tables_to_appear_in_same_query!(page, page_node, project, project_node,);

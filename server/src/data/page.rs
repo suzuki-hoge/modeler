@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::data::project::ProjectId;
+use serde::Serialize;
 
 pub type PageId = String;
 
@@ -7,6 +7,6 @@ pub type PageId = String;
 #[serde(rename_all = "camelCase")]
 pub struct Page {
     pub page_id: PageId,
-    pub project_id:ProjectId,
+    pub project_id: ProjectId,
     pub name: String,
 }

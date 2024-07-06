@@ -1,7 +1,7 @@
 use crate::data::{ObjectId, Position};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Serialize, Eq, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectNode {
     pub id: ObjectId,
@@ -9,7 +9,7 @@ pub struct ProjectNode {
     pub data: NodeData,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PageNode {
     pub id: ObjectId,
@@ -17,7 +17,7 @@ pub struct PageNode {
     pub position: Position,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Eq, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeData {
     pub icon_id: String,

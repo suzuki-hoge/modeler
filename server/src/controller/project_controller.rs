@@ -3,14 +3,26 @@ use actix_web::Responder;
 use serde_json::to_string as to_json_string;
 
 use crate::data::edge::{EdgeData, ProjectEdge};
-use crate::data::node::{NodeData, NodeIcon, ProjectNode};
+use crate::data::node::NodeIcon;
 use crate::data::project::ProjectId;
-use crate::db::store::project;
+use crate::db::store::page::page_store;
+use crate::db::store::project::{node_store, project_store};
 
 pub async fn get_projects() -> impl Responder {
     println!("/projects");
 
-    match project::find_all() {
+    match project_store::find_all() {
+        Ok(rows) => to_json_string(&rows).unwrap(),
+        Err(e) => e.to_string(),
+    }
+}
+
+pub async fn get_pages(path: Path<ProjectId>) -> impl Responder {
+    println!("/pages");
+
+    let project_id = path.into_inner();
+
+    match page_store::find(&project_id) {
         Ok(rows) => to_json_string(&rows).unwrap(),
         Err(e) => e.to_string(),
     }
@@ -58,42 +70,13 @@ pub async fn get_icons(path: Path<ProjectId>) -> impl Responder {
 
 pub async fn get_nodes(path: Path<ProjectId>) -> impl Responder {
     println!("project/nodes");
-    let _project_id = path.into_inner();
 
-    let nodes = vec![
-        ProjectNode {
-            id: String::from("fd76cca4-9f6d-4c2d-b1e7-8db4953cb0d8"),
-            r#type: String::from("class"),
-            data: NodeData {
-                icon_id: String::from("fb951145-bea1-4934-b44f-bdaa63c79763"),
-                name: String::from("ItemController"),
-                properties: vec![],
-                methods: vec![String::from("apply()")],
-            },
-        },
-        ProjectNode {
-            id: String::from("2f92651f-27a2-444d-b66d-6fd65188ab2d"),
-            r#type: String::from("class"),
-            data: NodeData {
-                icon_id: String::from("50c9f120-6d07-4bb2-a935-bc674e18d137"),
-                name: String::from("ItemStore"),
-                properties: vec![],
-                methods: vec![String::from("findAll(): List<ref#item#>"), String::from("save(item: ref#item#)")],
-            },
-        },
-        ProjectNode {
-            id: String::from("3fe61ea6-7d1b-45ea-a421-96c5659cd797"),
-            r#type: String::from("class"),
-            data: NodeData {
-                icon_id: String::from("5cc0cdfc-fd4f-405c-b383-1d54f3f1c4b7"),
-                name: String::from("Item"),
-                properties: vec![String::from("value: Int")],
-                methods: vec![String::from("get(): Int"), String::from("set(value: Int)")],
-            },
-        },
-    ];
+    let project_id = path.into_inner();
 
-    to_json_string(&nodes).unwrap()
+    match node_store::find(&project_id) {
+        Ok(rows) => to_json_string(&rows).unwrap(),
+        Err(e) => e.to_string(),
+    }
 }
 
 pub async fn get_edges(path: Path<ProjectId>) -> impl Responder {

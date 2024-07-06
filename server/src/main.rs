@@ -31,13 +31,11 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(server.clone()))
             .service(resource("/ws/{project_id}/{page_id}/{user}").to(start_session))
             .route("/projects", web::get().to(project_controller::get_projects))
-            .route("/project/{project_id}/pages", web::get().to(page_controller::get_pages))
-
-            .route("/{project_id}/pages", web::get().to(page_controller::get_pages))
+            .route("/project/{project_id}/pages", web::get().to(project_controller::get_pages))
+            .route("/project/{project_id}/nodes", web::get().to(project_controller::get_nodes))
+            .route("/project/{project_id}/{page_id}/nodes", web::get().to(page_controller::get_nodes))
             .route("/{project_id}/icons", web::get().to(project_controller::get_icons))
-            .route("/{project_id}/nodes", web::get().to(project_controller::get_nodes))
             .route("/{project_id}/edges", web::get().to(project_controller::get_edges))
-            .route("/{project_id}/{page_id}/nodes", web::get().to(page_controller::get_nodes))
             .route("/{project_id}/{page_id}/edges", web::get().to(page_controller::get_edges))
     })
     .bind(("127.0.0.1", 8080))?

@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
 use actix::{
-    Actor, ActorContext, ActorFutureExt, Addr, AsyncContext, ContextFutureSpawner, fut::ready, Handler,
+    fut::ready, Actor, ActorContext, ActorFutureExt, Addr, AsyncContext, ContextFutureSpawner, Handler,
     Message as ActixMessage, Running, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext};
