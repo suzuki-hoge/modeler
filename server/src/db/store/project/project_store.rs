@@ -2,8 +2,8 @@ use diesel::prelude::*;
 use itertools::Itertools;
 
 use crate::data::project::Project;
-use crate::db::get_connection;
 use crate::db::schema::project::dsl::project;
+use crate::db::Conn;
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = crate::db::schema::project)]
@@ -24,11 +24,8 @@ impl ProjectRow {
     }
 }
 
-pub fn find_all() -> Result<Vec<Project>, String> {
-    let mut connection = get_connection()?;
-
-    let rows: Vec<ProjectRow> =
-        project.select(ProjectRow::as_select()).load(&mut connection).map_err(|e| e.to_string())?;
+pub fn find_all(mut conn: Conn) -> Result<Vec<Project>, String> {
+    let rows: Vec<ProjectRow> = project.select(ProjectRow::as_select()).load(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(rows.into_iter().map(|row| row.read()).collect_vec())
 }

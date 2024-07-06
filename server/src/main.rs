@@ -8,6 +8,7 @@ use actix_web::{
 
 use crate::actor::{start_server, start_session};
 use crate::controller::{page_controller, project_controller};
+use crate::db::create_connection_pool;
 
 mod actor;
 mod controller;
@@ -15,8 +16,10 @@ mod data;
 mod db;
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<(), String> {
     let server = start_server();
+
+    let pool = create_connection_pool()?;
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -29,6 +32,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .app_data(Data::new(server.clone()))
+            .app_data(Data::new(pool.clone()))
             .service(resource("/ws/{project_id}/{page_id}/{user}").to(start_session))
             .route("/projects", web::get().to(project_controller::get_projects))
             .route("/project/{project_id}/pages", web::get().to(project_controller::get_pages))
@@ -38,7 +42,9 @@ async fn main() -> std::io::Result<()> {
             .route("/{project_id}/edges", web::get().to(project_controller::get_edges))
             .route("/{project_id}/{page_id}/edges", web::get().to(page_controller::get_edges))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", 8080))
+    .map_err(|e| e.to_string())?
     .run()
     .await
+    .map_err(|e| e.to_string())
 }

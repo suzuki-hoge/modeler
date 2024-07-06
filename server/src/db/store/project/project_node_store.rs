@@ -6,8 +6,8 @@ use serde_json::to_string as to_json_string;
 use crate::data::node::{NodeData, ProjectNode};
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
-use crate::db::get_connection;
 use crate::db::schema::project_node as schema;
+use crate::db::Conn;
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = schema)]
@@ -34,34 +34,28 @@ impl ProjectNodeRow {
     }
 }
 
-pub fn find(project_id: &ProjectId) -> Result<Vec<ProjectNode>, String> {
-    let mut connection = get_connection()?;
-
+pub fn find(mut conn: Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, String> {
     let rows: Vec<ProjectNodeRow> = schema::table
         .filter(schema::project_id.eq(project_id).and(schema::type_.eq("class")))
         .select(ProjectNodeRow::as_select())
-        .load(&mut connection)
+        .load(&mut conn)
         .map_err(|e| e.to_string())?;
 
     Ok(rows.into_iter().map(|row| row.read()).collect_vec())
 }
 
-pub fn insert(value: ProjectNode, project_id: ProjectId) -> Result<(), String> {
-    let mut connection = get_connection()?;
-
+pub fn insert(mut conn: Conn, value: ProjectNode, project_id: ProjectId) -> Result<(), String> {
     let row = ProjectNodeRow::write(value, project_id);
 
-    diesel::insert_into(schema::table).values(&row).execute(&mut connection).map_err(|e| e.to_string())?;
+    diesel::insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-pub fn update(value: ProjectNode) -> Result<(), String> {
-    let mut connection = get_connection()?;
-
+pub fn update(mut conn: Conn, value: ProjectNode) -> Result<(), String> {
     let count = diesel::update(schema::table.find(&value.id))
         .set(schema::data.eq(&ProjectNodeRow::write_data(value.data)))
-        .execute(&mut connection)
+        .execute(&mut conn)
         .map_err(|e| e.to_string())?;
 
     match count {
@@ -70,10 +64,8 @@ pub fn update(value: ProjectNode) -> Result<(), String> {
     }
 }
 
-pub fn delete(id: ObjectId) -> Result<(), String> {
-    let mut connection = get_connection()?;
-
-    diesel::delete(schema::table.find(id)).execute(&mut connection).map_err(|e| e.to_string())?;
+pub fn delete(mut conn: Conn, id: ObjectId) -> Result<(), String> {
+    diesel::delete(schema::table.find(id)).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -81,23 +73,23 @@ pub fn delete(id: ObjectId) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use crate::data::node::{NodeData, ProjectNode};
-    use crate::db::get_connection;
-    use crate::db::store::project::node_store::{delete, find, insert, update};
+    use crate::db::create_connection_pool;
+    use crate::db::store::project::project_node_store::{delete, find, insert, update};
     use diesel::RunQueryDsl;
 
     #[test]
     fn test() {
         // setup
-        let mut connection = get_connection().unwrap();
-        diesel::sql_query("delete from project_node").execute(&mut connection).unwrap();
+        let pool = create_connection_pool().unwrap();
+        diesel::sql_query("delete from project_node").execute(&mut pool.get().unwrap()).unwrap();
         // fixme: write in test
         let project_id1 = String::from("7c6174a1-d573-443b-bfd5-e918bfeffd39");
         let project_id2 = String::from("3ac1ccff-fc6c-46fb-9aa3-ab0236875160");
 
         // find
-        let rows1 = find(&project_id1).unwrap();
+        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
         assert_eq!(0, rows1.len());
-        let rows2 = find(&project_id2).unwrap();
+        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
         assert_eq!(0, rows2.len());
 
         // insert
@@ -111,12 +103,12 @@ mod tests {
                 methods: vec![String::from("m1")],
             },
         };
-        insert(row.clone(), project_id1.clone()).unwrap();
+        insert(pool.get().unwrap(), row.clone(), project_id1.clone()).unwrap();
 
         // find
-        let rows1 = find(&project_id1).unwrap();
+        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
         assert_eq!(row, rows1[0]);
-        let rows2 = find(&project_id2).unwrap();
+        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
         assert_eq!(0, rows2.len());
 
         // update
@@ -130,21 +122,21 @@ mod tests {
                 methods: vec![String::from("m2")],
             },
         };
-        update(new_row.clone()).unwrap();
+        update(pool.get().unwrap(), new_row.clone()).unwrap();
 
         // find
-        let rows1 = find(&project_id1).unwrap();
+        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
         assert_eq!(new_row, rows1[0]);
-        let rows2 = find(&project_id2).unwrap();
+        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
         assert_eq!(0, rows2.len());
 
         // delete
-        delete(row.id).unwrap();
+        delete(pool.get().unwrap(), row.id).unwrap();
 
         // find
-        let rows1 = find(&project_id1).unwrap();
+        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
         assert_eq!(0, rows1.len());
-        let rows2 = find(&project_id2).unwrap();
+        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
         assert_eq!(0, rows2.len());
     }
 }

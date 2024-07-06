@@ -3,8 +3,8 @@ use itertools::Itertools;
 
 use crate::data::page::Page;
 use crate::data::project::ProjectId;
-use crate::db::get_connection;
 use crate::db::schema::page::dsl;
+use crate::db::Conn;
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = crate::db::schema::page)]
@@ -26,13 +26,11 @@ impl PageRow {
     }
 }
 
-pub fn find(project_id: &ProjectId) -> Result<Vec<Page>, String> {
-    let mut connection = get_connection()?;
-
+pub fn find(mut conn: Conn, project_id: &ProjectId) -> Result<Vec<Page>, String> {
     let rows: Vec<PageRow> = dsl::page
         .filter(dsl::project_id.eq(project_id))
         .select(PageRow::as_select())
-        .load(&mut connection)
+        .load(&mut conn)
         .map_err(|e| e.to_string())?;
 
     Ok(rows.into_iter().map(|row| row.read()).collect_vec())

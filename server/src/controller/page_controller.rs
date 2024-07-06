@@ -1,18 +1,19 @@
-use actix_web::web::Path;
+use actix_web::web::{Data, Path};
 use actix_web::Responder;
 use serde_json::to_string as to_json_string;
 
 use crate::data::edge::PageEdge;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
-use crate::db::store::page::node_store;
+use crate::db::store::page::page_node_store;
+use crate::db::Pool;
 
-pub async fn get_nodes(path: Path<(ProjectId, PageId)>) -> impl Responder {
+pub async fn get_nodes(pool: Data<Pool>, path: Path<(ProjectId, PageId)>) -> impl Responder {
     println!("page/nodes");
 
     let (_project_id, page_id) = path.into_inner();
 
-    match node_store::find(&page_id) {
+    match page_node_store::find(pool.get().unwrap(), &page_id) {
         Ok(rows) => to_json_string(&rows).unwrap(),
         Err(e) => e.to_string(),
     }
