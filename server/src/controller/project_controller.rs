@@ -4,19 +4,16 @@ use serde_json::to_string as to_json_string;
 
 use crate::data::edge::{EdgeData, ProjectEdge};
 use crate::data::node::{NodeData, NodeIcon, ProjectNode};
-use crate::data::page::Page;
-use crate::data::ProjectId;
+use crate::data::project::ProjectId;
+use crate::db::store::project;
 
-pub async fn get_pages(path: Path<ProjectId>) -> impl Responder {
-    println!("project/pages");
-    let _project_id = path.into_inner();
+pub async fn get_projects() -> impl Responder {
+    println!("/projects");
 
-    let pages = vec![
-        Page { page_id: String::from("34955f5f-87fe-4b9b-96d6-a4f17821c0f8"), name: String::from("クラス図１") },
-        Page { page_id: String::from("35cefa97-eb4c-4fbb-baa1-80cd39d655ee"), name: String::from("クラス図２") },
-    ];
-
-    to_json_string(&pages).unwrap()
+    match project::find_all() {
+        Ok(rows) => to_json_string(&rows).unwrap(),
+        Err(e) => e.to_string(),
+    }
 }
 
 pub async fn get_icons(path: Path<ProjectId>) -> impl Responder {

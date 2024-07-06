@@ -6,6 +6,8 @@
 $ rustup install nightly
 ```
 
+- macOS ( ARM64 )
+
 ## Database
 
 ```

@@ -4,7 +4,8 @@ use serde_json::to_string as to_json_string;
 
 use crate::actor::server::Server;
 use crate::actor::session::Response;
-use crate::actor::{PageId, SessionId};
+use crate::actor::SessionId;
+use crate::data::page::PageId;
 use crate::data::User;
 
 #[derive(ActixMessage)]

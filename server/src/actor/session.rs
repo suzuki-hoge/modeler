@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
 use actix::{
-    fut::ready, Actor, ActorContext, ActorFutureExt, Addr, AsyncContext, ContextFutureSpawner, Handler,
+    Actor, ActorContext, ActorFutureExt, Addr, AsyncContext, ContextFutureSpawner, fut::ready, Handler,
     Message as ActixMessage, Running, StreamHandler, WrapFuture,
 };
 use actix_web_actors::ws::{Message as WsMessage, ProtocolError, WebsocketContext};
@@ -32,8 +32,9 @@ use crate::actor::message::project::node::property::insert_property::InsertPrope
 use crate::actor::message::project::node::property::update_property::UpdatePropertyRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
-use crate::actor::{PageId, SessionId};
-use crate::data::ProjectId;
+use crate::actor::SessionId;
+use crate::data::page::PageId;
+use crate::data::project::ProjectId;
 
 pub fn create_session_id() -> SessionId {
     Uuid::new_v4().to_string().split('-').next().unwrap().to_string()

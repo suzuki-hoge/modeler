@@ -2,11 +2,12 @@ use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
 use serde_json::to_string as to_json_string;
 
-use crate::actor::message::{parse_string, Json};
+use crate::actor::message::{Json, parse_string};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
-use crate::actor::{PageId, SessionId};
+use crate::actor::SessionId;
 use crate::data::ObjectId;
+use crate::data::page::PageId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]

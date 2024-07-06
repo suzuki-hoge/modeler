@@ -3,9 +3,8 @@ use serde::Serialize;
 pub mod edge;
 pub mod node;
 pub mod page;
+pub mod project;
 
-pub type ProjectId = String;
-pub type PageId = String;
 pub type ObjectId = String;
 
 pub type User = String;

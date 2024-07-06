@@ -3,8 +3,10 @@ use std::collections::HashMap;
 use actix::{Actor, Context, Recipient};
 
 use crate::actor::session::Response;
-use crate::actor::{PageId, SessionId};
-use crate::data::{ProjectId, User};
+use crate::actor::SessionId;
+use crate::data::User;
+use crate::data::page::PageId;
+use crate::data::project::ProjectId;
 
 pub type Sessions = HashMap<SessionId, Recipient<Response>>;
 
