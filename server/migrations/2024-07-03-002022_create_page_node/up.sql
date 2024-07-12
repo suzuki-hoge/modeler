@@ -1,9 +1,11 @@
 create table page_node
 (
-    object_id varchar(36) primary key,
+    object_id varchar(36) not null,
     page_id   varchar(36) not null,
     x         varchar(10) not null,
     y         varchar(10) not null,
-    foreign key fk (page_id) references page (page_id)
+    primary key (object_id, page_id),
+    foreign key fk1 (object_id) references project_node (object_id) on delete cascade,
+    foreign key fk2 (page_id) references page (page_id) on delete cascade
 ) character set utf8mb4
   collate utf8mb4_bin;

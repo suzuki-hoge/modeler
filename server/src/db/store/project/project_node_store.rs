@@ -92,7 +92,7 @@ where
     V: AsChangeset<Target = schema::table> + 'static,
     <V as AsChangeset>::Changeset: QueryFragment<Mysql> + 'static,
 {
-    let count = update(schema::table.find(&object_id)).set(value).execute(&mut conn).map_err(|e| e.to_string())?;
+    let count = update(schema::table.find(object_id)).set(value).execute(&mut conn).map_err(|e| e.to_string())?;
 
     match count {
         1 => Ok(()),
@@ -111,6 +111,7 @@ mod tests {
     use diesel::sql_types::Text;
     use diesel::{sql_query, RunQueryDsl};
     use itertools::Itertools;
+    use uuid::Uuid;
 
     use crate::db::create_connection_pool;
     use crate::db::store::project::project_node_store::{
@@ -125,18 +126,10 @@ mod tests {
         let pool = create_connection_pool().unwrap();
 
         // setup keys
-        let object_id = String::from("a8416664-f4bd-4242-a81c-78e1de298675");
-        let project_id = String::from("fa1065a8-9758-4ad6-950e-cb2b67060156");
+        let object_id = Uuid::new_v4().to_string();
+        let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        sql_query("delete from project_node where object_id = ?")
-            .bind::<Text, _>(&object_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
-        sql_query("delete from project where project_id = ?")
-            .bind::<Text, _>(&project_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
         create_project(pool.get().unwrap(), project_id.clone(), String::from("project 1")).unwrap();
 
         // find
@@ -210,5 +203,11 @@ mod tests {
         // find
         let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
         assert_eq!(0, rows.len());
+
+        // clean up
+        sql_query("delete from project where project_id = ?")
+            .bind::<Text, _>(&project_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
     }
 }

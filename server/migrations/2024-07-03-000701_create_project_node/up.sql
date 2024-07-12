@@ -6,6 +6,6 @@ create table project_node
     icon_id    varchar(36) not null,
     properties text        not null,
     methods    text        not null,
-    foreign key fk (project_id) references project (project_id)
+    foreign key fk (project_id) references project (project_id) on delete cascade
 ) character set utf8mb4
   collate utf8mb4_bin;

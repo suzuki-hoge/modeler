@@ -26,3 +26,15 @@ up:
 
 down:
 	@docker compose down
+
+#
+# diesel
+#
+
+db-run:
+	@docker compose exec diesel diesel migration run
+
+db-clear:
+	@find migrations -name down.sql | sort -r | xargs -Ifile cat file | xargs -Iquery docker compose exec -T db mysql -u app -ppassword modeler -e "query"
+	@docker compose exec db mysql -u app -ppassword modeler -e "drop table __diesel_schema_migrations"
+	@docker compose exec diesel diesel migration run

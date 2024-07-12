@@ -46,6 +46,7 @@ mod tests {
 
     use diesel::sql_types::Text;
     use diesel::{sql_query, RunQueryDsl};
+    use uuid::Uuid;
 
     #[test]
     fn test() {
@@ -53,18 +54,10 @@ mod tests {
         let pool = create_connection_pool().unwrap();
 
         // setup keys
-        let page_id = String::from("56406da8-f73b-4cce-9802-466b3c7d4587");
-        let project_id = String::from("91eba316-6b6a-4e0a-a6c8-992947bc76f4");
+        let page_id = Uuid::new_v4().to_string();
+        let project_id = Uuid::new_v4().to_string();
 
         // setup tables
-        sql_query("delete from page where page_id = ?")
-            .bind::<Text, _>(&page_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
-        sql_query("delete from project where project_id = ?")
-            .bind::<Text, _>(&project_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
         create_project(pool.get().unwrap(), project_id.clone(), String::from("project 1")).unwrap();
 
         // find
@@ -78,5 +71,11 @@ mod tests {
         let rows = find_pages(pool.get().unwrap(), &project_id).unwrap();
         assert_eq!(1, rows.len());
         assert_eq!("project 1", &rows[0].name);
+
+        // clean up
+        sql_query("delete from project where project_id = ?")
+            .bind::<Text, _>(&project_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
     }
 }

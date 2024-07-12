@@ -3,7 +3,7 @@ create table page
     page_id    varchar(36) primary key,
     project_id varchar(36)  not null,
     name       varchar(255) not null,
-    foreign key fk (project_id) references project (project_id)
+    foreign key fk (project_id) references project (project_id) on delete cascade
 ) character set utf8mb4
   collate utf8mb4_bin;
 

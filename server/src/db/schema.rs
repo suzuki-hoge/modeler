@@ -12,7 +12,20 @@ diesel::table! {
 }
 
 diesel::table! {
-    page_node (object_id) {
+    page_edge (object_id, page_id) {
+        #[max_length = 36]
+        object_id -> Varchar,
+        #[max_length = 36]
+        page_id -> Varchar,
+        #[max_length = 36]
+        source -> Varchar,
+        #[max_length = 36]
+        target -> Varchar,
+    }
+}
+
+diesel::table! {
+    page_node (object_id, page_id) {
         #[max_length = 36]
         object_id -> Varchar,
         #[max_length = 36]
@@ -34,6 +47,23 @@ diesel::table! {
 }
 
 diesel::table! {
+    project_edge (object_id) {
+        #[max_length = 36]
+        object_id -> Varchar,
+        #[max_length = 36]
+        project_id -> Varchar,
+        #[max_length = 36]
+        source -> Varchar,
+        #[max_length = 36]
+        target -> Varchar,
+        #[max_length = 36]
+        arrow_type -> Varchar,
+        #[max_length = 36]
+        label -> Varchar,
+    }
+}
+
+diesel::table! {
     project_node (object_id) {
         #[max_length = 36]
         object_id -> Varchar,
@@ -49,7 +79,11 @@ diesel::table! {
 }
 
 diesel::joinable!(page -> project (project_id));
+diesel::joinable!(page_edge -> page (page_id));
+diesel::joinable!(page_edge -> project_edge (object_id));
 diesel::joinable!(page_node -> page (page_id));
+diesel::joinable!(page_node -> project_node (object_id));
+diesel::joinable!(project_edge -> project (project_id));
 diesel::joinable!(project_node -> project (project_id));
 
-diesel::allow_tables_to_appear_in_same_query!(page, page_node, project, project_node,);
+diesel::allow_tables_to_appear_in_same_query!(page, page_edge, page_node, project, project_edge, project_node,);

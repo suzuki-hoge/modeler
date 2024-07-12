@@ -7,8 +7,8 @@ use crate::data::ObjectId;
 pub struct ProjectEdge {
     pub id: ObjectId,
     pub r#type: String,
-    pub source: String,
-    pub target: String,
+    pub source: ObjectId,
+    pub target: ObjectId,
     pub marker_end: String,
     pub data: EdgeData,
 }
@@ -18,8 +18,8 @@ pub struct ProjectEdge {
 pub struct PageEdge {
     pub id: ObjectId,
     pub r#type: String,
-    pub source: String,
-    pub target: String,
+    pub source: ObjectId,
+    pub target: ObjectId,
 }
 
 #[derive(Serialize)]

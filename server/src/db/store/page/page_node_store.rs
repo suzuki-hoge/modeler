@@ -44,10 +44,16 @@ pub fn create_page_node(mut conn: Conn, object_id: ObjectId, page_id: PageId, x:
     Ok(())
 }
 
-pub fn update_page_node_position(mut conn: Conn, object_id: &ObjectId, x: f64, y: f64) -> Result<(), String> {
+pub fn update_page_node_position(
+    mut conn: Conn,
+    object_id: &ObjectId,
+    page_id: &PageId,
+    x: f64,
+    y: f64,
+) -> Result<(), String> {
     let x = x.to_string();
     let y = y.to_string();
-    let count = update(schema::table.find(&object_id))
+    let count = update(schema::table.find((object_id, page_id)))
         .set((schema::x.eq(x), schema::y.eq(y)))
         .execute(&mut conn)
         .map_err(|e| e.to_string())?;
@@ -58,23 +64,24 @@ pub fn update_page_node_position(mut conn: Conn, object_id: &ObjectId, x: f64, y
     }
 }
 
-pub fn delete_page_node(mut conn: Conn, id: &ObjectId) -> Result<(), String> {
-    delete(schema::table.find(id)).execute(&mut conn).map_err(|e| e.to_string())?;
+pub fn delete_page_node(mut conn: Conn, object_id: &ObjectId, page_id: &PageId) -> Result<(), String> {
+    delete(schema::table.find((object_id, page_id))).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use diesel::sql_types::Text;
-    use diesel::{sql_query, RunQueryDsl};
-
     use crate::db::create_connection_pool;
     use crate::db::store::page::page_node_store::{
         create_page_node, delete_page_node, find_page_nodes, update_page_node_position,
     };
     use crate::db::store::page::page_store::create_page;
+    use crate::db::store::project::project_node_store::create_project_node;
     use crate::db::store::project::project_store::create_project;
+    use diesel::sql_types::Text;
+    use diesel::{sql_query, RunQueryDsl};
+    use uuid::Uuid;
 
     #[test]
     fn test() {
@@ -82,25 +89,21 @@ mod tests {
         let pool = create_connection_pool().unwrap();
 
         // setup keys
-        let object_id = String::from("e017bfc0-befa-474a-994e-2712e59b754d");
-        let page_id = String::from("a06bdff2-45de-41a0-945f-1b6b360f6a31");
-        let project_id = String::from("3dcb7990-81c8-4412-b08c-ad73be469902");
+        let object_id = Uuid::new_v4().to_string();
+        let page_id = Uuid::new_v4().to_string();
+        let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        sql_query("delete from page_node where object_id = ?")
-            .bind::<Text, _>(&page_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
-        sql_query("delete from page where page_id = ?")
-            .bind::<Text, _>(&page_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
-        sql_query("delete from project where project_id = ?")
-            .bind::<Text, _>(&project_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
         create_project(pool.get().unwrap(), project_id.clone(), String::from("project 1")).unwrap();
         create_page(pool.get().unwrap(), page_id.clone(), project_id.clone(), String::from("project 1")).unwrap();
+        create_project_node(
+            pool.get().unwrap(),
+            object_id.clone(),
+            project_id.clone(),
+            String::from("node 1"),
+            String::from("icon 1"),
+        )
+        .unwrap();
 
         // find
         let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
@@ -116,7 +119,7 @@ mod tests {
         assert_eq!("2", &rows[0].position.y.to_string());
 
         // update name
-        update_page_node_position(pool.get().unwrap(), &object_id, -1.2, -3.4).unwrap();
+        update_page_node_position(pool.get().unwrap(), &object_id, &page_id, -1.2, -3.4).unwrap();
 
         // find
         let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
@@ -124,10 +127,16 @@ mod tests {
         assert_eq!("-3.4", &rows[0].position.y.to_string());
 
         // delete
-        delete_page_node(pool.get().unwrap(), &object_id).unwrap();
+        delete_page_node(pool.get().unwrap(), &object_id, &page_id).unwrap();
 
         // find
         let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
         assert_eq!(0, rows.len());
+
+        // clean up
+        sql_query("delete from project where project_id = ?")
+            .bind::<Text, _>(&project_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
     }
 }
