@@ -34,7 +34,6 @@ async fn main() -> Result<(), String> {
             .app_data(Data::new(server.clone()))
             .app_data(Data::new(pool.clone()))
             .service(resource("/ws/{project_id}/{page_id}/{user}").to(start_session))
-            .route("/projects", web::get().to(project_controller::get_projects))
             .route("/project/{project_id}/pages", web::get().to(project_controller::get_pages))
             .route("/project/{project_id}/nodes", web::get().to(project_controller::get_nodes))
             .route("/project/{project_id}/{page_id}/nodes", web::get().to(page_controller::get_nodes))

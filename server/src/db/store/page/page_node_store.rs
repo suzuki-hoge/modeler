@@ -1,7 +1,6 @@
 use diesel::prelude::*;
+use diesel::{delete, insert_into, update};
 use itertools::Itertools;
-use serde_json::from_str as from_json_str;
-use serde_json::to_string as to_json_string;
 
 use crate::data::node::PageNode;
 use crate::data::page::PageId;
@@ -9,52 +8,47 @@ use crate::data::{ObjectId, Position};
 use crate::db::schema::page_node as schema;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable, Insertable)]
+#[derive(Queryable, Selectable, Insertable, Debug)]
 #[diesel(table_name = schema)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-#[derive(Debug)]
-struct PageNodeRow {
-    id: String,
+struct Row {
+    object_id: String,
     page_id: String,
-    type_: String,
-    position: String,
+    x: String,
+    y: String,
 }
 
-impl PageNodeRow {
-    fn read(self) -> PageNode {
-        PageNode { id: self.id, r#type: self.type_, position: from_json_str(&self.position).unwrap() }
-    }
-
-    fn write(value: PageNode, page_id: PageId) -> Self {
-        Self { id: value.id, page_id, type_: value.r#type, position: to_json_string(&value.position).unwrap() }
-    }
-
-    fn write_position(value: Position) -> String {
-        to_json_string(&value).unwrap()
+fn read(row: Row) -> PageNode {
+    PageNode {
+        id: row.object_id,
+        r#type: String::from("class"),
+        position: Position { x: row.x.parse().unwrap(), y: row.y.parse().unwrap() },
     }
 }
 
-pub fn find(mut conn: Conn, page_id: &PageId) -> Result<Vec<PageNode>, String> {
-    let rows: Vec<PageNodeRow> = schema::table
-        .filter(schema::page_id.eq(page_id).and(schema::type_.eq("class")))
-        .select(PageNodeRow::as_select())
+pub fn find_page_nodes(mut conn: Conn, page_id: &PageId) -> Result<Vec<PageNode>, String> {
+    let rows = schema::table
+        .filter(schema::page_id.eq(page_id))
+        .select(Row::as_select())
         .load(&mut conn)
         .map_err(|e| e.to_string())?;
 
-    Ok(rows.into_iter().map(|row| row.read()).collect_vec())
+    Ok(rows.into_iter().map(read).collect_vec())
 }
 
-pub fn insert(mut conn: Conn, value: PageNode, page_id: PageId) -> Result<(), String> {
-    let row = PageNodeRow::write(value, page_id);
+pub fn create_page_node(mut conn: Conn, object_id: ObjectId, page_id: PageId, x: f64, y: f64) -> Result<(), String> {
+    let row = Row { object_id, page_id, x: x.to_string(), y: y.to_string() };
 
-    diesel::insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
+    insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-pub fn update(mut conn: Conn, value: PageNode) -> Result<(), String> {
-    let count = diesel::update(schema::table.find(&value.id))
-        .set(schema::position.eq(&PageNodeRow::write_position(value.position)))
+pub fn update_page_node_position(mut conn: Conn, object_id: &ObjectId, x: f64, y: f64) -> Result<(), String> {
+    let x = x.to_string();
+    let y = y.to_string();
+    let count = update(schema::table.find(&object_id))
+        .set((schema::x.eq(x), schema::y.eq(y)))
         .execute(&mut conn)
         .map_err(|e| e.to_string())?;
 
@@ -64,71 +58,76 @@ pub fn update(mut conn: Conn, value: PageNode) -> Result<(), String> {
     }
 }
 
-pub fn delete(mut conn: Conn, id: ObjectId) -> Result<(), String> {
-    diesel::delete(schema::table.find(id)).execute(&mut conn).map_err(|e| e.to_string())?;
+pub fn delete_page_node(mut conn: Conn, id: &ObjectId) -> Result<(), String> {
+    delete(schema::table.find(id)).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use diesel::RunQueryDsl;
+    use diesel::sql_types::Text;
+    use diesel::{sql_query, RunQueryDsl};
 
-    use crate::data::node::PageNode;
-    use crate::data::Position;
     use crate::db::create_connection_pool;
-    use crate::db::store::page::page_node_store::{delete, find, insert, update};
+    use crate::db::store::page::page_node_store::{
+        create_page_node, delete_page_node, find_page_nodes, update_page_node_position,
+    };
+    use crate::db::store::page::page_store::create_page;
+    use crate::db::store::project::project_store::create_project;
 
     #[test]
     fn test() {
-        // setup
+        // init
         let pool = create_connection_pool().unwrap();
-        diesel::sql_query("delete from page_node").execute(&mut pool.get().unwrap()).unwrap();
-        // fixme: write in test
-        let page_id1 = String::from("3313e913-b0ab-4e3b-a35f-f1cf8ab625e1");
-        let page_id2 = String::from("1c672dc5-6951-4712-a345-86f60f28a7b2");
+
+        // setup keys
+        let object_id = String::from("e017bfc0-befa-474a-994e-2712e59b754d");
+        let page_id = String::from("a06bdff2-45de-41a0-945f-1b6b360f6a31");
+        let project_id = String::from("3dcb7990-81c8-4412-b08c-ad73be469902");
+
+        // setup parent table
+        sql_query("delete from page_node where object_id = ?")
+            .bind::<Text, _>(&page_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
+        sql_query("delete from page where page_id = ?")
+            .bind::<Text, _>(&page_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
+        sql_query("delete from project where project_id = ?")
+            .bind::<Text, _>(&project_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
+        create_project(pool.get().unwrap(), project_id.clone(), String::from("project 1")).unwrap();
+        create_page(pool.get().unwrap(), page_id.clone(), project_id.clone(), String::from("project 1")).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &page_id1).unwrap();
-        assert_eq!(0, rows1.len());
-        let rows2 = find(pool.get().unwrap(), &page_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
+        assert_eq!(0, rows.len());
 
-        // insert
-        let row = PageNode {
-            id: String::from("5e5a3441-678b-43dd-93c2-825fa0b99a2c"),
-            r#type: String::from("class"),
-            position: Position { x: 0.0, y: 0.0 },
-        };
-        insert(pool.get().unwrap(), row.clone(), page_id1.clone()).unwrap();
+        // create
+        create_page_node(pool.get().unwrap(), object_id.clone(), page_id.clone(), 1.0, 2.0).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &page_id1).unwrap();
-        assert_eq!(row, rows1[0]);
-        let rows2 = find(pool.get().unwrap(), &page_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
+        assert_eq!(1, rows.len());
+        assert_eq!("1", &rows[0].position.x.to_string());
+        assert_eq!("2", &rows[0].position.y.to_string());
 
-        // update
-        let new_row = PageNode {
-            id: String::from("5e5a3441-678b-43dd-93c2-825fa0b99a2c"),
-            r#type: String::from("class"),
-            position: Position { x: 1.0, y: 0.1 },
-        };
-        update(pool.get().unwrap(), new_row.clone()).unwrap();
+        // update name
+        update_page_node_position(pool.get().unwrap(), &object_id, -1.2, -3.4).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &page_id1).unwrap();
-        assert_eq!(new_row, rows1[0]);
-        let rows2 = find(pool.get().unwrap(), &page_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
+        assert_eq!("-1.2", &rows[0].position.x.to_string());
+        assert_eq!("-3.4", &rows[0].position.y.to_string());
 
         // delete
-        delete(pool.get().unwrap(), row.id).unwrap();
+        delete_page_node(pool.get().unwrap(), &object_id).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &page_id1).unwrap();
-        assert_eq!(0, rows1.len());
-        let rows2 = find(pool.get().unwrap(), &page_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_page_nodes(pool.get().unwrap(), &page_id).unwrap();
+        assert_eq!(0, rows.len());
     }
 }

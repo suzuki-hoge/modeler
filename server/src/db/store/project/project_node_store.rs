@@ -1,4 +1,7 @@
+use diesel::mysql::Mysql;
 use diesel::prelude::*;
+use diesel::query_builder::QueryFragment;
+use diesel::{delete, insert_into, update};
 use itertools::Itertools;
 use serde_json::from_str as from_json_str;
 use serde_json::to_string as to_json_string;
@@ -9,54 +12,87 @@ use crate::data::ObjectId;
 use crate::db::schema::project_node as schema;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable, Insertable)]
+#[derive(Queryable, Selectable, Insertable, Debug)]
 #[diesel(table_name = schema)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-#[derive(Debug)]
-struct ProjectNodeRow {
-    id: String,
-    project_id: String,
-    type_: String,
-    data: String,
+struct Row {
+    object_id: ObjectId,
+    project_id: ProjectId,
+    name: String,
+    icon_id: String,
+    properties: String,
+    methods: String,
 }
 
-impl ProjectNodeRow {
-    fn read(self) -> ProjectNode {
-        ProjectNode { id: self.id, r#type: self.type_, data: from_json_str(&self.data).unwrap() }
-    }
-
-    fn write(value: ProjectNode, project_id: ProjectId) -> Self {
-        Self { id: value.id, project_id, type_: value.r#type, data: to_json_string(&value.data).unwrap() }
-    }
-
-    fn write_data(value: NodeData) -> String {
-        to_json_string(&value).unwrap()
+fn read(row: Row) -> ProjectNode {
+    ProjectNode {
+        id: row.object_id,
+        r#type: String::from("class"),
+        data: NodeData {
+            name: row.name,
+            icon_id: row.icon_id,
+            properties: from_json_str(&row.properties).unwrap(),
+            methods: from_json_str(&row.methods).unwrap(),
+        },
     }
 }
 
-pub fn find(mut conn: Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, String> {
-    let rows: Vec<ProjectNodeRow> = schema::table
-        .filter(schema::project_id.eq(project_id).and(schema::type_.eq("class")))
-        .select(ProjectNodeRow::as_select())
+pub fn find_project_nodes(mut conn: Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, String> {
+    let rows = schema::table
+        .filter(schema::project_id.eq(project_id))
+        .select(Row::as_select())
         .load(&mut conn)
         .map_err(|e| e.to_string())?;
 
-    Ok(rows.into_iter().map(|row| row.read()).collect_vec())
+    Ok(rows.into_iter().map(read).collect_vec())
 }
 
-pub fn insert(mut conn: Conn, value: ProjectNode, project_id: ProjectId) -> Result<(), String> {
-    let row = ProjectNodeRow::write(value, project_id);
+pub fn create_project_node(
+    mut conn: Conn,
+    object_id: ObjectId,
+    project_id: ProjectId,
+    name: String,
+    icon_id: String,
+) -> Result<(), String> {
+    let empty: Vec<String> = vec![];
+    let row = Row {
+        object_id,
+        project_id,
+        name,
+        icon_id,
+        properties: to_json_string(&empty).unwrap(),
+        methods: to_json_string(&empty).unwrap(),
+    };
 
-    diesel::insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
+    insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-pub fn update(mut conn: Conn, value: ProjectNode) -> Result<(), String> {
-    let count = diesel::update(schema::table.find(&value.id))
-        .set(schema::data.eq(&ProjectNodeRow::write_data(value.data)))
-        .execute(&mut conn)
-        .map_err(|e| e.to_string())?;
+pub fn update_project_node_name(conn: Conn, object_id: &ObjectId, name: String) -> Result<(), String> {
+    update_project_node(conn, object_id, schema::name.eq(name))
+}
+
+pub fn update_project_node_icon_id(conn: Conn, object_id: &ObjectId, icon_id: String) -> Result<(), String> {
+    update_project_node(conn, object_id, schema::icon_id.eq(icon_id))
+}
+
+pub fn update_project_node_properties(conn: Conn, object_id: &ObjectId, properties: Vec<String>) -> Result<(), String> {
+    let value = to_json_string(&properties).unwrap();
+    update_project_node(conn, object_id, schema::properties.eq(value))
+}
+
+pub fn update_project_node_methods(conn: Conn, object_id: &ObjectId, methods: Vec<String>) -> Result<(), String> {
+    let value = to_json_string(&methods).unwrap();
+    update_project_node(conn, object_id, schema::methods.eq(value))
+}
+
+fn update_project_node<V>(mut conn: Conn, object_id: &ObjectId, value: V) -> Result<(), String>
+where
+    V: AsChangeset<Target = schema::table> + 'static,
+    <V as AsChangeset>::Changeset: QueryFragment<Mysql> + 'static,
+{
+    let count = update(schema::table.find(&object_id)).set(value).execute(&mut conn).map_err(|e| e.to_string())?;
 
     match count {
         1 => Ok(()),
@@ -64,79 +100,115 @@ pub fn update(mut conn: Conn, value: ProjectNode) -> Result<(), String> {
     }
 }
 
-pub fn delete(mut conn: Conn, id: ObjectId) -> Result<(), String> {
-    diesel::delete(schema::table.find(id)).execute(&mut conn).map_err(|e| e.to_string())?;
+pub fn delete_project_node(mut conn: Conn, object_id: &ObjectId) -> Result<(), String> {
+    delete(schema::table.find(object_id)).execute(&mut conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::data::node::{NodeData, ProjectNode};
+    use diesel::sql_types::Text;
+    use diesel::{sql_query, RunQueryDsl};
+    use itertools::Itertools;
+
     use crate::db::create_connection_pool;
-    use crate::db::store::project::project_node_store::{delete, find, insert, update};
-    use diesel::RunQueryDsl;
+    use crate::db::store::project::project_node_store::{
+        create_project_node, delete_project_node, find_project_nodes, update_project_node_icon_id,
+        update_project_node_methods, update_project_node_name, update_project_node_properties,
+    };
+    use crate::db::store::project::project_store::create_project;
 
     #[test]
     fn test() {
-        // setup
+        // init
         let pool = create_connection_pool().unwrap();
-        diesel::sql_query("delete from project_node").execute(&mut pool.get().unwrap()).unwrap();
-        // fixme: write in test
-        let project_id1 = String::from("7c6174a1-d573-443b-bfd5-e918bfeffd39");
-        let project_id2 = String::from("3ac1ccff-fc6c-46fb-9aa3-ab0236875160");
+
+        // setup keys
+        let object_id = String::from("a8416664-f4bd-4242-a81c-78e1de298675");
+        let project_id = String::from("fa1065a8-9758-4ad6-950e-cb2b67060156");
+
+        // setup parent table
+        sql_query("delete from project_node where object_id = ?")
+            .bind::<Text, _>(&object_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
+        sql_query("delete from project where project_id = ?")
+            .bind::<Text, _>(&project_id)
+            .execute(&mut pool.get().unwrap())
+            .unwrap();
+        create_project(pool.get().unwrap(), project_id.clone(), String::from("project 1")).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
-        assert_eq!(0, rows1.len());
-        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!(0, rows.len());
 
-        // insert
-        let row = ProjectNode {
-            id: String::from("a8416664-f4bd-4242-a81c-78e1de298675"),
-            r#type: String::from("class"),
-            data: NodeData {
-                icon_id: String::from("default"),
-                name: String::from("Test"),
-                properties: vec![String::from("p1")],
-                methods: vec![String::from("m1")],
-            },
-        };
-        insert(pool.get().unwrap(), row.clone(), project_id1.clone()).unwrap();
+        // create
+        create_project_node(
+            pool.get().unwrap(),
+            object_id.clone(),
+            project_id.clone(),
+            String::from("name1"),
+            String::from("icon1"),
+        )
+        .unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
-        assert_eq!(row, rows1[0]);
-        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!(1, rows.len());
+        assert_eq!("name1", &rows[0].data.name);
+        assert_eq!("icon1", &rows[0].data.icon_id);
 
-        // update
-        let new_row = ProjectNode {
-            id: String::from("a8416664-f4bd-4242-a81c-78e1de298675"),
-            r#type: String::from("class"),
-            data: NodeData {
-                icon_id: String::from("default"),
-                name: String::from("Test"),
-                properties: vec![String::from("p2")],
-                methods: vec![String::from("m2")],
-            },
-        };
-        update(pool.get().unwrap(), new_row.clone()).unwrap();
+        // update name
+        update_project_node_name(pool.get().unwrap(), &object_id, String::from("name2")).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
-        assert_eq!(new_row, rows1[0]);
-        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!("name2", &rows[0].data.name);
+
+        // update name
+        update_project_node_icon_id(pool.get().unwrap(), &object_id, String::from("icon2")).unwrap();
+
+        // find
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!("icon2", &rows[0].data.icon_id);
+
+        // update properties
+        update_project_node_properties(
+            pool.get().unwrap(),
+            &object_id,
+            vec![String::from("property 1"), String::from("property 2")],
+        )
+        .unwrap();
+
+        // find
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!(vec!["property 1", "property 2"], rows[0].data.properties.iter().collect_vec());
+
+        // update methods
+        update_project_node_methods(
+            pool.get().unwrap(),
+            &object_id,
+            vec![String::from("method 1"), String::from("method 2")],
+        )
+        .unwrap();
+
+        // find
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!(vec!["method 1", "method 2"], rows[0].data.methods.iter().collect_vec());
+
+        // update methods
+        update_project_node_methods(pool.get().unwrap(), &object_id, vec![]).unwrap();
+
+        // find
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!(0, rows[0].data.methods.len());
 
         // delete
-        delete(pool.get().unwrap(), row.id).unwrap();
+        delete_project_node(pool.get().unwrap(), &object_id).unwrap();
 
         // find
-        let rows1 = find(pool.get().unwrap(), &project_id1).unwrap();
-        assert_eq!(0, rows1.len());
-        let rows2 = find(pool.get().unwrap(), &project_id2).unwrap();
-        assert_eq!(0, rows2.len());
+        let rows = find_project_nodes(pool.get().unwrap(), &project_id).unwrap();
+        assert_eq!(0, rows.len());
     }
 }

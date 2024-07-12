@@ -6,24 +6,15 @@ use crate::data::edge::{EdgeData, ProjectEdge};
 use crate::data::node::NodeIcon;
 use crate::data::project::ProjectId;
 use crate::db::store::page::page_store;
-use crate::db::store::project::{project_node_store, project_store};
+use crate::db::store::project::project_node_store;
 use crate::db::Pool;
-
-pub async fn get_projects(pool: Data<Pool>) -> impl Responder {
-    println!("/projects");
-
-    match project_store::find_all(pool.get().unwrap()) {
-        Ok(rows) => to_json_string(&rows).unwrap(),
-        Err(e) => e.to_string(),
-    }
-}
 
 pub async fn get_pages(pool: Data<Pool>, path: Path<ProjectId>) -> impl Responder {
     println!("/pages");
 
     let project_id = path.into_inner();
 
-    match page_store::find(pool.get().unwrap(), &project_id) {
+    match page_store::find_pages(pool.get().unwrap(), &project_id) {
         Ok(rows) => to_json_string(&rows).unwrap(),
         Err(e) => e.to_string(),
     }
@@ -74,7 +65,7 @@ pub async fn get_nodes(pool: Data<Pool>, path: Path<ProjectId>) -> impl Responde
 
     let project_id = path.into_inner();
 
-    match project_node_store::find(pool.get().unwrap(), &project_id) {
+    match project_node_store::find_project_nodes(pool.get().unwrap(), &project_id) {
         Ok(rows) => to_json_string(&rows).unwrap(),
         Err(e) => e.to_string(),
     }

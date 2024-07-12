@@ -1,7 +1,7 @@
 use std::env;
 
 use diesel::r2d2::ConnectionManager;
-use diesel::{MysqlConnection};
+use diesel::MysqlConnection;
 use dotenvy::dotenv;
 use r2d2::PooledConnection;
 

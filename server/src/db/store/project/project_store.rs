@@ -1,31 +1,22 @@
+use diesel::insert_into;
 use diesel::prelude::*;
-use itertools::Itertools;
 
-use crate::data::project::Project;
-use crate::db::schema::project::dsl::project;
+use crate::data::project::ProjectId;
+use crate::db::schema::project as schema;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable)]
-#[diesel(table_name = crate::db::schema::project)]
+#[derive(Queryable, Selectable, Insertable, Debug)]
+#[diesel(table_name = schema)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
-#[derive(Debug)]
-struct ProjectRow {
-    id: String,
+struct Row {
+    project_id: ProjectId,
     name: String,
 }
 
-impl ProjectRow {
-    // fn write(value: Project) -> Self {
-    //     Self { id: value.project_id, name: value.name }
-    // }
+pub fn create_project(mut conn: Conn, project_id: ProjectId, name: String) -> Result<(), String> {
+    let row = Row { project_id, name };
 
-    fn read(self) -> Project {
-        Project { project_id: self.id, name: self.name }
-    }
-}
+    insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
 
-pub fn find_all(mut conn: Conn) -> Result<Vec<Project>, String> {
-    let rows: Vec<ProjectRow> = project.select(ProjectRow::as_select()).load(&mut conn).map_err(|e| e.to_string())?;
-
-    Ok(rows.into_iter().map(|row| row.read()).collect_vec())
+    Ok(())
 }

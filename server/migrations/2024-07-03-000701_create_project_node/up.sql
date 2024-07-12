@@ -1,9 +1,11 @@
 create table project_node
 (
-    id         varchar(36) primary key,
+    object_id  varchar(36) primary key,
     project_id varchar(36) not null,
-    type       varchar(36) not null,
-    data       text        not null,
-    foreign key fk (project_id) references project (id)
+    name       varchar(36) not null,
+    icon_id    varchar(36) not null,
+    properties text        not null,
+    methods    text        not null,
+    foreign key fk (project_id) references project (project_id)
 ) character set utf8mb4
   collate utf8mb4_bin;

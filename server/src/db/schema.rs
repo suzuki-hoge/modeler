@@ -1,48 +1,50 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    page (id) {
-        #[max_length = 36]
-        id -> Varchar,
-        #[max_length = 36]
-        project_id -> Varchar,
-        #[max_length = 255]
-        name -> Varchar,
-    }
-}
-
-diesel::table! {
-    page_node (id) {
-        #[max_length = 36]
-        id -> Varchar,
+    page (page_id) {
         #[max_length = 36]
         page_id -> Varchar,
-        #[sql_name = "type"]
         #[max_length = 36]
-        type_ -> Varchar,
-        position -> Text,
-    }
-}
-
-diesel::table! {
-    project (id) {
-        #[max_length = 36]
-        id -> Varchar,
+        project_id -> Varchar,
         #[max_length = 255]
         name -> Varchar,
     }
 }
 
 diesel::table! {
-    project_node (id) {
+    page_node (object_id) {
         #[max_length = 36]
-        id -> Varchar,
+        object_id -> Varchar,
+        #[max_length = 36]
+        page_id -> Varchar,
+        #[max_length = 10]
+        x -> Varchar,
+        #[max_length = 10]
+        y -> Varchar,
+    }
+}
+
+diesel::table! {
+    project (project_id) {
         #[max_length = 36]
         project_id -> Varchar,
-        #[sql_name = "type"]
+        #[max_length = 255]
+        name -> Varchar,
+    }
+}
+
+diesel::table! {
+    project_node (object_id) {
         #[max_length = 36]
-        type_ -> Varchar,
-        data -> Text,
+        object_id -> Varchar,
+        #[max_length = 36]
+        project_id -> Varchar,
+        #[max_length = 36]
+        name -> Varchar,
+        #[max_length = 36]
+        icon_id -> Varchar,
+        properties -> Text,
+        methods -> Text,
     }
 }
 

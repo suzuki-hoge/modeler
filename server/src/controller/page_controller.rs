@@ -13,7 +13,7 @@ pub async fn get_nodes(pool: Data<Pool>, path: Path<(ProjectId, PageId)>) -> imp
 
     let (_project_id, page_id) = path.into_inner();
 
-    match page_node_store::find(pool.get().unwrap(), &page_id) {
+    match page_node_store::find_page_nodes(pool.get().unwrap(), &page_id) {
         Ok(rows) => to_json_string(&rows).unwrap(),
         Err(e) => e.to_string(),
     }
