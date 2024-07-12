@@ -1,5 +1,6 @@
-use crate::data::project::ProjectId;
 use serde::Serialize;
+
+use crate::data::project::ProjectId;
 
 pub type PageId = String;
 

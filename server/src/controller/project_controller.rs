@@ -12,7 +12,7 @@ pub async fn get_pages(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     let project_id = path.into_inner();
 
-    respond(page_store::find_pages(pool.get().unwrap(), &project_id))
+    respond(page_store::find_pages(&mut pool.get().unwrap(), &project_id))
 }
 
 pub async fn get_icons(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -20,7 +20,7 @@ pub async fn get_icons(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     let project_id = path.into_inner();
 
-    respond(node_icon_store::find_node_icons(pool.get().unwrap(), &project_id))
+    respond(node_icon_store::find_node_icons(&mut pool.get().unwrap(), &project_id))
 }
 
 pub async fn get_nodes(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -28,7 +28,7 @@ pub async fn get_nodes(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     let project_id = path.into_inner();
 
-    respond(project_node_store::find_project_nodes(pool.get().unwrap(), &project_id))
+    respond(project_node_store::find_project_nodes(&mut pool.get().unwrap(), &project_id))
 }
 
 pub async fn get_edges(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -36,5 +36,5 @@ pub async fn get_edges(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     let project_id = path.into_inner();
 
-    respond(project_edge_store::find_project_edges(pool.get().unwrap(), &project_id))
+    respond(project_edge_store::find_project_edges(&mut pool.get().unwrap(), &project_id))
 }

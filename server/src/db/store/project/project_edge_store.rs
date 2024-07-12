@@ -8,6 +8,8 @@ use crate::data::edge::{EdgeData, ProjectEdge};
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::schema::project_edge as schema;
+use crate::db::store::project::project_store;
+use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
 #[derive(Queryable, Selectable, Insertable, Debug)]
@@ -33,70 +35,87 @@ fn read(row: Row) -> ProjectEdge {
     }
 }
 
-pub fn find_project_edges(mut conn: Conn, project_id: &ProjectId) -> Result<Vec<ProjectEdge>, String> {
+pub fn find_project_edges(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectEdge>, DatabaseError> {
+    project_store::exists(conn, project_id)?;
+
     let rows = schema::table
         .filter(schema::project_id.eq(project_id))
         .select(Row::as_select())
-        .load(&mut conn)
-        .map_err(|e| e.to_string())?;
+        .load(conn)
+        .map_err(DatabaseError::other)?;
 
     Ok(rows.into_iter().map(read).collect_vec())
 }
 
 pub fn create_project_edge(
-    mut conn: Conn,
-    object_id: ObjectId,
-    project_id: ProjectId,
-    source: ObjectId,
-    target: ObjectId,
-    arrow_type: String,
-    label: String,
-) -> Result<(), String> {
-    let row = Row { object_id, project_id, source, target, arrow_type, label };
+    conn: &mut Conn,
+    object_id: &ObjectId,
+    project_id: &ProjectId,
+    source: &ObjectId,
+    target: &ObjectId,
+    arrow_type: &String,
+    label: &String,
+) -> Result<(), DatabaseError> {
+    let row = Row {
+        object_id: object_id.clone(),
+        project_id: project_id.clone(),
+        source: source.clone(),
+        target: target.clone(),
+        arrow_type: arrow_type.clone(),
+        label: label.clone(),
+    };
 
-    insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
+    insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
 
 pub fn update_project_edge_connection(
-    conn: Conn,
+    conn: &mut Conn,
     object_id: &ObjectId,
-    source: ObjectId,
-    target: ObjectId,
-) -> Result<(), String> {
-    update_project_edge(conn, object_id, (schema::source.eq(source), schema::target.eq(target)))
+    source: &ObjectId,
+    target: &ObjectId,
+) -> Result<(), DatabaseError> {
+    update_project_edge(conn, object_id, (schema::source.eq(source.clone()), schema::target.eq(target.clone())))
 }
 
-pub fn update_project_edge_arrow_type(conn: Conn, object_id: &ObjectId, arrow_type: String) -> Result<(), String> {
-    update_project_edge(conn, object_id, schema::arrow_type.eq(arrow_type))
+pub fn update_project_edge_arrow_type(
+    conn: &mut Conn,
+    object_id: &ObjectId,
+    arrow_type: &String,
+) -> Result<(), DatabaseError> {
+    update_project_edge(conn, object_id, schema::arrow_type.eq(arrow_type.clone()))
 }
 
-pub fn update_project_edge_label(conn: Conn, object_id: &ObjectId, label: String) -> Result<(), String> {
-    update_project_edge(conn, object_id, schema::label.eq(label))
+pub fn update_project_edge_label(conn: &mut Conn, object_id: &ObjectId, label: &String) -> Result<(), DatabaseError> {
+    update_project_edge(conn, object_id, schema::label.eq(label.clone()))
 }
 
-fn update_project_edge<V>(mut conn: Conn, object_id: &ObjectId, value: V) -> Result<(), String>
+fn update_project_edge<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), DatabaseError>
 where
     V: AsChangeset<Target = schema::table> + 'static,
     <V as AsChangeset>::Changeset: QueryFragment<Mysql> + 'static,
 {
-    let count = update(schema::table.find(object_id)).set(value).execute(&mut conn).map_err(|e| e.to_string())?;
+    let count = update(schema::table.find(object_id)).set(value).execute(conn).map_err(DatabaseError::other)?;
 
     match count {
         1 => Ok(()),
-        _ => Err(format!("unexpected update: [ {} rows found ]", count)),
+        _ => Err(DatabaseError::unexpected_row_matched(count)),
     }
 }
 
-pub fn delete_project_edge(mut conn: Conn, object_id: &ObjectId) -> Result<(), String> {
-    delete(schema::table.find(object_id)).execute(&mut conn).map_err(|e| e.to_string())?;
+pub fn delete_project_edge(conn: &mut Conn, object_id: &ObjectId) -> Result<(), DatabaseError> {
+    delete(schema::table.find(object_id)).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
+    use diesel::sql_types::Text;
+    use diesel::{sql_query, RunQueryDsl};
+    use uuid::Uuid;
+
     use crate::db::create_connection_pool;
     use crate::db::store::project::project_edge_store::{
         create_project_edge, delete_project_edge, find_project_edges, update_project_edge_arrow_type,
@@ -104,104 +123,76 @@ mod tests {
     };
     use crate::db::store::project::project_node_store::create_project_node;
     use crate::db::store::project::project_store::create_project;
-    use diesel::sql_types::Text;
-    use diesel::{sql_query, RunQueryDsl};
-    use uuid::Uuid;
+    use crate::db::store::DatabaseError;
+
+    fn s(value: &'static str) -> String {
+        String::from(value)
+    }
 
     #[test]
-    fn test() {
+    fn test() -> Result<(), DatabaseError> {
         // init
-        let pool = create_connection_pool().unwrap();
+        let mut conn = create_connection_pool().unwrap().get().unwrap();
 
         // setup keys
         let object_id = Uuid::new_v4().to_string();
-        let project_node_id1 = Uuid::new_v4().to_string();
-        let project_node_id2 = Uuid::new_v4().to_string();
+        let node_id1 = Uuid::new_v4().to_string();
+        let node_id2 = Uuid::new_v4().to_string();
         let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        create_project(pool.get().unwrap(), project_id.clone(), String::from("project 1")).unwrap();
-        create_project_node(
-            pool.get().unwrap(),
-            project_node_id1.clone(),
-            project_id.clone(),
-            String::from("node 1"),
-            String::from("icon 1"),
-        )
-        .unwrap();
-        create_project_node(
-            pool.get().unwrap(),
-            project_node_id2.clone(),
-            project_id.clone(),
-            String::from("node 2"),
-            String::from("icon 2"),
-        )
-        .unwrap();
+        create_project(&mut conn, &project_id, &s("project 1"))?;
+        create_project_node(&mut conn, &node_id1, &project_id, &s("node 1"), &s("icon 1"))?;
+        create_project_node(&mut conn, &node_id2, &project_id, &s("node 2"), &s("icon 2"))?;
 
         // find
-        let rows = find_project_edges(pool.get().unwrap(), &project_id).unwrap();
+        let rows = find_project_edges(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_project_edge(
-            pool.get().unwrap(),
-            object_id.clone(),
-            project_id.clone(),
-            project_node_id1.clone(),
-            project_node_id2.clone(),
-            String::from("arrow 1"),
-            String::from("1"),
-        )
-        .unwrap();
+        create_project_edge(&mut conn, &object_id, &project_id, &node_id1, &node_id2, &s("arrow 1"), &s("1"))?;
 
         // find
-        let rows = find_project_edges(pool.get().unwrap(), &project_id).unwrap();
+        let rows = find_project_edges(&mut conn, &project_id)?;
         assert_eq!(1, rows.len());
-        assert_eq!(&project_node_id1, &rows[0].source);
-        assert_eq!(&project_node_id2, &rows[0].target);
+        assert_eq!(&node_id1, &rows[0].source);
+        assert_eq!(&node_id2, &rows[0].target);
         assert_eq!("arrow 1", &rows[0].marker_end);
         assert_eq!("arrow 1", &rows[0].data.arrow_type);
         assert_eq!("1", &rows[0].data.label);
 
         // update connection
-        update_project_edge_connection(
-            pool.get().unwrap(),
-            &object_id,
-            project_node_id2.clone(),
-            project_node_id1.clone(),
-        )
-        .unwrap();
+        update_project_edge_connection(&mut conn, &object_id, &node_id2, &node_id1)?;
 
         // find
-        let rows = find_project_edges(pool.get().unwrap(), &project_id).unwrap();
-        assert_eq!(&project_node_id2, &rows[0].source);
-        assert_eq!(&project_node_id1, &rows[0].target);
+        let rows = find_project_edges(&mut conn, &project_id)?;
+        assert_eq!(&node_id2, &rows[0].source);
+        assert_eq!(&node_id1, &rows[0].target);
 
         // update arrow type
-        update_project_edge_arrow_type(pool.get().unwrap(), &object_id, String::from("arrow 2")).unwrap();
+        update_project_edge_arrow_type(&mut conn, &object_id, &s("arrow 2"))?;
 
         // find
-        let rows = find_project_edges(pool.get().unwrap(), &project_id).unwrap();
+        let rows = find_project_edges(&mut conn, &project_id)?;
         assert_eq!("arrow 2", &rows[0].data.arrow_type);
 
         // update label
-        update_project_edge_label(pool.get().unwrap(), &object_id, String::from("0..1")).unwrap();
+        update_project_edge_label(&mut conn, &object_id, &s("0..1"))?;
 
         // find
-        let rows = find_project_edges(pool.get().unwrap(), &project_id).unwrap();
+        let rows = find_project_edges(&mut conn, &project_id)?;
         assert_eq!("0..1", &rows[0].data.label);
 
         // delete
-        delete_project_edge(pool.get().unwrap(), &object_id).unwrap();
+        delete_project_edge(&mut conn, &object_id)?;
 
         // find
-        let rows = find_project_edges(pool.get().unwrap(), &project_id).unwrap();
+        let rows = find_project_edges(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
         // clean up
-        sql_query("delete from project where project_id = ?")
-            .bind::<Text, _>(&project_id)
-            .execute(&mut pool.get().unwrap())
-            .unwrap();
+        sql_query("delete from project where project_id = ?").bind::<Text, _>(&project_id).execute(&mut conn).unwrap();
+
+        Ok(())
     }
 }

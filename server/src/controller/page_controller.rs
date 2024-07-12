@@ -11,7 +11,7 @@ pub async fn get_nodes(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
 
     let page_id = path.into_inner();
 
-    respond(page_node_store::find_page_nodes(pool.get().unwrap(), &page_id))
+    respond(page_node_store::find_page_nodes(&mut pool.get().unwrap(), &page_id))
 }
 
 pub async fn get_edges(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
@@ -19,5 +19,5 @@ pub async fn get_edges(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
 
     let page_id = path.into_inner();
 
-    respond(page_edge_store::find_page_edges(pool.get().unwrap(), &page_id))
+    respond(page_edge_store::find_page_edges(&mut pool.get().unwrap(), &page_id))
 }

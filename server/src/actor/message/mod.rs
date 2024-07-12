@@ -1,10 +1,10 @@
-pub mod connection;
-pub mod page;
-pub mod project;
-
 use std::collections::HashMap;
 
 use serde_json::Value;
+
+pub mod connection;
+pub mod page;
+pub mod project;
 
 pub type Json = HashMap<String, Value>;
 
@@ -38,7 +38,7 @@ pub fn _parse_strings(json: &Json, key: &str) -> Result<Vec<String>, String> {
 mod tests {
     use serde_json::from_str as from_json_str;
 
-    use crate::actor::message::{_parse_strings, parse_f64, parse_i64, parse_string, Json};
+    use crate::actor::message::{Json, _parse_strings, parse_f64, parse_i64, parse_string};
 
     #[test]
     fn parse_string_ok() {

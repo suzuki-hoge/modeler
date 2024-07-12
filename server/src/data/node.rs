@@ -1,5 +1,6 @@
-use crate::data::{ObjectId, Position};
 use serde::{Deserialize, Serialize};
+
+use crate::data::{ObjectId, Position};
 
 #[derive(Serialize, Eq, PartialEq, Clone, Debug)]
 #[serde(rename_all = "camelCase")]

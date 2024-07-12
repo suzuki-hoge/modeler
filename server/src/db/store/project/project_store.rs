@@ -1,8 +1,10 @@
+use diesel::dsl::count;
 use diesel::insert_into;
 use diesel::prelude::*;
 
 use crate::data::project::ProjectId;
 use crate::db::schema::project as schema;
+use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
 #[derive(Queryable, Selectable, Insertable, Debug)]
@@ -13,10 +15,24 @@ struct Row {
     name: String,
 }
 
-pub fn create_project(mut conn: Conn, project_id: ProjectId, name: String) -> Result<(), String> {
-    let row = Row { project_id, name };
+pub fn create_project(conn: &mut Conn, project_id: &ProjectId, name: &String) -> Result<(), DatabaseError> {
+    let row = Row { project_id: project_id.clone(), name: name.clone() };
 
-    insert_into(schema::table).values(&row).execute(&mut conn).map_err(|e| e.to_string())?;
+    insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
+}
+
+pub fn exists(conn: &mut Conn, project_id: &ProjectId) -> Result<(), DatabaseError> {
+    let count: i64 = schema::table
+        .filter(schema::project_id.eq(project_id))
+        .select(count(schema::project_id))
+        .first(conn)
+        .map_err(DatabaseError::other)?;
+
+    if count == 0 {
+        Err(DatabaseError::InvalidKey)
+    } else {
+        Ok(())
+    }
 }
