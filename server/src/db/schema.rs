@@ -1,6 +1,21 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    node_icon (project_id, id) {
+        #[max_length = 36]
+        project_id -> Varchar,
+        #[max_length = 36]
+        id -> Varchar,
+        #[max_length = 36]
+        preview -> Varchar,
+        #[max_length = 36]
+        desc -> Varchar,
+        #[max_length = 36]
+        color -> Varchar,
+    }
+}
+
+diesel::table! {
     page (page_id) {
         #[max_length = 36]
         page_id -> Varchar,
@@ -78,6 +93,7 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(node_icon -> project (project_id));
 diesel::joinable!(page -> project (project_id));
 diesel::joinable!(page_edge -> page (page_id));
 diesel::joinable!(page_edge -> project_edge (object_id));
@@ -86,4 +102,12 @@ diesel::joinable!(page_node -> project_node (object_id));
 diesel::joinable!(project_edge -> project (project_id));
 diesel::joinable!(project_node -> project (project_id));
 
-diesel::allow_tables_to_appear_in_same_query!(page, page_edge, page_node, project, project_edge, project_node,);
+diesel::allow_tables_to_appear_in_same_query!(
+    node_icon,
+    page,
+    page_edge,
+    page_node,
+    project,
+    project_edge,
+    project_node,
+);
