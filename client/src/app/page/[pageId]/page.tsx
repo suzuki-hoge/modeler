@@ -2,7 +2,7 @@
 import 'reactflow/dist/style.css'
 
 import { faker } from '@faker-js/faker'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import ReactFlow, { Background, Panel, ReactFlowProvider } from 'reactflow'
 import { shallow } from 'zustand/shallow'
@@ -26,11 +26,9 @@ import { createPageSocket, PageSocketContext } from '@/app/_socket/page-socket'
 import { createProjectSocket, handleProjectMessage, ProjectSocketContext } from '@/app/_socket/project-socket'
 import { pageSelector, usePageStore } from '@/app/_store/page-store'
 import { projectSelector, useProjectStore } from '@/app/_store/project-store'
+import { DebugPanel } from '@/app/page/[pageId]/DebugPanel'
 
 const Inner = () => {
-  // debug
-  const [storeDebug, setStoreDebug] = useState(false)
-
   // store
   const projectStore = useProjectStore(projectSelector, shallow)
   const pageStore = usePageStore(pageSelector, shallow)
@@ -112,89 +110,54 @@ const Inner = () => {
     return <p>Loading...</p>
   }
 
+  const debug = true
+
   return (
-    <div id='page' style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow
-        nodes={pageStore.nodes}
-        edges={pageStore.edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        defaultEdgeOptions={defaultEdgeOptions}
-        connectionLineStyle={connectionLineStyle}
-        connectionLineType={connectionLineType}
-        connectionLineComponent={ConnectionLine}
-        onNodesChange={onNodesChange}
-        onNodeDragStart={onNodeDragStart}
-        onNodeDragStop={onNodeDragStop}
-        onEdgesChange={onEdgesChange}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
-        attributionPosition='top-left'
-        fitView={true}
-        panOnDrag={false}
-        panOnScroll={true}
-        zoomOnPinch={true}
-        zoomOnScroll={false}
-        selectionOnDrag={true}
-        onPaneClick={onPaneClick}
-      >
-        <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
-        <Panel position='bottom-right'>
-          <button onClick={() => setStoreDebug((prev) => !prev)}>store debug</button>
-        </Panel>
-        {storeDebug && (
-          <Panel position='bottom-left'>
-            {projectStore.nodes.map((x) => (
-              <p key={x.id} style={{ margin: 0 }}>
-                {x.id.split('-')[0]}
-                {': '}
-                {x.data.name}
-              </p>
-            ))}
-            <hr />
-            {pageStore.nodes.map((x) => (
-              <p key={x.id} style={{ margin: 0 }}>
-                {projectStore.getNode(x.id).data.name}
-                {': '}
-                {JSON.stringify(x.position)}
-              </p>
-            ))}
-            <hr />
-            {projectStore.edges.map((x) => (
-              <p key={x.id} style={{ margin: 0 }}>
-                {x.id.split('-')[0]}
-                {': '}
-                {projectStore.getNode(x.source).data.name}
-                {' → '}
-                {projectStore.getNode(x.target).data.name}
-              </p>
-            ))}
-            <hr />
-            {pageStore.edges.map((x) => (
-              <p key={x.id} style={{ margin: 0 }}>
-                {projectStore.getNode(x.source).data.name}
-                {' → '}
-                {projectStore.getNode(x.target).data.name}
-              </p>
-            ))}
-          </Panel>
+    <>
+      <div id='page' style={{ width: '100vw', height: debug ? '70vh' : '100vh' }}>
+        <ReactFlow
+          nodes={pageStore.nodes}
+          edges={pageStore.edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          defaultEdgeOptions={defaultEdgeOptions}
+          connectionLineStyle={connectionLineStyle}
+          connectionLineType={connectionLineType}
+          connectionLineComponent={ConnectionLine}
+          onNodesChange={onNodesChange}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDragStop={onNodeDragStop}
+          onEdgesChange={onEdgesChange}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
+          attributionPosition='top-left'
+          fitView={true}
+          panOnDrag={false}
+          panOnScroll={true}
+          zoomOnPinch={true}
+          zoomOnScroll={false}
+          selectionOnDrag={true}
+          onPaneClick={onPaneClick}
+        >
+          <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
+          <Background />
+        </ReactFlow>
+        <Arrows />
+        {selectorState.active && (
+          <ClassCreatableSelector
+            x={`${selectorState.position.screen.x}px`}
+            y={`${selectorState.position.screen.y}px`}
+            headers={projectStore.nodeHeaders}
+            icons={projectStore.nodeIcons}
+            newNodePosition={selectorState.position.flow}
+            onSelect={onPostNodeSelect}
+            onPostNodeCreate={onPostNodeCreate}
+            onClose={() => selectorState.setActive(false)}
+          />
         )}
-        <Background />
-      </ReactFlow>
-      <Arrows />
-      {selectorState.active && (
-        <ClassCreatableSelector
-          x={`${selectorState.position.screen.x}px`}
-          y={`${selectorState.position.screen.y}px`}
-          headers={projectStore.nodeHeaders}
-          icons={projectStore.nodeIcons}
-          newNodePosition={selectorState.position.flow}
-          onSelect={onPostNodeSelect}
-          onPostNodeCreate={onPostNodeCreate}
-          onClose={() => selectorState.setActive(false)}
-        />
-      )}
-    </div>
+      </div>
+      {debug && <DebugPanel />}
+    </>
   )
 }
 
