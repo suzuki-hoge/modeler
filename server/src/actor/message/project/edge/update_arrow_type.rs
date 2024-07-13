@@ -11,54 +11,51 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct CreateNodeRequest {
+pub struct UpdateArrowTypeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
-    pub name: String,
-    pub icon_id: String,
+    pub arrow_type: String,
 }
 
-impl CreateNodeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<CreateNodeRequest, String> {
+impl UpdateArrowTypeRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateArrowTypeRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "objectId")?,
-            name: parse_string(&json, "name")?,
-            icon_id: parse_string(&json, "iconId")?,
+            arrow_type: parse_string(&json, "arrowType")?,
         })
     }
 }
 
-impl Handler<CreateNodeRequest> for Server {
+impl Handler<UpdateArrowTypeRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: CreateNodeRequest, _: &mut Context<Self>) {
-        println!("accept create-node request");
+    fn handle(&mut self, request: UpdateArrowTypeRequest, _: &mut Context<Self>) {
+        println!("accept update-arrow-type request");
 
-        let response = CreateNodeResponse::new(request.object_id, request.name, request.icon_id);
+        let response = UpdateArrowTypeResponse::new(request.object_id, request.arrow_type);
         self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateNodeResponse {
+pub struct UpdateArrowTypeResponse {
     r#type: String,
     object_id: ObjectId,
-    name: String,
-    icon_id: String,
+    arrow_type: String,
 }
 
-impl CreateNodeResponse {
-    fn new(object_id: ObjectId, name: String, icon_id: String) -> Self {
-        Self { r#type: String::from("create-node"), object_id, name, icon_id }
+impl UpdateArrowTypeResponse {
+    fn new(object_id: ObjectId, arrow_type: String) -> Self {
+        Self { r#type: String::from("update-arrow-type"), object_id, arrow_type }
     }
 }
 
-impl From<CreateNodeResponse> for Response {
-    fn from(value: CreateNodeResponse) -> Self {
+impl From<UpdateArrowTypeResponse> for Response {
+    fn from(value: UpdateArrowTypeResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }

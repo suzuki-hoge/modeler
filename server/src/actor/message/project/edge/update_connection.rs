@@ -11,66 +11,54 @@ use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-pub struct CreateEdgeRequest {
+pub struct UpdateConnectionRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
     pub source: ObjectId,
     pub target: ObjectId,
-    pub arrow_type: String,
-    pub label: String,
 }
 
-impl CreateEdgeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<CreateEdgeRequest, String> {
+impl UpdateConnectionRequest {
+    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateConnectionRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "objectId")?,
             source: parse_string(&json, "source")?,
             target: parse_string(&json, "target")?,
-            arrow_type: parse_string(&json, "arrowType")?,
-            label: parse_string(&json, "label")?,
         })
     }
 }
 
-impl Handler<CreateEdgeRequest> for Server {
+impl Handler<UpdateConnectionRequest> for Server {
     type Result = ();
 
-    fn handle(&mut self, request: CreateEdgeRequest, _: &mut Context<Self>) {
-        println!("accept create-edge request");
+    fn handle(&mut self, request: UpdateConnectionRequest, _: &mut Context<Self>) {
+        println!("accept update-connection request");
 
-        let response = CreateEdgeResponse::new(
-            request.object_id,
-            request.source,
-            request.target,
-            request.arrow_type,
-            request.label,
-        );
+        let response = UpdateConnectionResponse::new(request.object_id, request.source, request.target);
         self.send_to_project(&request.page_id, response.into(), &request.session_id);
     }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateEdgeResponse {
+pub struct UpdateConnectionResponse {
     r#type: String,
     object_id: ObjectId,
     source: ObjectId,
     target: ObjectId,
-    arrow_type: String,
-    label: String,
 }
 
-impl CreateEdgeResponse {
-    fn new(object_id: ObjectId, source: ObjectId, target: ObjectId, arrow_type: String, label: String) -> Self {
-        Self { r#type: String::from("create-edge"), object_id, source, target, arrow_type, label }
+impl UpdateConnectionResponse {
+    fn new(object_id: ObjectId, source: ObjectId, target: ObjectId) -> Self {
+        Self { r#type: String::from("update-connection"), object_id, source, target }
     }
 }
 
-impl From<CreateEdgeResponse> for Response {
-    fn from(value: CreateEdgeResponse) -> Self {
+impl From<UpdateConnectionResponse> for Response {
+    fn from(value: UpdateConnectionResponse) -> Self {
         Self { json: to_json_string(&value).unwrap() }
     }
 }
