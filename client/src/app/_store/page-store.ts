@@ -29,7 +29,7 @@ type Unlock = (id: string) => void
 type PutNodes = (nodes: Node<PageNodeData>[]) => void
 type PutEdges = (edges: Edge<PageEdgeData>[]) => void
 
-export type PageStore = {
+type PageStoreWithState = {
   // node
   nodes: Node<PageNodeData>[]
   isNodeExists: IsNodeExists
@@ -57,9 +57,10 @@ export type PageStore = {
   putEdges: PutEdges
 }
 
-export const pageSelector = (store: PageStore) => ({
+export type PageStore = Omit<PageStoreWithState, 'nodes' | 'edges' | 'lockIds'>
+
+export const pageSelector = (store: PageStoreWithState) => ({
   // node
-  nodes: store.nodes,
   isNodeExists: store.isNodeExists,
   getNode: store.getNode,
   addNode: store.addNode,
@@ -68,14 +69,12 @@ export const pageSelector = (store: PageStore) => ({
   applyNodeChange: store.applyNodeChange,
 
   // edge
-  edges: store.edges,
   isEdgeExists: store.isEdgeExists,
   addEdge: store.addEdge,
   removeEdge: store.removeEdge,
   applyEdgeChange: store.applyEdgeChange,
 
   // state
-  lockIds: store.lockIds,
   isLocked: store.isLocked,
   lock: store.lock,
   unlock: store.unlock,
@@ -85,7 +84,7 @@ export const pageSelector = (store: PageStore) => ({
   putEdges: store.putEdges,
 })
 
-export const usePageStore = createWithEqualityFn<PageStore>((set, get) => ({
+export const usePageStore = createWithEqualityFn<PageStoreWithState>((set, get) => ({
   // node
   nodes: [],
   isNodeExists: (id) => get().nodes.some((node) => node.id === id),

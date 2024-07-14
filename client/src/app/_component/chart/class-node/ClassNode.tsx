@@ -33,8 +33,6 @@ export const ClassNode = (props: Props) => {
   const projectNode = projectStore.getNode(props.id)
   const pageNode = pageStore.getNode(props.id)
 
-  console.log(props)
-  console.log(pageNode)
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
 

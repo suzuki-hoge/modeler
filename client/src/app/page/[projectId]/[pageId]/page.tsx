@@ -37,6 +37,8 @@ const Inner = (props: InnerProps) => {
   // store
   const projectStore = useProjectStore(projectSelector, shallow)
   const pageStore = usePageStore(pageSelector, shallow)
+  const pageNodes2 = usePageStore((state) => state.nodes, shallow)
+  const pageEdges2 = usePageStore((state) => state.edges, shallow)
 
   // socket
   const projectSocket = useContext(ProjectSocketContext)!
@@ -124,8 +126,8 @@ const Inner = (props: InnerProps) => {
     <>
       <div id='page' style={{ width: '100vw', height: debug ? '70vh' : '100vh' }}>
         <ReactFlow
-          nodes={pageStore.nodes}
-          edges={pageStore.edges}
+          nodes={pageNodes2}
+          edges={pageEdges2}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}

@@ -23,7 +23,7 @@ type PutNodes = (nodes: Node<ProjectNodeData>[]) => void
 type PutNodeIcons = (nodeIcons: NodeIcon[]) => void
 type PutEdges = (edges: Edge<ProjectEdgeData>[]) => void
 
-export type ProjectStore = {
+type ProjectStoreWithState = {
   // node
   nodes: Node<ProjectNodeData>[]
   nodeHeaders: NodeHeader[]
@@ -47,9 +47,10 @@ export type ProjectStore = {
   putEdges: PutEdges
 }
 
-export const projectSelector = (store: ProjectStore) => ({
+export type ProjectStore = Omit<ProjectStoreWithState, 'nodes' | 'edges'>
+
+export const projectSelector = (store: ProjectStoreWithState) => ({
   // node
-  nodes: store.nodes,
   nodeHeaders: store.nodeHeaders,
   nodeIcons: store.nodeIcons,
   getNode: store.getNode,
@@ -58,7 +59,6 @@ export const projectSelector = (store: ProjectStore) => ({
   updateNodeData: store.updateNodeData,
 
   // edge
-  edges: store.edges,
   getEdge: store.getEdge,
   findEdge: store.findEdge,
   createEdge: store.createEdge,
@@ -71,7 +71,7 @@ export const projectSelector = (store: ProjectStore) => ({
   putEdges: store.putEdges,
 })
 
-export const useProjectStore = createWithEqualityFn<ProjectStore>((set, get) => ({
+export const useProjectStore = createWithEqualityFn<ProjectStoreWithState>((set, get) => ({
   // node
   nodes: [],
   nodeHeaders: [],
