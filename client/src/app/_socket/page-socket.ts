@@ -55,16 +55,16 @@ export const PageSocketContext = createContext<PageSocket | null>(null)
 export function handlePageMessage(response: unknown, store: PageStore) {
   if (response) {
     // node
-    handleAddNode(response, console.log) //fixme
-    handleRemoveNode(response, console.log) //fixme
-    handleMoveNode(response, (response) => store.moveNode(response.objectId, response.x, response.y))
+    handleAddNode(response, store)
+    handleRemoveNode(response, store)
+    handleMoveNode(response, store)
 
     // edge
-    handleAddEdge(response, console.log) //fixme
-    handleRemoveEdge(response, console.log) //fixme
+    handleAddEdge(response, store)
+    handleRemoveEdge(response, store)
 
     // state
-    handleLock(response, (response) => store.lock(response.objectId))
-    handleUnlock(response, (response) => store.unlock(response.objectId))
+    handleLock(response, store)
+    handleUnlock(response, store)
   }
 }

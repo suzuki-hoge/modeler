@@ -4,6 +4,7 @@ import { Node } from 'reactflow'
 import z from 'zod'
 
 import { PageNodeData } from '@/app/_object/node/type'
+import { PageStore } from '@/app/_store/page-store'
 
 // types
 
@@ -43,10 +44,10 @@ export function createAddNode(send: (request: AddNodeRequest) => void, socket: (
 
 // handle
 
-export function handleAddNode(response: unknown, handler: (response: AddNodeResponse) => void) {
+export function handleAddNode(response: unknown, store: PageStore) {
   if (isAddNodeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.addNode({ id: response.objectId, type: 'class', position: { x: response.x, y: response.y }, data: {} })
   }
 }
 

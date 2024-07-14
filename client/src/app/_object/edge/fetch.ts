@@ -5,14 +5,14 @@ import useSWR from 'swr'
 import { PageEdgeData, ProjectEdgeData } from '@/app/_object/edge/type'
 
 export function useProjectEdges(projectId: string): [Edge<ProjectEdgeData>[] | undefined, boolean] {
-  const url = `http://localhost:8080/${projectId}/edges`
+  const url = `http://localhost:8080/project/${projectId}/edges`
 
   const { data, isValidating } = useSWR(url, fetchProjectEdges)
   return [data, isValidating]
 }
 
-export function usePageEdges(projectId: string, pageId: string): [Edge<PageEdgeData>[] | undefined, boolean] {
-  const url = `http://localhost:8080/${projectId}/${pageId}/edges`
+export function usePageEdges(pageId: string): [Edge<PageEdgeData>[] | undefined, boolean] {
+  const url = `http://localhost:8080/page/${pageId}/edges`
 
   const { data, isValidating } = useSWR(url, fetchPageEdges)
   return [data, isValidating]

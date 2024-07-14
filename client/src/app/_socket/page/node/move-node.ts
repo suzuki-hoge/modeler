@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
+
 // types
 
 const type = 'move-node'
@@ -35,10 +37,10 @@ export function createMoveNode(send: (request: MoveNodeRequest) => void, socket:
 
 // handle
 
-export function handleMoveNode(response: unknown, handler: (response: MoveNodeResponse) => void) {
+export function handleMoveNode(response: unknown, store: PageStore) {
   if (isMoveNodeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.moveNode(response.objectId, response.x, response.y)
   }
 }
 

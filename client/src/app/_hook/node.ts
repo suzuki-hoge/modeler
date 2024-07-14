@@ -17,6 +17,7 @@ export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesC
       if (change.type === 'remove') {
         socket.removeNode(change.id)
         store.removeNode(change.id)
+        console.log('removed')
       } else if (change.type === 'position' && change.dragging && change.position) {
         // send move message on drag stop
         store.moveNode(change.id, change.position.x, change.position.y)

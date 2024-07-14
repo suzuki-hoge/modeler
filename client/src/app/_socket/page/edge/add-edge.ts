@@ -4,6 +4,7 @@ import { Edge } from 'reactflow'
 import z from 'zod'
 
 import { PageEdgeData } from '@/app/_object/edge/type'
+import { PageStore } from '@/app/_store/page-store'
 
 // types
 
@@ -12,6 +13,8 @@ const type = 'add-edge'
 const addEdgeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
+  source: z.string(),
+  target: z.string(),
 })
 type AddEdgeRequest = z.infer<typeof addEdgeRequest>
 
@@ -28,6 +31,8 @@ export function createAddEdge(send: (request: AddEdgeRequest) => void, socket: (
       const request = {
         type,
         objectId: edge.id,
+        source: edge.source,
+        target: edge.target,
       }
       console.log(`--> ${JSON.stringify(request)}`)
       send(request)
@@ -39,10 +44,10 @@ export function createAddEdge(send: (request: AddEdgeRequest) => void, socket: (
 
 // handle
 
-export function handleAddEdge(response: unknown, handler: (response: AddEdgeResponse) => void) {
+export function handleAddEdge(response: unknown, store: PageStore) {
   if (isAddEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.addEdge({ id: response.objectId, source: response.source, target: response.target, data: {} })
   }
 }
 

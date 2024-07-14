@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { ProjectStore } from '@/app/_store/project-store'
+
 // types
 
 const type = 'delete-node'
@@ -36,10 +38,10 @@ export function createDeleteNode(
 
 // handle
 
-export function handleDeleteNode(response: unknown, handler: (response: DeleteNodeResponse) => void) {
+export function handleDeleteNode(response: unknown, store: ProjectStore) {
   if (isDeleteNodeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.deleteNode(response.objectId)
   }
 }
 

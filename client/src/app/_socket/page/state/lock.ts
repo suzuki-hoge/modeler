@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
+
 // types
 
 const type = 'lock'
@@ -33,10 +35,10 @@ export function createLock(send: (request: LockRequest) => void, socket: () => W
 
 // handle
 
-export function handleLock(response: unknown, handler: (response: LockResponse) => void) {
+export function handleLock(response: unknown, store: PageStore) {
   if (isLockResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.lock(response.objectId)
   }
 }
 

@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
+
 // types
 
 const type = 'unlock'
@@ -33,10 +35,10 @@ export function createUnlock(send: (request: UnlockRequest) => void, socket: () 
 
 // handle
 
-export function handleUnlock(response: unknown, handler: (response: UnlockResponse) => void) {
+export function handleUnlock(response: unknown, store: PageStore) {
   if (isUnlockResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.unlock(response.objectId)
   }
 }
 

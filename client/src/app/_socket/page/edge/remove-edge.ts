@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
+
 // types
 
 const type = 'remove-edge'
@@ -36,10 +38,10 @@ export function createRemoveEdge(
 
 // handle
 
-export function handleRemoveEdge(response: unknown, handler: (response: RemoveEdgeResponse) => void) {
+export function handleRemoveEdge(response: unknown, store: PageStore) {
   if (isRemoveEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.removeEdge(response.objectId)
   }
 }
 

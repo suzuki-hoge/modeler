@@ -74,39 +74,39 @@ impl Session {
             // project
             // node
             Some("create-node") => {
-                self.server_address.do_send(CreateNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(CreateNodeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("delete-node") => {
-                self.server_address.do_send(DeleteNodeRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(DeleteNodeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-name") => {
-                self.server_address.do_send(UpdateNameRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdateNameRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-icon-id") => {
-                self.server_address.do_send(UpdateIconIdRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdateIconIdRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-properties") => {
-                self.server_address.do_send(UpdatePropertiesRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdatePropertiesRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-methods") => {
-                self.server_address.do_send(UpdateMethodsRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdateMethodsRequest::parse(&self.session_id, &self.project_id, json)?)
             }
 
             // edge
             Some("create-edge") => {
-                self.server_address.do_send(CreateEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(CreateEdgeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-connection") => {
-                self.server_address.do_send(UpdateConnectionRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdateConnectionRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-arrow-type") => {
-                self.server_address.do_send(UpdateArrowTypeRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdateArrowTypeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("update-label") => {
-                self.server_address.do_send(UpdateLabelRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(UpdateLabelRequest::parse(&self.session_id, &self.project_id, json)?)
             }
             Some("delete-edge") => {
-                self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
+                self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
 
             // page

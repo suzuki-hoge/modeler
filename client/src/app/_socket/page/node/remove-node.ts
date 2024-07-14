@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
+
 // types
 
 const type = 'remove-node'
@@ -36,10 +38,10 @@ export function createRemoveNode(
 
 // handle
 
-export function handleRemoveNode(response: unknown, handler: (response: RemoveNodeResponse) => void) {
+export function handleRemoveNode(response: unknown, store: PageStore) {
   if (isRemoveNodeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.removeNode(response.objectId)
   }
 }
 

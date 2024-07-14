@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { ProjectStore } from '@/app/_store/project-store'
+
 // types
 
 const type = 'update-icon-id'
@@ -37,10 +39,10 @@ export function createUpdateIconId(
 
 // handle
 
-export function handleUpdateIconId(response: unknown, handler: (response: UpdateIconIdResponse) => void) {
+export function handleUpdateIconId(response: unknown, store: ProjectStore) {
   if (isUpdateIconIdResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.updateNodeData(response.objectId, (data) => ({ ...data, iconId: response.iconId }))
   }
 }
 

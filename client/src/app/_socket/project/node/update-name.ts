@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { ProjectStore } from '@/app/_store/project-store'
+
 // types
 
 const type = 'update-name'
@@ -37,10 +39,10 @@ export function createUpdateName(
 
 // handle
 
-export function handleUpdateName(response: unknown, handler: (response: UpdateNameResponse) => void) {
+export function handleUpdateName(response: unknown, store: ProjectStore) {
   if (isUpdateNameResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.updateNodeData(response.objectId, (data) => ({ ...data, name: response.name }))
   }
 }
 

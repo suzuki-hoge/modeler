@@ -3,7 +3,9 @@ import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Node } from 'reactflow'
 import z from 'zod'
 
+import { createProjectNode } from '@/app/_object/node/function'
 import { ProjectNodeData } from '@/app/_object/node/type'
+import { ProjectStore } from '@/app/_store/project-store'
 
 // types
 
@@ -46,10 +48,10 @@ export function createCreateNode(
 
 // handle
 
-export function handleCreateNode(response: unknown, handler: (response: CreateNodeResponse) => void) {
+export function handleCreateNode(response: unknown, store: ProjectStore) {
   if (isCreateNodeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.createNode(createProjectNode(response.objectId, response.name))
   }
 }
 

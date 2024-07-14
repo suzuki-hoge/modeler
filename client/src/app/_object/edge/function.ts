@@ -37,15 +37,15 @@ export function extractPageEdge(edge: Edge<ProjectEdgeData>): Edge<PageEdgeData>
 }
 
 interface Change {
-  src?: string
-  dst?: string
+  source?: string
+  target?: string
   arrowType?: ArrowType
   label?: string
 }
 
 export function updateEdge(edge: Edge<ProjectEdgeData>, change: Change): Edge<ProjectEdgeData> {
-  if (change.src) edge.source = change.src
-  if (change.dst) edge.target = change.dst
+  if (change.source) edge.source = change.source
+  if (change.target) edge.target = change.target
   if (change.arrowType) {
     edge.markerEnd = change.arrowType
     edge.data!.arrowType = change.arrowType

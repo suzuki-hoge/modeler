@@ -22,13 +22,18 @@ import { createOnPostNodeCreate, createOnPostNodeSelect, useOnNodeDrag, useOnNod
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { usePageEdges, useProjectEdges } from '@/app/_object/edge/fetch'
 import { useNodeIcons, usePageNodes, useProjectNodes } from '@/app/_object/node/fetch'
-import { createPageSocket, PageSocketContext } from '@/app/_socket/page-socket'
+import { createPageSocket, handlePageMessage, PageSocketContext } from '@/app/_socket/page-socket'
 import { createProjectSocket, handleProjectMessage, ProjectSocketContext } from '@/app/_socket/project-socket'
 import { pageSelector, usePageStore } from '@/app/_store/page-store'
 import { projectSelector, useProjectStore } from '@/app/_store/project-store'
-import { DebugPanel } from '@/app/page/[pageId]/DebugPanel'
+import { DebugPanel } from '@/app/page/[projectId]/[pageId]/DebugPanel'
 
-const Inner = () => {
+interface InnerProps {
+  projectId: string
+  pageId: string
+}
+
+const Inner = (props: InnerProps) => {
   // store
   const projectStore = useProjectStore(projectSelector, shallow)
   const pageStore = usePageStore(pageSelector, shallow)
@@ -37,7 +42,10 @@ const Inner = () => {
   const projectSocket = useContext(ProjectSocketContext)!
   const pageSocket = useContext(PageSocketContext)!
   useEffect(
-    () => handleProjectMessage(projectSocket.response, projectStore),
+    () => {
+      handleProjectMessage(projectSocket.response, projectStore)
+      handlePageMessage(projectSocket.response, pageStore)
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectSocket.response],
   )
@@ -65,11 +73,11 @@ const Inner = () => {
   const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
 
   // init
-  const [icons, isValidating1] = useNodeIcons('1')
-  const [projectNodes, isValidating2] = useProjectNodes('1')
-  const [projectEdges, isValidating3] = useProjectEdges('1')
-  const [pageNodes, isValidating4] = usePageNodes('1', '1')
-  const [pageEdges, isValidating5] = usePageEdges('1', '1')
+  const [icons, isValidating1] = useNodeIcons(props.projectId)
+  const [projectNodes, isValidating2] = useProjectNodes(props.projectId)
+  const [projectEdges, isValidating3] = useProjectEdges(props.projectId)
+  const [pageNodes, isValidating4] = usePageNodes(props.pageId)
+  const [pageEdges, isValidating5] = usePageEdges(props.pageId)
   useEffect(
     () => {
       if (!isValidating1) projectStore.putNodeIcons(icons!)
@@ -162,21 +170,24 @@ const Inner = () => {
 }
 
 interface Props {
-  params: { pageId: string }
+  params: {
+    projectId: string
+    pageId: string
+  }
 }
 
 const user = faker.person.firstName()
 
 export default function Page(props: Props) {
   const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket<unknown>(
-    `ws://127.0.0.1:8080/ws/1/${props.params.pageId}/${user}`,
+    `ws://127.0.0.1:8080/ws/${props.params.projectId}/${props.params.pageId}/${user}`,
   )
 
   return (
     <ReactFlowProvider>
       <ProjectSocketContext.Provider value={createProjectSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
         <PageSocketContext.Provider value={createPageSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
-          <Inner />
+          <Inner {...props.params} />
         </PageSocketContext.Provider>
       </ProjectSocketContext.Provider>
     </ReactFlowProvider>

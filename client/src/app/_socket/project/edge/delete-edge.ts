@@ -2,6 +2,8 @@ import { ReadyState } from 'react-use-websocket'
 import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { ProjectStore } from '@/app/_store/project-store'
+
 // types
 
 const type = 'delete-edge'
@@ -36,10 +38,10 @@ export function createDeleteEdge(
 
 // handle
 
-export function handleDeleteEdge(response: unknown, handler: (response: DeleteEdgeResponse) => void) {
+export function handleDeleteEdge(response: unknown, store: ProjectStore) {
   if (isDeleteEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.deleteEdge(response.objectId)
   }
 }
 

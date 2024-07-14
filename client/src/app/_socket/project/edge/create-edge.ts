@@ -3,7 +3,9 @@ import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Edge } from 'reactflow'
 import z from 'zod'
 
+import { createEdge } from '@/app/_object/edge/function'
 import { ProjectEdgeData } from '@/app/_object/edge/type'
+import { ProjectStore } from '@/app/_store/project-store'
 
 // types
 
@@ -12,8 +14,8 @@ const type = 'create-edge'
 const createEdgeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
-  src: z.string(),
-  dst: z.string(),
+  source: z.string(),
+  target: z.string(),
   arrowType: z.union([z.literal('simple'), z.literal('generalization')]),
   label: z.string(),
 })
@@ -35,8 +37,8 @@ export function createCreateEdge(
       const request = {
         type,
         objectId: edge.id,
-        src: edge.source,
-        dst: edge.target,
+        source: edge.source,
+        target: edge.target,
         arrowType: edge.data!.arrowType,
         label: edge.data!.label,
       }
@@ -50,10 +52,12 @@ export function createCreateEdge(
 
 // handle
 
-export function handleCreateEdge(response: unknown, handler: (response: CreateEdgeResponse) => void) {
+export function handleCreateEdge(response: unknown, store: ProjectStore) {
   if (isCreateEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
+    store.createEdge(
+      createEdge(response.objectId, response.source, response.target, response.arrowType, response.label),
+    )
   }
 }
 

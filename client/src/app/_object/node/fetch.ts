@@ -5,21 +5,21 @@ import useSWR from 'swr'
 import { NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
 
 export function useNodeIcons(projectId: string): [NodeIcon[] | undefined, boolean] {
-  const url = `http://localhost:8080/${projectId}/icons`
+  const url = `http://localhost:8080/project/${projectId}/icons`
 
   const { data, isValidating } = useSWR<NodeIcon[]>(url, fetchNodeIcons)
   return [data, isValidating]
 }
 
 export function useProjectNodes(projectId: string): [Node<ProjectNodeData>[] | undefined, boolean] {
-  const url = `http://localhost:8080/${projectId}/nodes`
+  const url = `http://localhost:8080/project/${projectId}/nodes`
 
   const { data, isValidating } = useSWR(url, fetchProjectNodes)
   return [data, isValidating]
 }
 
-export function usePageNodes(projectId: string, pageId: string): [Node<PageNodeData>[] | undefined, boolean] {
-  const url = `http://localhost:8080/${projectId}/${pageId}/nodes`
+export function usePageNodes(pageId: string): [Node<PageNodeData>[] | undefined, boolean] {
+  const url = `http://localhost:8080/page/${pageId}/nodes`
 
   const { data, isValidating } = useSWR(url, fetchPageNodes)
   return [data, isValidating]

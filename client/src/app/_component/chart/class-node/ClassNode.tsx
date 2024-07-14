@@ -9,14 +9,6 @@ import { ClassIcon } from '@/app/_component/input/class-icon/ClassIcon'
 import { ClassName } from '@/app/_component/input/class-name/ClassName'
 import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
 import { createOnPostNodeCreate, createOnPostNodeSelect } from '@/app/_hook/node'
-import {
-  deleteMethod,
-  deleteProperty,
-  insertMethod,
-  insertProperty,
-  updateMethod,
-  updateProperty,
-} from '@/app/_object/node/function'
 import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
 import { PageSocketContext } from '@/app/_socket/page-socket'
 import { ProjectSocketContext } from '@/app/_socket/project-socket'
@@ -41,6 +33,8 @@ export const ClassNode = (props: Props) => {
   const projectNode = projectStore.getNode(props.id)
   const pageNode = pageStore.getNode(props.id)
 
+  console.log(props)
+  console.log(pageNode)
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
 
@@ -81,70 +75,70 @@ export const ClassNode = (props: Props) => {
   )
   const onInsertProperties = useMemo(
     () =>
-      projectNode.data.properties.map((_, n) => () => {
-        projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', n))
-        projectSocket.insertProperty(props.id, '', n)
+      projectNode.data.properties.map(() => () => {
+        // projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', n))
+        // projectSocket.insertProperty(props.id, '', n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectNode.data.properties],
   )
   const onUpdateProperties = useMemo(
     () =>
-      projectNode.data.properties.map((_, n) => (inner: string) => {
-        projectStore.updateNodeData(props.id, (data) => updateProperty(data, inner, n))
-        projectSocket.updateProperty(props.id, inner, n)
+      projectNode.data.properties.map(() => () => {
+        // projectStore.updateNodeData(props.id, (data) => updateProperty(data, inner, n))
+        // projectSocket.updateProperty(props.id, inner, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectNode.data.properties],
   )
   const onDeleteProperties = useMemo(
     () =>
-      projectNode.data.properties.map((_, n) => () => {
-        projectStore.updateNodeData(props.id, (data) => deleteProperty(data, n))
-        projectSocket.deleteProperty(props.id, n)
+      projectNode.data.properties.map(() => () => {
+        // projectStore.updateNodeData(props.id, (data) => deleteProperty(data, n))
+        // projectSocket.deleteProperty(props.id, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectNode.data.properties],
   )
   const onInsertFirstProperty = useCallback(
     () => {
-      projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', 0))
-      projectSocket.insertProperty(props.id, '', 0)
+      // projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', 0))
+      // projectSocket.insertProperty(props.id, '', 0)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
   const onInsertMethods = useMemo(
     () =>
-      projectNode.data.methods.map((_, n) => () => {
-        projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', n))
-        projectSocket.insertMethod(props.id, '', n)
+      projectNode.data.methods.map(() => () => {
+        // projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', n))
+        // projectSocket.insertMethod(props.id, '', n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectNode.data.methods],
   )
   const onUpdateMethods = useMemo(
     () =>
-      projectNode.data.methods.map((_, n) => (inner: string) => {
-        projectStore.updateNodeData(props.id, (data) => updateMethod(data, inner, n))
-        projectSocket.updateMethod(props.id, inner, n)
+      projectNode.data.methods.map(() => () => {
+        // projectStore.updateNodeData(props.id, (data) => updateMethod(data, inner, n))
+        // projectSocket.updateMethod(props.id, inner, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectNode.data.methods],
   )
   const onDeleteMethods = useMemo(
     () =>
-      projectNode.data.methods.map((_, n) => () => {
-        projectStore.updateNodeData(props.id, (data) => deleteMethod(data, n))
-        projectSocket.deleteMethod(props.id, n)
+      projectNode.data.methods.map(() => () => {
+        // projectStore.updateNodeData(props.id, (data) => deleteMethod(data, n))
+        // projectSocket.deleteMethod(props.id, n)
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [projectNode.data.methods],
   )
   const onInsertFirstMethod = useCallback(
     () => {
-      projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', 0))
-      projectSocket.insertMethod(props.id, '', 0)
+      // projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', 0))
+      // projectSocket.insertMethod(props.id, '', 0)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],

@@ -54,8 +54,8 @@ export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
   )
   const onRotate = useCallback(
     () => {
-      projectStore.updateEdge(props.id, (edge) => updateEdge(edge, { src: edge.target, dst: edge.source }))
-      projectSocket.updateEdge(projectStore.getEdge(props.id))
+      projectStore.updateEdge(props.id, (edge) => updateEdge(edge, { source: edge.target, target: edge.source }))
+      projectSocket.updateConnection(projectStore.getEdge(props.id))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -63,7 +63,7 @@ export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
   const onChangeToGeneralization = useCallback(
     () => {
       projectStore.updateEdge(props.id, (edge) => updateEdge(edge, { arrowType: 'generalization' }))
-      projectSocket.updateEdge(projectStore.getEdge(props.id))
+      projectSocket.updateArrowType(projectStore.getEdge(props.id))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -71,7 +71,7 @@ export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
   const onChangeToSimple = useCallback(
     () => {
       projectStore.updateEdge(props.id, (edge) => updateEdge(edge, { arrowType: 'simple' }))
-      projectSocket.updateEdge(projectStore.getEdge(props.id))
+      projectSocket.updateArrowType(projectStore.getEdge(props.id))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -79,7 +79,7 @@ export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
   const onChangeLabel = useCallback(
     (label: string) => {
       projectStore.updateEdge(props.id, (edge) => updateEdge(edge, { label }))
-      projectSocket.updateEdge(projectStore.getEdge(props.id))
+      projectSocket.updateLabel(projectStore.getEdge(props.id))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],

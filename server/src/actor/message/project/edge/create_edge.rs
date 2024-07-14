@@ -8,12 +8,13 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
+use crate::data::project::ProjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct CreateEdgeRequest {
     pub session_id: SessionId,
-    pub page_id: PageId,
+    pub project_id: ProjectId,
     pub object_id: ObjectId,
     pub source: ObjectId,
     pub target: ObjectId,
@@ -22,10 +23,10 @@ pub struct CreateEdgeRequest {
 }
 
 impl CreateEdgeRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<CreateEdgeRequest, String> {
+    pub fn parse(session_id: &SessionId, project_id: &ProjectId, json: Json) -> Result<CreateEdgeRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
-            page_id: page_id.clone(),
+            project_id: project_id.clone(),
             object_id: parse_string(&json, "objectId")?,
             source: parse_string(&json, "source")?,
             target: parse_string(&json, "target")?,
@@ -48,7 +49,7 @@ impl Handler<CreateEdgeRequest> for Server {
             request.arrow_type,
             request.label,
         );
-        self.send_to_project(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.project_id, response.into(), &request.session_id);
     }
 }
 

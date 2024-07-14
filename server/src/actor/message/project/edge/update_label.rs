@@ -8,21 +8,22 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
+use crate::data::project::ProjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct UpdateLabelRequest {
     pub session_id: SessionId,
-    pub page_id: PageId,
+    pub project_id: ProjectId,
     pub object_id: ObjectId,
     pub label: String,
 }
 
 impl UpdateLabelRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateLabelRequest, String> {
+    pub fn parse(session_id: &SessionId, project_id: &ProjectId, json: Json) -> Result<UpdateLabelRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
-            page_id: page_id.clone(),
+            project_id: project_id.clone(),
             object_id: parse_string(&json, "objectId")?,
             label: parse_string(&json, "label")?,
         })
@@ -36,7 +37,7 @@ impl Handler<UpdateLabelRequest> for Server {
         println!("accept update-label request");
 
         let response = UpdateLabelResponse::new(request.object_id, request.label);
-        self.send_to_project(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.project_id, response.into(), &request.session_id);
     }
 }
 

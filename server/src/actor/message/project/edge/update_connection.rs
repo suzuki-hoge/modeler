@@ -8,22 +8,23 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
+use crate::data::project::ProjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct UpdateConnectionRequest {
     pub session_id: SessionId,
-    pub page_id: PageId,
+    pub project_id: ProjectId,
     pub object_id: ObjectId,
     pub source: ObjectId,
     pub target: ObjectId,
 }
 
 impl UpdateConnectionRequest {
-    pub fn parse(session_id: &SessionId, page_id: &PageId, json: Json) -> Result<UpdateConnectionRequest, String> {
+    pub fn parse(session_id: &SessionId, project_id: &ProjectId, json: Json) -> Result<UpdateConnectionRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
-            page_id: page_id.clone(),
+            project_id: project_id.clone(),
             object_id: parse_string(&json, "objectId")?,
             source: parse_string(&json, "source")?,
             target: parse_string(&json, "target")?,
@@ -38,7 +39,7 @@ impl Handler<UpdateConnectionRequest> for Server {
         println!("accept update-connection request");
 
         let response = UpdateConnectionResponse::new(request.object_id, request.source, request.target);
-        self.send_to_project(&request.page_id, response.into(), &request.session_id);
+        self.send_to_project(&request.project_id, response.into(), &request.session_id);
     }
 }
 
