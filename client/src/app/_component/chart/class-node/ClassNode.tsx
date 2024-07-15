@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useContext, useEffect, useMemo } from 'react'
+import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { Node, NodeTypes, XYPosition } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
@@ -9,26 +9,25 @@ import { ClassIcon } from '@/app/_component/input/class-icon/ClassIcon'
 import { ClassName } from '@/app/_component/input/class-name/ClassName'
 import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
 import { createOnPostNodeCreate, createOnPostNodeSelect } from '@/app/_hook/node'
+import { deleteString, insertString, updateString } from '@/app/_object/node/function'
 import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
-import { PageSocketContext } from '@/app/_socket/page-socket'
-import { ProjectSocketContext } from '@/app/_socket/project-socket'
-import { pageSelector, usePageStore } from '@/app/_store/page-store'
-import { projectSelector, useProjectStore } from '@/app/_store/project-store'
+import { pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
+import { projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
+import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
+import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
 
 import styles from './class-node.module.scss'
 
 interface Props {
   id: string
   selected: boolean
-  xPos: number
-  yPos: number
 }
 
 export const ClassNode = (props: Props) => {
-  const projectStore = useProjectStore(projectSelector, shallow)
-  const pageStore = usePageStore(pageSelector, shallow)
-  const projectSocket = useContext(ProjectSocketContext)!
-  const pageSocket = useContext(PageSocketContext)!
+  const projectStore = useProjectStore(projectStoreSelector, shallow)
+  const pageStore = usePageStore(pageStoreSelector, shallow)
+  const projectSocket = useProjectSocket(projectSocketSelector, shallow)
+  const pageSocket = usePageSocket(pageSocketSelector, shallow)
 
   const projectNode = projectStore.getNode(props.id)
   const pageNode = pageStore.getNode(props.id)
@@ -36,7 +35,7 @@ export const ClassNode = (props: Props) => {
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
 
-  const data = useMemo(() => projectNode.data, [projectNode.data])
+  const data = projectNode.data
   const newNodePosition = useMemo(
     () => ({ x: pageNode.position.x, y: pageNode.position.y + (pageNode.height || 0) + 30 }),
     [pageNode.position, pageNode.height],
@@ -59,6 +58,7 @@ export const ClassNode = (props: Props) => {
     (name: string) => {
       projectStore.updateNodeData(props.id, (data) => ({ ...data, name }))
       projectSocket.updateName(props.id, name)
+      pageStore.modifyNode(props.id)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -67,105 +67,44 @@ export const ClassNode = (props: Props) => {
     (iconId: string) => {
       projectStore.updateNodeData(props.id, (data) => ({ ...data, iconId }))
       projectSocket.updateIconId(props.id, iconId)
+      pageStore.modifyNode(props.id)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onInsertProperties = useMemo(
-    () =>
-      projectNode.data.properties.map(() => () => {
-        // projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', n))
-        // projectSocket.insertProperty(props.id, '', n)
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNode.data.properties],
-  )
-  const onUpdateProperties = useMemo(
-    () =>
-      projectNode.data.properties.map(() => () => {
-        // projectStore.updateNodeData(props.id, (data) => updateProperty(data, inner, n))
-        // projectSocket.updateProperty(props.id, inner, n)
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNode.data.properties],
-  )
-  const onDeleteProperties = useMemo(
-    () =>
-      projectNode.data.properties.map(() => () => {
-        // projectStore.updateNodeData(props.id, (data) => deleteProperty(data, n))
-        // projectSocket.deleteProperty(props.id, n)
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNode.data.properties],
-  )
-  const onInsertFirstProperty = useCallback(
-    () => {
-      // projectStore.updateNodeData(props.id, (data) => insertProperty(data, '', 0))
-      // projectSocket.insertProperty(props.id, '', 0)
+  const onChangeProperties = useCallback(
+    (properties: string[]) => {
+      projectStore.updateNodeData(props.id, (data) => ({ ...data, properties }))
+      projectSocket.updateProperties(props.id, properties)
+      pageStore.modifyNode(props.id)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onInsertMethods = useMemo(
-    () =>
-      projectNode.data.methods.map(() => () => {
-        // projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', n))
-        // projectSocket.insertMethod(props.id, '', n)
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNode.data.methods],
-  )
-  const onUpdateMethods = useMemo(
-    () =>
-      projectNode.data.methods.map(() => () => {
-        // projectStore.updateNodeData(props.id, (data) => updateMethod(data, inner, n))
-        // projectSocket.updateMethod(props.id, inner, n)
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNode.data.methods],
-  )
-  const onDeleteMethods = useMemo(
-    () =>
-      projectNode.data.methods.map(() => () => {
-        // projectStore.updateNodeData(props.id, (data) => deleteMethod(data, n))
-        // projectSocket.deleteMethod(props.id, n)
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNode.data.methods],
-  )
-  const onInsertFirstMethod = useCallback(
-    () => {
-      // projectStore.updateNodeData(props.id, (data) => insertMethod(data, '', 0))
-      // projectSocket.insertMethod(props.id, '', 0)
+  const onChangeMethods = useCallback(
+    (methods: string[]) => {
+      projectStore.updateNodeData(props.id, (data) => ({ ...data, methods }))
+      projectSocket.updateMethods(props.id, methods)
+      pageStore.modifyNode(props.id)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onPostNodeCreate = useCallback(
-    () =>
-      createOnPostNodeCreate(
-        projectStore,
-        projectSocket,
-        pageStore,
-        pageSocket,
-        { id: props.id, arrowType: 'simple' },
-        () => {},
-      ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+  const onPostNodeCreate = createOnPostNodeCreate(
+    projectStore,
+    projectSocket,
+    pageStore,
+    pageSocket,
+    { id: props.id, arrowType: 'simple' },
+    () => {},
   )
-  const onPostNodeSelect = useCallback(
-    () =>
-      createOnPostNodeSelect(
-        projectStore,
-        projectSocket,
-        pageStore,
-        pageSocket,
-        { id: props.id, arrowType: 'simple' },
-        () => {},
-      ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+  const onPostNodeSelect = createOnPostNodeSelect(
+    projectStore,
+    projectSocket,
+    pageStore,
+    pageSocket,
+    { id: props.id, arrowType: 'simple' },
+    () => {},
   )
 
   return (
@@ -179,14 +118,8 @@ export const ClassNode = (props: Props) => {
         icons={icons}
         onChangeName={onChangeName}
         onChangeIconId={onChangeIconId}
-        onInsertProperties={onInsertProperties}
-        onUpdateProperties={onUpdateProperties}
-        onDeleteProperties={onDeleteProperties}
-        onInsertFirstProperty={onInsertFirstProperty}
-        onInsertMethods={onInsertMethods}
-        onUpdateMethods={onUpdateMethods}
-        onDeleteMethods={onDeleteMethods}
-        onInsertFirstMethod={onInsertFirstMethod}
+        onChangeProperties={onChangeProperties}
+        onChangeMethods={onChangeMethods}
         newNodePosition={newNodePosition}
         onPostNodeCreate={onPostNodeCreate}
         onPostNodeSelect={onPostNodeSelect}
@@ -205,14 +138,8 @@ interface InnerProps {
   icons: NodeIcon[]
   onChangeName: (name: string) => void
   onChangeIconId: (iconId: string) => void
-  onInsertProperties: Array<() => void>
-  onUpdateProperties: Array<(inner: string) => void>
-  onDeleteProperties: Array<() => void>
-  onInsertFirstProperty: () => void
-  onInsertMethods: Array<() => void>
-  onUpdateMethods: Array<(inner: string) => void>
-  onDeleteMethods: Array<() => void>
-  onInsertFirstMethod: () => void
+  onChangeProperties: (properties: string[]) => void
+  onChangeMethods: (methods: string[]) => void
   newNodePosition: XYPosition
   onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
   onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
@@ -233,42 +160,42 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
         onChangeIconId={props.onChangeIconId}
       />
       <hr />
-      {props.data.properties.map((property, i) => (
+      {props.data.properties.map((property, n) => (
         <Property
-          key={i}
+          key={n}
           isSelected={props.isSelected}
           inner={property}
           headers={props.headers}
           icons={props.icons}
-          onInsertProperty={props.onInsertProperties[i]}
-          onUpdateProperty={props.onUpdateProperties[i]}
-          onDeleteProperty={props.onDeleteProperties[i]}
+          properties={props.data.properties}
+          n={n}
+          onChangeProperties={props.onChangeProperties}
           newNodePosition={props.newNodePosition}
           onPostNodeCreate={props.onPostNodeCreate}
           onPostNodeSelect={props.onPostNodeSelect}
         />
       ))}
       {props.data.properties.length === 0 && (
-        <EmptyLine isSelected={props.isSelected} onInsert={props.onInsertFirstProperty} />
+        <EmptyLine isSelected={props.isSelected} onInsert={() => props.onChangeProperties([''])} />
       )}
       <hr />
-      {props.data.methods.map((method, i) => (
+      {props.data.methods.map((method, n) => (
         <Method
-          key={i}
+          key={n}
           isSelected={props.isSelected}
           inner={method}
           headers={props.headers}
           icons={props.icons}
-          onInsertMethod={props.onInsertMethods[i]}
-          onUpdateMethod={props.onUpdateMethods[i]}
-          onDeleteMethod={props.onDeleteMethods[i]}
+          methods={props.data.methods}
+          n={n}
+          onChangeMethods={props.onChangeMethods}
           newNodePosition={props.newNodePosition}
           onPostNodeCreate={props.onPostNodeCreate}
           onPostNodeSelect={props.onPostNodeSelect}
         />
       ))}
       {props.data.methods.length === 0 && (
-        <EmptyLine isSelected={props.isSelected} onInsert={props.onInsertFirstMethod} />
+        <EmptyLine isSelected={props.isSelected} onInsert={() => props.onChangeMethods([''])} />
       )}
     </div>
   )
@@ -301,9 +228,9 @@ interface PropertyProps {
   inner: string
   headers: NodeHeader[]
   icons: NodeIcon[]
-  onInsertProperty: () => void
-  onUpdateProperty: (inner: string) => void
-  onDeleteProperty: () => void
+  properties: string[]
+  n: number
+  onChangeProperties: (properties: string[]) => void
   newNodePosition: XYPosition
   onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
   onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
@@ -317,14 +244,14 @@ const Property = memo(function _Property(props: PropertyProps) {
         headers={props.headers}
         icons={props.icons}
         readonly={false}
-        onTextChange={props.onUpdateProperty}
+        onTextChange={(inner) => props.onChangeProperties(updateString(props.properties, inner, props.n))}
         newNodePosition={props.newNodePosition}
         onPostNodeCreate={props.onPostNodeCreate}
         onPostNodeSelect={props.onPostNodeSelect}
       />
       <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
-        <AddIcon onClick={props.onInsertProperty} />
-        <DeleteIcon onClick={props.onDeleteProperty} />
+        <AddIcon onClick={() => props.onChangeProperties(insertString(props.properties, '', props.n))} />
+        <DeleteIcon onClick={() => props.onChangeProperties(deleteString(props.properties, props.n))} />
       </div>
     </div>
   )
@@ -335,9 +262,9 @@ interface MethodProps {
   inner: string
   headers: NodeHeader[]
   icons: NodeIcon[]
-  onInsertMethod: () => void
-  onUpdateMethod: (inner: string) => void
-  onDeleteMethod: () => void
+  methods: string[]
+  n: number
+  onChangeMethods: (methods: string[]) => void
   newNodePosition: XYPosition
   onPostNodeCreate: (node: Node<ProjectNodeData>, position: XYPosition) => void
   onPostNodeSelect: (header: NodeHeader, position: XYPosition) => void
@@ -351,14 +278,14 @@ const Method = memo(function _Method(props: MethodProps) {
         headers={props.headers}
         icons={props.icons}
         readonly={false}
-        onTextChange={props.onUpdateMethod}
+        onTextChange={(inner) => props.onChangeMethods(updateString(props.methods, inner, props.n))}
         newNodePosition={props.newNodePosition}
         onPostNodeCreate={props.onPostNodeCreate}
         onPostNodeSelect={props.onPostNodeSelect}
       />
       <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
-        <AddIcon onClick={props.onInsertMethod} />
-        <DeleteIcon onClick={props.onDeleteMethod} />
+        <AddIcon onClick={() => props.onChangeMethods(insertString(props.methods, '', props.n))} />
+        <DeleteIcon onClick={() => props.onChangeMethods(deleteString(props.methods, props.n))} />
       </div>
     </div>
   )

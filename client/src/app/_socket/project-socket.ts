@@ -1,99 +1,136 @@
-import { createContext } from 'react'
-import { SendJsonMessage, WebSocketLike } from 'react-use-websocket/src/lib/types'
+import { ReadyState } from 'react-use-websocket/src/lib/constants'
+import { SendJsonMessage } from 'react-use-websocket/src/lib/types'
+import { Edge, Node } from 'reactflow'
+import { createWithEqualityFn } from 'zustand/traditional'
 
+import { ProjectEdgeData } from '@/app/_object/edge/type'
+import { ProjectNodeData } from '@/app/_object/node/type'
 import { handleConnect } from '@/app/_socket/connection/connect'
 import { handleDisconnect } from '@/app/_socket/connection/disconnect'
-import { createCreateEdge, CreateEdge, handleCreateEdge } from '@/app/_socket/project/edge/create-edge'
-import { createDeleteEdge, DeleteEdge, handleDeleteEdge } from '@/app/_socket/project/edge/delete-edge'
-import {
-  createUpdateArrowType,
-  handleUpdateArrowType,
-  UpdateArrowType,
-} from '@/app/_socket/project/edge/update-arrow-type'
-import {
-  createUpdateConnection,
-  handleUpdateConnection,
-  UpdateConnection,
-} from '@/app/_socket/project/edge/update-connection'
-import { createUpdateLabel, handleUpdateLabel, UpdateLabel } from '@/app/_socket/project/edge/update-label'
-import { createCreateNode, CreateNode, handleCreateNode } from '@/app/_socket/project/node/create-node'
-import { createDeleteNode, DeleteNode, handleDeleteNode } from '@/app/_socket/project/node/delete-node'
-import { createUpdateIconId, handleUpdateIconId, UpdateIconId } from '@/app/_socket/project/node/update-icon-id'
-import { createUpdateMethods, handleUpdateMethods, UpdateMethods } from '@/app/_socket/project/node/update-methods'
-import { createUpdateName, handleUpdateName, UpdateName } from '@/app/_socket/project/node/update-name'
-import {
-  createUpdateProperties,
-  handleUpdateProperties,
-  UpdateProperties,
-} from '@/app/_socket/project/node/update-properties'
+import { handleCreateEdge, sendCreateEdge } from '@/app/_socket/project/edge/create-edge'
+import { handleDeleteEdge, sendDeleteEdge } from '@/app/_socket/project/edge/delete-edge'
+import { handleUpdateArrowType, sendUpdateArrowType } from '@/app/_socket/project/edge/update-arrow-type'
+import { handleUpdateConnection, sendUpdateConnection } from '@/app/_socket/project/edge/update-connection'
+import { handleUpdateLabel, sendUpdateLabel } from '@/app/_socket/project/edge/update-label'
+import { handleCreateNode, sendCreateNode } from '@/app/_socket/project/node/create-node'
+import { handleDeleteNode, sendDeleteNode } from '@/app/_socket/project/node/delete-node'
+import { handleUpdateIconId, sendUpdateIconId } from '@/app/_socket/project/node/update-icon-id'
+import { handleUpdateMethods, sendUpdateMethods } from '@/app/_socket/project/node/update-methods'
+import { handleUpdateName, sendUpdateName } from '@/app/_socket/project/node/update-name'
+import { handleUpdateProperties, sendUpdateProperties } from '@/app/_socket/project/node/update-properties'
+import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
-export type ProjectSocket = {
-  response: unknown
-
+type ProjectSocketWithState = {
   // node
-  createNode: CreateNode
-  deleteNode: DeleteNode
-  updateName: UpdateName
-  updateIconId: UpdateIconId
-  updateProperties: UpdateProperties
-  updateMethods: UpdateMethods
+  createNode: (node: Node<ProjectNodeData>) => void
+  deleteNode: (objectId: string) => void
+  updateName: (objectId: string, name: string) => void
+  updateIconId: (objectId: string, iconId: string) => void
+  updateProperties: (objectId: string, properties: string[]) => void
+  updateMethods: (objectId: string, methods: string[]) => void
 
   // edge
-  createEdge: CreateEdge
-  updateConnection: UpdateConnection
-  updateArrowType: UpdateArrowType
-  updateLabel: UpdateLabel
-  deleteEdge: DeleteEdge
+  createEdge: (edge: Edge<ProjectEdgeData>) => void
+  updateConnection: (edge: Edge<ProjectEdgeData>) => void
+  updateArrowType: (edge: Edge<ProjectEdgeData>) => void
+  updateLabel: (edge: Edge<ProjectEdgeData>) => void
+  deleteEdge: (objectId: string) => void
+
+  // init
+  sender: SendJsonMessage | null
+  readyState: ReadyState
+  initSender: (sender: SendJsonMessage) => void
+  initState: (readyState: ReadyState) => void
 }
 
-export function createProjectSocket(
-  send: SendJsonMessage,
-  response: unknown,
-  socket: () => WebSocketLike | null,
-): ProjectSocket {
-  return {
-    response,
+export type ProjectSocket2 = Omit<ProjectSocketWithState, 'sender' | 'readyState'>
 
-    // node
-    createNode: createCreateNode(send, socket),
-    deleteNode: createDeleteNode(send, socket),
-    updateName: createUpdateName(send, socket),
-    updateIconId: createUpdateIconId(send, socket),
-    updateProperties: createUpdateProperties(send, socket),
-    updateMethods: createUpdateMethods(send, socket),
+export const projectSocketSelector = (socket: ProjectSocketWithState) => ({
+  // node
+  createNode: socket.createNode,
+  deleteNode: socket.deleteNode,
+  updateName: socket.updateName,
+  updateIconId: socket.updateIconId,
+  updateProperties: socket.updateProperties,
+  updateMethods: socket.updateMethods,
 
-    // edge
-    createEdge: createCreateEdge(send, socket),
-    updateConnection: createUpdateConnection(send, socket),
-    updateArrowType: createUpdateArrowType(send, socket),
-    updateLabel: createUpdateLabel(send, socket),
-    deleteEdge: createDeleteEdge(send, socket),
-  }
-}
+  // edge
+  createEdge: socket.createEdge,
+  updateConnection: socket.updateConnection,
+  updateArrowType: socket.updateArrowType,
+  updateLabel: socket.updateLabel,
+  deleteEdge: socket.deleteEdge,
 
-export const ProjectSocketContext = createContext<ProjectSocket | null>(null)
+  // init
+  initSender: socket.initSender,
+  initState: socket.initState,
+})
 
-export function handleProjectMessage(response: unknown, store: ProjectStore) {
+export const useProjectSocket = createWithEqualityFn<ProjectSocketWithState>((set, get) => ({
+  // node
+  createNode: (node) => {
+    get().sender && sendCreateNode(get().sender!, get().readyState, node)
+  },
+  deleteNode: (objectId) => {
+    get().sender && sendDeleteNode(get().sender!, get().readyState, objectId)
+  },
+  updateName: (objectId, name) => {
+    get().sender && sendUpdateName(get().sender!, get().readyState, objectId, name)
+  },
+  updateIconId: (objectId, iconId) => {
+    get().sender && sendUpdateIconId(get().sender!, get().readyState, objectId, iconId)
+  },
+  updateProperties: (objectId, properties) => {
+    get().sender && sendUpdateProperties(get().sender!, get().readyState, objectId, properties)
+  },
+  updateMethods: (objectId, methods) => {
+    get().sender && sendUpdateMethods(get().sender!, get().readyState, objectId, methods)
+  },
+
+  // edge
+  createEdge: (edge) => {
+    get().sender && sendCreateEdge(get().sender!, get().readyState, edge)
+  },
+  updateConnection: (edge) => {
+    get().sender && sendUpdateConnection(get().sender!, get().readyState, edge)
+  },
+  updateArrowType: (edge) => {
+    get().sender && sendUpdateArrowType(get().sender!, get().readyState, edge)
+  },
+  updateLabel: (edge) => {
+    get().sender && sendUpdateLabel(get().sender!, get().readyState, edge)
+  },
+  deleteEdge: (objectId) => {
+    get().sender && sendDeleteEdge(get().sender!, get().readyState, objectId)
+  },
+
+  // init
+  sender: null,
+  readyState: -1,
+  initSender: (sender) => set({ sender }),
+  initState: (readyState) => set({ readyState }),
+}))
+
+export function handleProjectMessage(response: unknown, projectStore: ProjectStore, pageStore: PageStore) {
   if (response) {
-    console.log(`... ${JSON.stringify(response)}`)
     // connection
     handleConnect(response, () => {})
     handleDisconnect(response, () => {})
 
     // node
-    handleCreateNode(response, store)
-    handleDeleteNode(response, store)
-    handleUpdateName(response, store)
-    handleUpdateIconId(response, store)
-    handleUpdateProperties(response, store)
-    handleUpdateMethods(response, store)
+    handleCreateNode(response, projectStore)
+    handleDeleteNode(response, projectStore)
+    handleUpdateName(response, projectStore, pageStore)
+    handleUpdateIconId(response, projectStore, pageStore)
+    handleUpdateProperties(response, projectStore, pageStore)
+    handleUpdateMethods(response, projectStore, pageStore)
 
     // edge
-    handleCreateEdge(response, store)
-    handleUpdateConnection(response, store)
-    handleUpdateArrowType(response, store)
-    handleUpdateLabel(response, store)
-    handleDeleteEdge(response, store)
+    handleCreateEdge(response, projectStore)
+    handleUpdateConnection(response, projectStore)
+    handleUpdateArrowType(response, projectStore)
+    handleUpdateLabel(response, projectStore)
+    handleDeleteEdge(response, projectStore)
   }
 }

@@ -1,5 +1,4 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
 import { PageStore } from '@/app/_store/page-store'
@@ -21,18 +20,15 @@ export type RemoveNode = (objectId: string) => void
 
 // send
 
-export function createRemoveNode(
-  send: (request: RemoveNodeRequest) => void,
-  socket: () => WebSocketLike | null,
-): RemoveNode {
-  return (objectId: string) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
-    }
+type Sender = (request: RemoveNodeRequest) => void
+
+export function sendRemoveNode(sender: Sender, state: ReadyState, objectId: string): void {
+  if (state === ReadyState.OPEN) {
+    const request = { type, objectId }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 

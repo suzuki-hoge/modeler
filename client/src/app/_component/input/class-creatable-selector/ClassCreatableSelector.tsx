@@ -4,7 +4,7 @@ import { Node, XYPosition } from 'reactflow'
 import { IconText } from '@/app/_component/icon/icon-text/IconText'
 import { CreatableSelector } from '@/app/_component/selector/CreatableSelector'
 import { allocateNodeId, createProjectNode, getIcon } from '@/app/_object/node/function'
-import { ProjectNodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
+import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
 
 interface Props {
   x: string

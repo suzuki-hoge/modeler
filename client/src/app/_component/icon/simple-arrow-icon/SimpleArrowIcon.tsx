@@ -8,6 +8,7 @@ interface Props {
   vector: 'right' | 'down' | 'left' | 'up'
   onClick?: () => void
 }
+
 const deg = { right: -45, down: 45, left: 135, up: -135 }
 
 export const SimpleArrowIcon = (props: Props) => {

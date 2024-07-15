@@ -12,7 +12,7 @@ import {
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
 import { Popup, PopupState, usePopup } from '@/app/_component/selector/Popup'
-import { ProjectNodeData, NodeHeader, NodeIcon } from '@/app/_object/node/type'
+import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
 
 import styles from './completable-input.module.scss'
 

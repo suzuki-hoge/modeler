@@ -1,5 +1,4 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Edge } from 'reactflow'
 import z from 'zod'
 
@@ -25,22 +24,19 @@ export type UpdateArrowType = (edge: Edge<ProjectEdgeData>) => void
 
 // send
 
-export function createUpdateArrowType(
-  send: (request: UpdateArrowTypeRequest) => void,
-  socket: () => WebSocketLike | null,
-): UpdateArrowType {
-  return (edge: Edge<ProjectEdgeData>) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = {
-        type,
-        objectId: edge.id,
-        arrowType: edge.data!.arrowType,
-      }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
+type Sender = (request: UpdateArrowTypeRequest) => void
+
+export function sendUpdateArrowType(sender: Sender, state: ReadyState, edge: Edge<ProjectEdgeData>): void {
+  if (state === ReadyState.OPEN) {
+    const request = {
+      type,
+      objectId: edge.id,
+      arrowType: edge.data!.arrowType,
     }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 

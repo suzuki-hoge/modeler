@@ -1,10 +1,9 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Edge } from 'reactflow'
 import z from 'zod'
 
 import { PageEdgeData } from '@/app/_object/edge/type'
-import { PageStore } from '@/app/_store/page-store'
+import { PageStore } from '@/app/_store/page-store' // types
 
 // types
 
@@ -25,20 +24,20 @@ export type AddEdge = (edge: Edge<PageEdgeData>) => void
 
 // send
 
-export function createAddEdge(send: (request: AddEdgeRequest) => void, socket: () => WebSocketLike | null): AddEdge {
-  return (edge: Edge<PageEdgeData>) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = {
-        type,
-        objectId: edge.id,
-        source: edge.source,
-        target: edge.target,
-      }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
+type Sender = (request: AddEdgeRequest) => void
+
+export function sendAddEdge(sender: Sender, state: ReadyState, edge: Edge<PageEdgeData>): void {
+  if (state === ReadyState.OPEN) {
+    const request = {
+      type,
+      objectId: edge.id,
+      source: edge.source,
+      target: edge.target,
     }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 

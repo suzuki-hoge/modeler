@@ -1,4 +1,4 @@
-import { CSSProperties, memo, useCallback, useContext, useMemo } from 'react'
+import { CSSProperties, memo, useCallback, useMemo } from 'react'
 import { BaseEdge, ConnectionLineType, DefaultEdgeOptions, EdgeProps, EdgeTypes } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
@@ -7,14 +7,14 @@ import { EdgePalette } from '@/app/_component/chart/class-edge/EdgePalette'
 import { getInnerProps } from '@/app/_component/chart/class-edge/line'
 import { updateEdge } from '@/app/_object/edge/function'
 import { ArrowType, PageEdgeData } from '@/app/_object/edge/type'
-import { ProjectSocketContext } from '@/app/_socket/project-socket'
-import { pageSelector, usePageStore } from '@/app/_store/page-store'
-import { projectSelector, useProjectStore } from '@/app/_store/project-store'
+import { projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
+import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
+import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
 
 export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
-  const projectStore = useProjectStore(projectSelector, shallow)
-  const pageStore = usePageStore(pageSelector, shallow)
-  const projectSocket = useContext(ProjectSocketContext)!
+  const projectStore = useProjectStore(projectStoreSelector, shallow)
+  const pageStore = usePageStore(pageStoreSelector, shallow)
+  const projectSocket = useProjectSocket(projectSocketSelector, shallow)
 
   const projectEdge = projectStore.getEdge(props.id)
 

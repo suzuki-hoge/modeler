@@ -5,51 +5,33 @@ import { ProjectEdgeData } from '@/app/_object/edge/type'
 import { extractNodeHeader } from '@/app/_object/node/function'
 import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
 
-// node
-type GetNode = (id: string) => Node<ProjectNodeData>
-type CreateNode = (node: Node<ProjectNodeData>) => void
-type DeleteNode = (is: string) => void
-type UpdateNodeData = (id: string, updater: (data: ProjectNodeData) => ProjectNodeData) => void
-
-// edge
-type GetEdge = (id: string) => Edge<ProjectEdgeData>
-type FindEdge = (srcNodeId: string, dstNodeId: string) => Edge<ProjectEdgeData> | undefined
-type CreateEdge = (edge: Edge<ProjectEdgeData>) => void
-type UpdateEdge = (id: string, updater: (edge: Edge<ProjectEdgeData>) => Edge<ProjectEdgeData>) => void
-type DeleteEdge = (is: string) => void
-
-// init
-type PutNodes = (nodes: Node<ProjectNodeData>[]) => void
-type PutNodeIcons = (nodeIcons: NodeIcon[]) => void
-type PutEdges = (edges: Edge<ProjectEdgeData>[]) => void
-
 type ProjectStoreWithState = {
   // node
   nodes: Node<ProjectNodeData>[]
   nodeHeaders: NodeHeader[]
   nodeIcons: NodeIcon[]
-  getNode: GetNode
-  createNode: CreateNode
-  deleteNode: DeleteNode
-  updateNodeData: UpdateNodeData
+  getNode: (id: string) => Node<ProjectNodeData>
+  createNode: (node: Node<ProjectNodeData>) => void
+  deleteNode: (is: string) => void
+  updateNodeData: (id: string, updater: (data: ProjectNodeData) => ProjectNodeData) => void
 
   // edge
   edges: Edge<ProjectEdgeData>[]
-  getEdge: GetEdge
-  findEdge: FindEdge
-  createEdge: CreateEdge
-  deleteEdge: DeleteEdge
-  updateEdge: UpdateEdge
+  getEdge: (id: string) => Edge<ProjectEdgeData>
+  findEdge: (srcNodeId: string, dstNodeId: string) => Edge<ProjectEdgeData> | undefined
+  createEdge: (edge: Edge<ProjectEdgeData>) => void
+  updateEdge: (id: string, updater: (edge: Edge<ProjectEdgeData>) => Edge<ProjectEdgeData>) => void
+  deleteEdge: (is: string) => void
 
   // init
-  putNodes: PutNodes
-  putNodeIcons: PutNodeIcons
-  putEdges: PutEdges
+  putNodes: (nodes: Node<ProjectNodeData>[]) => void
+  putNodeIcons: (nodeIcons: NodeIcon[]) => void
+  putEdges: (edges: Edge<ProjectEdgeData>[]) => void
 }
 
 export type ProjectStore = Omit<ProjectStoreWithState, 'nodes' | 'edges'>
 
-export const projectSelector = (store: ProjectStoreWithState) => ({
+export const projectStoreSelector = (store: ProjectStoreWithState) => ({
   // node
   nodeHeaders: store.nodeHeaders,
   nodeIcons: store.nodeIcons,
@@ -91,6 +73,7 @@ export const useProjectStore = createWithEqualityFn<ProjectStoreWithState>((set,
     set({
       nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ data: updater(node.data) } } : node)),
     }),
+
   // edge
   edges: [],
   getEdge: (id) => get().edges.find((edge) => edge.id === id)!,
@@ -99,6 +82,7 @@ export const useProjectStore = createWithEqualityFn<ProjectStoreWithState>((set,
   createEdge: (edge) => set({ edges: [...get().edges, edge] }),
   deleteEdge: (id) => set({ edges: get().edges.filter((edge) => edge.id !== id) }),
   updateEdge: (id, updater) => set({ edges: get().edges.map((edge) => (edge.id === id ? updater(edge) : edge)) }),
+
   // init
   putNodes: (nodes) =>
     set({

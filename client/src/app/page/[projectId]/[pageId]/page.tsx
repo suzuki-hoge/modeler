@@ -2,7 +2,7 @@
 import 'reactflow/dist/style.css'
 
 import { faker } from '@faker-js/faker'
-import React, { useContext, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import ReactFlow, { Background, Panel, ReactFlowProvider } from 'reactflow'
 import { shallow } from 'zustand/shallow'
@@ -22,10 +22,10 @@ import { createOnPostNodeCreate, createOnPostNodeSelect, useOnNodeDrag, useOnNod
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { usePageEdges, useProjectEdges } from '@/app/_object/edge/fetch'
 import { useNodeIcons, usePageNodes, useProjectNodes } from '@/app/_object/node/fetch'
-import { createPageSocket, handlePageMessage, PageSocketContext } from '@/app/_socket/page-socket'
-import { createProjectSocket, handleProjectMessage, ProjectSocketContext } from '@/app/_socket/project-socket'
-import { pageSelector, usePageStore } from '@/app/_store/page-store'
-import { projectSelector, useProjectStore } from '@/app/_store/project-store'
+import { handlePageMessage, pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
+import { handleProjectMessage, projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
+import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
+import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
 import { DebugPanel } from '@/app/page/[projectId]/[pageId]/DebugPanel'
 
 interface InnerProps {
@@ -35,22 +35,14 @@ interface InnerProps {
 
 const Inner = (props: InnerProps) => {
   // store
-  const projectStore = useProjectStore(projectSelector, shallow)
-  const pageStore = usePageStore(pageSelector, shallow)
+  const projectStore = useProjectStore(projectStoreSelector, shallow)
+  const pageStore = usePageStore(pageStoreSelector, shallow)
   const pageNodes2 = usePageStore((state) => state.nodes, shallow)
   const pageEdges2 = usePageStore((state) => state.edges, shallow)
 
   // socket
-  const projectSocket = useContext(ProjectSocketContext)!
-  const pageSocket = useContext(PageSocketContext)!
-  useEffect(
-    () => {
-      handleProjectMessage(projectSocket.response, projectStore)
-      handlePageMessage(projectSocket.response, pageStore)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectSocket.response],
-  )
+  const projectSocket = useProjectSocket(projectSocketSelector, shallow)
+  const pageSocket = usePageSocket(pageSocketSelector, shallow)
 
   // pane
   const selectorState = useSelectorState()
@@ -181,17 +173,32 @@ interface Props {
 const user = faker.person.firstName()
 
 export default function Page(props: Props) {
-  const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket<unknown>(
+  const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocket<unknown>(
     `ws://127.0.0.1:8080/ws/${props.params.projectId}/${props.params.pageId}/${user}`,
   )
 
+  const projectSocket = useProjectSocket(projectSocketSelector, shallow)
+  const pageSocket = usePageSocket(pageSocketSelector, shallow)
+  const projectStore = useProjectStore(projectStoreSelector, shallow)
+  const pageStore = usePageStore(pageStoreSelector, shallow)
+
+  useEffect(
+    () => {
+      handleProjectMessage(lastJsonMessage, projectStore, pageStore)
+      handlePageMessage(lastJsonMessage, pageStore)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lastJsonMessage],
+  )
+
+  projectSocket.initSender(sendJsonMessage)
+  projectSocket.initState(readyState)
+  pageSocket.initSender(sendJsonMessage)
+  pageSocket.initState(readyState)
+
   return (
     <ReactFlowProvider>
-      <ProjectSocketContext.Provider value={createProjectSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
-        <PageSocketContext.Provider value={createPageSocket(sendJsonMessage, lastJsonMessage, getWebSocket)}>
-          <Inner {...props.params} />
-        </PageSocketContext.Provider>
-      </ProjectSocketContext.Provider>
+      <Inner {...props.params} />
     </ReactFlowProvider>
   )
 }

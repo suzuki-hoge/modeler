@@ -20,7 +20,7 @@ export function createProjectNode(id: string, name: string): Node<ProjectNodeDat
 }
 
 export function extractPageNode(node: Node<ProjectNodeData>, position: XYPosition): Node<PageNodeData> {
-  return { id: node.id, type: 'class', position, data: {} }
+  return { id: node.id, type: 'class', position, data: { modified: '' } }
 }
 
 export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
@@ -28,35 +28,17 @@ export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
 }
 
 export function expandToPageNode(header: NodeHeader, position: XYPosition): Node<PageNodeData> {
-  return { id: header.id, type: 'class', position, data: {} }
+  return { id: header.id, type: 'class', position, data: { modified: '' } }
 }
 
-export function insertProperty(data: ProjectNodeData, property: string, n: number): ProjectNodeData {
-  const properties = [...data.properties.slice(0, n + 1), property, ...data.properties.slice(n + 1)]
-  return { ...data, properties }
+export function insertString(values: string[], value: string, n: number): string[] {
+  return [...values.slice(0, n + 1), value, ...values.slice(n + 1)]
 }
 
-export function updateProperty(data: ProjectNodeData, property: string, n: number): ProjectNodeData {
-  const properties = data.properties.map((m, i) => (i === n ? property : m))
-  return { ...data, properties }
+export function updateString(values: string[], value: string, n: number): string[] {
+  return values.map((m, i) => (i === n ? value : m))
 }
 
-export function deleteProperty(data: ProjectNodeData, n: number): ProjectNodeData {
-  const properties = data.properties.filter((_, i) => i !== n)
-  return { ...data, properties }
-}
-
-export function insertMethod(data: ProjectNodeData, method: string, n: number): ProjectNodeData {
-  const methods = [...data.methods.slice(0, n + 1), method, ...data.methods.slice(n + 1)]
-  return { ...data, methods }
-}
-
-export function updateMethod(data: ProjectNodeData, method: string, n: number): ProjectNodeData {
-  const methods = data.methods.map((m, i) => (i === n ? method : m))
-  return { ...data, methods }
-}
-
-export function deleteMethod(data: ProjectNodeData, n: number): ProjectNodeData {
-  const methods = data.methods.filter((_, i) => i !== n)
-  return { ...data, methods }
+export function deleteString(values: string[], n: number): string[] {
+  return values.filter((_, i) => i !== n)
 }

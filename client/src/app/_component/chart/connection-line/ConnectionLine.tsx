@@ -1,5 +1,4 @@
-import { BaseEdge, ConnectionLineComponentProps, getStraightPath } from 'reactflow'
-import { internalsSymbol, useNodes } from 'reactflow'
+import { BaseEdge, ConnectionLineComponentProps, getStraightPath, internalsSymbol, useNodes } from 'reactflow'
 
 import { ProjectNodeData } from '@/app/_object/node/type'
 

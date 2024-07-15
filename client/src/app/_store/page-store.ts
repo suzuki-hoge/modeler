@@ -6,60 +6,38 @@ import { PageEdgeData } from '@/app/_object/edge/type'
 import { PageNodeData } from '@/app/_object/node/type'
 import { LockIds } from '@/app/_object/state/type'
 
-// node
-type IsNodeExists = (id: string) => boolean
-type GetNode = (id: string) => Node<PageNodeData>
-type AddNode = (node: Node<PageNodeData>) => void
-type RemoveNode = (id: string) => void
-type MoveNode = (id: string, x: number, y: number) => void
-type ApplyNodeChange = (change: NodeChange) => void
-
-// edge
-type IsEdgeExists = (id: string) => boolean
-type AddEdge = (edge: Edge<PageEdgeData>) => void
-type RemoveEdge = (id: string) => void
-type ApplyEdgeChange = (change: EdgeChange) => void
-
-// state
-type IsLocked = (id: string) => boolean
-type Lock = (id: string) => void
-type Unlock = (id: string) => void
-
-// init
-type PutNodes = (nodes: Node<PageNodeData>[]) => void
-type PutEdges = (edges: Edge<PageEdgeData>[]) => void
-
 type PageStoreWithState = {
   // node
   nodes: Node<PageNodeData>[]
-  isNodeExists: IsNodeExists
-  getNode: GetNode
-  addNode: AddNode
-  removeNode: RemoveNode
-  moveNode: MoveNode
-  applyNodeChange: ApplyNodeChange
+  isNodeExists: (id: string) => boolean
+  getNode: (id: string) => Node<PageNodeData>
+  addNode: (node: Node<PageNodeData>) => void
+  removeNode: (id: string) => void
+  moveNode: (id: string, x: number, y: number) => void
+  applyNodeChange: (change: NodeChange) => void
+  modifyNode: (id: string) => void
 
   // edge
   edges: Edge<PageEdgeData>[]
-  isEdgeExists: IsEdgeExists
-  addEdge: AddEdge
-  removeEdge: RemoveEdge
-  applyEdgeChange: ApplyEdgeChange
+  isEdgeExists: (id: string) => boolean
+  addEdge: (edge: Edge<PageEdgeData>) => void
+  removeEdge: (id: string) => void
+  applyEdgeChange: (change: EdgeChange) => void
 
   // state
   lockIds: LockIds
-  isLocked: IsLocked
-  lock: Lock
-  unlock: Unlock
+  isLocked: (id: string) => boolean
+  lock: (id: string) => void
+  unlock: (id: string) => void
 
   // init
-  putNodes: PutNodes
-  putEdges: PutEdges
+  putNodes: (nodes: Node<PageNodeData>[]) => void
+  putEdges: (edges: Edge<PageEdgeData>[]) => void
 }
 
 export type PageStore = Omit<PageStoreWithState, 'nodes' | 'edges' | 'lockIds'>
 
-export const pageSelector = (store: PageStoreWithState) => ({
+export const pageStoreSelector = (store: PageStoreWithState) => ({
   // node
   isNodeExists: store.isNodeExists,
   getNode: store.getNode,
@@ -67,6 +45,7 @@ export const pageSelector = (store: PageStoreWithState) => ({
   removeNode: store.removeNode,
   moveNode: store.moveNode,
   applyNodeChange: store.applyNodeChange,
+  modifyNode: store.modifyNode,
 
   // edge
   isEdgeExists: store.isEdgeExists,
@@ -96,6 +75,12 @@ export const usePageStore = createWithEqualityFn<PageStoreWithState>((set, get) 
       nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ position: { x, y } } } : node)),
     }),
   applyNodeChange: (change) => set({ nodes: applyNodeChanges([change], get().nodes) }),
+  modifyNode: (id) =>
+    set({
+      nodes: get().nodes.map((node) =>
+        node.id === id ? { ...node, ...{ data: { modified: new Date().toISOString() } } } : node,
+      ),
+    }),
 
   // edge
   edges: [],
@@ -109,6 +94,7 @@ export const usePageStore = createWithEqualityFn<PageStoreWithState>((set, get) 
   isLocked: (id) => get().lockIds.contains(id),
   lock: (id) => set({ lockIds: get().lockIds.add(id) }),
   unlock: (id) => set({ lockIds: get().lockIds.delete(id) }),
+
   // init
   putNodes: (nodes) => set({ nodes }),
   putEdges: (edges) => set({ edges }),

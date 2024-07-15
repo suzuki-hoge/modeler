@@ -1,7 +1,7 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store' // types
 import { ProjectStore } from '@/app/_store/project-store'
 
 // types
@@ -22,27 +22,25 @@ export type UpdateMethods = (objectId: string, methods: string[]) => void
 
 // send
 
-export function createUpdateMethods(
-  send: (request: UpdateMethodsRequest) => void,
-  socket: () => WebSocketLike | null,
-): UpdateMethods {
-  return (objectId: string, methods: string[]) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId, methods }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
-    }
+type Sender = (request: UpdateMethodsRequest) => void
+
+export function sendUpdateMethods(sender: Sender, state: ReadyState, objectId: string, methods: string[]): void {
+  if (state === ReadyState.OPEN) {
+    const request = { type, objectId, methods }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 
 // handle
 
-export function handleUpdateMethods(response: unknown, store: ProjectStore) {
+export function handleUpdateMethods(response: unknown, store: ProjectStore, pageStore: PageStore) {
   if (isUpdateMethodsResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
     store.updateNodeData(response.objectId, (data) => ({ ...data, methods: response.methods }))
+    pageStore.modifyNode(response.objectId)
   }
 }
 

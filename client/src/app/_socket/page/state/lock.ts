@@ -1,5 +1,4 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
 import { PageStore } from '@/app/_store/page-store'
@@ -21,15 +20,15 @@ export type Lock = (objectId: string) => void
 
 // send
 
-export function createLock(send: (request: LockRequest) => void, socket: () => WebSocketLike | null): Lock {
-  return (objectId: string) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
-    }
+type Sender = (request: LockRequest) => void
+
+export function sendLock(sender: Sender, state: ReadyState, objectId: string): void {
+  if (state === ReadyState.OPEN) {
+    const request = { type, objectId }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 

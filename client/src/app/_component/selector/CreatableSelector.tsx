@@ -10,11 +10,13 @@ type SelectOption<Choice> = Choice & {
   value: string
   __isNew__: false
 }
+
 interface CreateOption {
   label: string
   value: string
   __isNew__: true
 }
+
 type Option<Choice> = SelectOption<Choice> | CreateOption
 
 export interface CreatableSelectorProps<Choice> {

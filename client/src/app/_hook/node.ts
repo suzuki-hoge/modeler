@@ -6,18 +6,17 @@ import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/
 import { ProjectEdgeData } from '@/app/_object/edge/type'
 import { expandToPageNode, extractPageNode } from '@/app/_object/node/function'
 import { NodeHeader, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
-import { PageSocket } from '@/app/_socket/page-socket'
-import { ProjectSocket } from '@/app/_socket/project-socket'
+import { PageSocket2 } from '@/app/_socket/page-socket'
+import { ProjectSocket2 } from '@/app/_socket/project-socket'
 import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesChange {
+export function useOnNodesChange(store: PageStore, socket: PageSocket2): OnNodesChange {
   return (changes) => {
     for (const change of changes) {
       if (change.type === 'remove') {
         socket.removeNode(change.id)
         store.removeNode(change.id)
-        console.log('removed')
       } else if (change.type === 'position' && change.dragging && change.position) {
         // send move message on drag stop
         store.moveNode(change.id, change.position.x, change.position.y)
@@ -28,7 +27,7 @@ export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesC
   }
 }
 
-export function useOnNodeDrag(socket: PageSocket): {
+export function useOnNodeDrag(socket: PageSocket2): {
   onNodeDragStart: NodeDragHandler
   onNodeDragStop: NodeDragHandler
 } {
@@ -51,9 +50,9 @@ export function useOnNodeDrag(socket: PageSocket): {
 
 export function createOnPostNodeCreate(
   projectStore: ProjectStore,
-  projectSocket: ProjectSocket,
+  projectSocket: ProjectSocket2,
   pageStore: PageStore,
-  pageSocket: PageSocket,
+  pageSocket: PageSocket2,
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
 ): (projectNode: Node<ProjectNodeData>, position: XYPosition) => void {
@@ -81,9 +80,9 @@ export function createOnPostNodeCreate(
 
 export function createOnPostNodeSelect(
   projectStore: ProjectStore,
-  projectSocket: ProjectSocket,
+  projectSocket: ProjectSocket2,
   pageStore: PageStore,
-  pageSocket: PageSocket,
+  pageSocket: PageSocket2,
   source: DragSource | null,
   setSource: Dispatch<SetStateAction<DragSource | null>>,
 ): (header: NodeHeader, position: XYPosition) => void {
@@ -110,7 +109,7 @@ export function createOnPostNodeSelect(
 
 function edgeDrawn(
   pageStore: PageStore,
-  pageSocket: PageSocket,
+  pageSocket: PageSocket2,
   pageNode: Node<PageNodeData>,
   projectEdge: Edge<ProjectEdgeData>,
 ) {
@@ -124,9 +123,9 @@ function edgeDrawn(
 
 function newEdgeDrawn(
   projectStore: ProjectStore,
-  projectSocket: ProjectSocket,
+  projectSocket: ProjectSocket2,
   pageStore: PageStore,
-  pageSocket: PageSocket,
+  pageSocket: PageSocket2,
   pageNode: Node<PageNodeData>,
   source: string,
   target: string,
@@ -142,7 +141,7 @@ function newEdgeDrawn(
   pageSocket.addEdge(pageEdge)
 }
 
-function paneClicked(pageStore: PageStore, pageSocket: PageSocket, pageNode: Node<PageNodeData>) {
+function paneClicked(pageStore: PageStore, pageSocket: PageSocket2, pageNode: Node<PageNodeData>) {
   pageStore.addNode(pageNode)
   pageSocket.addNode(pageNode)
 }

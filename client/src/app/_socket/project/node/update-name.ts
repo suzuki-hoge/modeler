@@ -1,7 +1,7 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
 // types
@@ -22,27 +22,25 @@ export type UpdateName = (objectId: string, name: string) => void
 
 // send
 
-export function createUpdateName(
-  send: (request: UpdateNameRequest) => void,
-  socket: () => WebSocketLike | null,
-): UpdateName {
-  return (objectId: string, name: string) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId, name }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
-    }
+type Sender = (request: UpdateNameRequest) => void
+
+export function sendUpdateName(sender: Sender, state: ReadyState, objectId: string, name: string): void {
+  if (state === ReadyState.OPEN) {
+    const request = { type, objectId, name }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 
 // handle
 
-export function handleUpdateName(response: unknown, store: ProjectStore) {
+export function handleUpdateName(response: unknown, projectStore: ProjectStore, pageStore: PageStore) {
   if (isUpdateNameResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    store.updateNodeData(response.objectId, (data) => ({ ...data, name: response.name }))
+    projectStore.updateNodeData(response.objectId, (data) => ({ ...data, name: response.name }))
+    pageStore.modifyNode(response.objectId)
   }
 }
 

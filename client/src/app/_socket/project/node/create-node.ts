@@ -1,5 +1,4 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import { Node } from 'reactflow'
 import z from 'zod'
 
@@ -26,23 +25,20 @@ export type CreateNode = (node: Node<ProjectNodeData>) => void
 
 // send
 
-export function createCreateNode(
-  send: (request: CreateNodeRequest) => void,
-  socket: () => WebSocketLike | null,
-): CreateNode {
-  return (node: Node<ProjectNodeData>) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = {
-        type,
-        objectId: node.id,
-        iconId: node.data.iconId,
-        name: node.data.name,
-      }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
+type Sender = (request: CreateNodeRequest) => void
+
+export function sendCreateNode(sender: Sender, state: ReadyState, node: Node<ProjectNodeData>): void {
+  if (state === ReadyState.OPEN) {
+    const request = {
+      type,
+      objectId: node.id,
+      iconId: node.data.iconId,
+      name: node.data.name,
     }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 

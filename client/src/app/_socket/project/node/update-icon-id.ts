@@ -1,7 +1,7 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
+import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
 // types
@@ -22,27 +22,25 @@ export type UpdateIconId = (objectId: string, iconId: string) => void
 
 // send
 
-export function createUpdateIconId(
-  send: (request: UpdateIconIdRequest) => void,
-  socket: () => WebSocketLike | null,
-): UpdateIconId {
-  return (objectId: string, iconId: string) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId, iconId }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
-    }
+type Sender = (request: UpdateIconIdRequest) => void
+
+export function sendUpdateIconId(sender: Sender, state: ReadyState, objectId: string, iconId: string): void {
+  if (state === ReadyState.OPEN) {
+    const request = { type, objectId, iconId }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 
 // handle
 
-export function handleUpdateIconId(response: unknown, store: ProjectStore) {
+export function handleUpdateIconId(response: unknown, store: ProjectStore, pageStore: PageStore) {
   if (isUpdateIconIdResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
     store.updateNodeData(response.objectId, (data) => ({ ...data, iconId: response.iconId }))
+    pageStore.modifyNode(response.objectId)
   }
 }
 

@@ -5,7 +5,10 @@ export interface ProjectNodeData {
   methods: string[]
 }
 
-export type PageNodeData = Record<string, never>
+// export type PageNodeData = Record<string, never>
+export interface PageNodeData {
+  modified: string
+}
 
 export interface NodeHeader {
   id: string

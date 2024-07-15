@@ -5,15 +5,14 @@ import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'react
 import { SelectorState } from '@/app/_hook/pane'
 import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
 import { ArrowType } from '@/app/_object/edge/type'
-import { PageSocket } from '@/app/_socket/page-socket'
-import { ProjectSocket } from '@/app/_socket/project-socket'
+import { PageSocket2 } from '@/app/_socket/page-socket'
+import { ProjectSocket2 } from '@/app/_socket/project-socket'
 import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnEdgesChange(store: PageStore, socket: PageSocket): OnEdgesChange {
+export function useOnEdgesChange(store: PageStore, socket: PageSocket2): OnEdgesChange {
   return (changes) => {
     for (const change of changes) {
-      console.log('edge change', change)
       if (change.type === 'remove') {
         socket.removeNode(change.id)
         store.removeNode(change.id)
@@ -38,9 +37,9 @@ interface OnConnect {
 
 export function useOnConnect(
   projectStore: ProjectStore,
-  projectSocket: ProjectSocket,
+  projectSocket: ProjectSocket2,
   pageStore: PageStore,
-  pageSocket: PageSocket,
+  pageSocket: PageSocket2,
   selectorState: SelectorState,
 ): OnConnect {
   const [source, setSource] = useState<DragSource | null>(null)
@@ -53,8 +52,8 @@ export function useOnConnect(
   const onConnectEnd: OnConnectEnd = (e) => {
     const event = e as MouseEvent
     const sourceNodeIds = Set([
-      ...projectStore.nodes.filter((node) => node.selected).map((node) => node.id),
-      source!.id,
+      // ...projectStore.nodes.filter((node) => node.selected).map((node) => node.id),
+      // source!.id,
     ])
 
     const targetNodeIds = document

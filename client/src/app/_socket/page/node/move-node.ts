@@ -1,5 +1,4 @@
 import { ReadyState } from 'react-use-websocket'
-import { WebSocketLike } from 'react-use-websocket/src/lib/types'
 import z from 'zod'
 
 import { PageStore } from '@/app/_store/page-store'
@@ -23,15 +22,15 @@ export type MoveNode = (objectId: string, x: number, y: number) => void
 
 // send
 
-export function createMoveNode(send: (request: MoveNodeRequest) => void, socket: () => WebSocketLike | null): MoveNode {
-  return (objectId: string, x: number, y: number) => {
-    if (socket()?.readyState === ReadyState.OPEN) {
-      const request = { type, objectId, x, y }
-      console.log(`--> ${JSON.stringify(request)}`)
-      send(request)
-    } else {
-      console.log('already disconnected')
-    }
+type Sender = (request: MoveNodeRequest) => void
+
+export function sendMoveNode(sender: Sender, state: ReadyState, objectId: string, x: number, y: number): void {
+  if (state === ReadyState.OPEN) {
+    const request = { type, objectId, x, y }
+    console.log(`--> ${JSON.stringify(request)}`)
+    sender(request)
+  } else {
+    console.log('already disconnected')
   }
 }
 
