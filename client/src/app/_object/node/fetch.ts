@@ -44,5 +44,5 @@ function fetchPageNodes(url: string): Promise<Node<PageNodeData>[]> {
 }
 
 function parsePageNodes(data: Omit<Node<PageNodeData>, 'data'>[]): Node<PageNodeData>[] {
-  return data.map((row) => ({ ...row, data: {} }))
+  return data.map((row) => ({ ...row, data: { modified: '' } }))
 }

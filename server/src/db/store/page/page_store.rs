@@ -29,6 +29,7 @@ pub fn find_pages(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<Page>, 
     let rows = schema::table
         .filter(schema::project_id.eq(project_id))
         .select(Row::as_select())
+        .order_by(schema::name.asc())
         .load(conn)
         .map_err(DatabaseError::other)?;
 
