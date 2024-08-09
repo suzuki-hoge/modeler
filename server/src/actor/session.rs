@@ -35,7 +35,7 @@ use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 
 pub fn create_session_id() -> SessionId {
-    Uuid::new_v4().to_string().split('-').next().unwrap().to_string()
+    Uuid::new_v4().to_string()
 }
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
@@ -58,6 +58,7 @@ impl Session {
                 actor.server_address.do_send(DisconnectRequest {
                     session_id: actor.session_id.clone(),
                     page_id: actor.page_id.clone(),
+                    project_id: actor.project_id.clone(),
                 });
 
                 context.stop();
@@ -72,6 +73,7 @@ impl Session {
     fn handle_json(&mut self, json: Json) -> Result<(), String> {
         match json.get("type").and_then(|v| v.as_str()) {
             // project
+
             // node
             Some("create-node") => {
                 self.server_address.do_send(CreateNodeRequest::parse(&self.session_id, &self.project_id, json)?)
@@ -110,6 +112,7 @@ impl Session {
             }
 
             // page
+
             // node
             Some("add-node") => {
                 self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
@@ -161,8 +164,11 @@ impl Actor for Session {
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
-        self.server_address
-            .do_send(DisconnectRequest { session_id: self.session_id.clone(), page_id: self.page_id.clone() });
+        self.server_address.do_send(DisconnectRequest {
+            session_id: self.session_id.clone(),
+            page_id: self.page_id.clone(),
+            project_id: self.project_id.clone(),
+        });
         Running::Stop
     }
 }

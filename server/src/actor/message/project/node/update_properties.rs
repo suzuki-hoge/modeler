@@ -6,9 +6,8 @@ use crate::actor::message::{parse_string, parse_strings, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::SessionId;
-use crate::data::page::PageId;
-use crate::data::ObjectId;
 use crate::data::project::ProjectId;
+use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -20,7 +19,11 @@ pub struct UpdatePropertiesRequest {
 }
 
 impl UpdatePropertiesRequest {
-    pub fn parse(session_id: &SessionId, project_id: &ProjectId, json: Json) -> Result<UpdatePropertiesRequest, String> {
+    pub fn parse(
+        session_id: &SessionId,
+        project_id: &ProjectId,
+        json: Json,
+    ) -> Result<UpdatePropertiesRequest, String> {
         Ok(Self {
             session_id: session_id.clone(),
             project_id: project_id.clone(),

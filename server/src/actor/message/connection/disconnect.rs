@@ -6,6 +6,7 @@ use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
+use crate::data::project::ProjectId;
 use crate::data::User;
 
 #[derive(ActixMessage)]
@@ -13,6 +14,7 @@ use crate::data::User;
 pub struct DisconnectRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
+    pub project_id: ProjectId,
 }
 
 impl Handler<DisconnectRequest> for Server {
@@ -20,7 +22,7 @@ impl Handler<DisconnectRequest> for Server {
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
         println!("accept disconnect request");
-        let user = self.disconnect(request.session_id.clone(), request.page_id.clone());
+        let user = self.disconnect(request.session_id.clone(), request.page_id.clone(), request.project_id.clone());
 
         let response = DisconnectResponse::new(request.session_id.clone(), user);
         self.send_to_page(&request.page_id, response.into(), &request.session_id);

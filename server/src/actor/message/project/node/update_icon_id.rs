@@ -6,9 +6,8 @@ use crate::actor::message::{parse_string, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::SessionId;
-use crate::data::page::PageId;
-use crate::data::ObjectId;
 use crate::data::project::ProjectId;
+use crate::data::ObjectId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
