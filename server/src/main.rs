@@ -7,7 +7,7 @@ use actix_web::{
 };
 
 use crate::actor::{start_server, start_session};
-use crate::controller::{page_controller, project_controller};
+use crate::controller::{debug_controller, page_controller, project_controller};
 use crate::db::create_connection_pool;
 
 mod actor;
@@ -41,6 +41,7 @@ async fn main() -> Result<(), String> {
             .route("/project/{project_id}/edges", web::get().to(project_controller::get_edges))
             .route("/page/{page_id}/nodes", web::get().to(page_controller::get_nodes))
             .route("/page/{page_id}/edges", web::get().to(page_controller::get_edges))
+            .route("/debug/session", web::get().to(debug_controller::session))
     })
     .bind(("127.0.0.1", 8080))
     .map_err(|e| e.to_string())?

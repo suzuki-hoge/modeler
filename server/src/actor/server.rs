@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Write;
 
 use actix::{Actor, Context, Recipient};
-use serde_json::to_string as to_json_string;
+use serde_json::{json, to_string as to_json_string};
 
 use crate::actor::session::Response;
 use crate::actor::SessionId;
@@ -39,8 +39,19 @@ impl Server {
 
     pub fn disconnect(&mut self, session_id: SessionId, page_id: PageId, project_id: ProjectId) -> User {
         let (_, user) = self.sessions.remove(&session_id).unwrap();
-        self.project_sessions.entry(project_id).or_default().retain(|id| id != &session_id);
-        self.page_sessions.entry(page_id).or_default().retain(|id| id != &session_id);
+
+        let project_sessions = self.project_sessions.entry(project_id.clone()).or_default();
+        project_sessions.retain(|id| id != &session_id);
+        if project_sessions.is_empty() {
+            self.project_sessions.remove(&project_id);
+        }
+
+        let page_sessions = self.page_sessions.entry(page_id.clone()).or_default();
+        page_sessions.retain(|id| id != &session_id);
+        if page_sessions.is_empty() {
+            self.page_sessions.remove(&project_id);
+        }
+
         user
     }
 
@@ -71,9 +82,9 @@ impl Server {
     fn dump(&self) {
         let users: HashMap<SessionId, User> = self.sessions.iter().map(|(k, v)| (k.clone(), v.1.clone())).collect();
 
-        let json = serde_json::json!({
-            "project_sessions": self.project_sessions,
-            "page_sessions": self.page_sessions,
+        let json = json!({
+            "projectSessions": self.project_sessions,
+            "pageSessions": self.page_sessions,
             "users": users
         });
 

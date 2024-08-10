@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::db::store::DatabaseError;
 
+pub mod debug_controller;
 pub mod page_controller;
 pub mod project_controller;
 
