@@ -14,7 +14,6 @@ export const Node: Story = {
   args: {
     id: 'store',
     isSelected: false,
-    isLocked: false,
     data: {
       iconId: 'store',
       name: 'ItemStore',
@@ -33,16 +32,10 @@ export const Node: Story = {
     ],
     onChangeName: console.log,
     onChangeIconId: console.log,
-    onInsertProperties: [],
-    onUpdateProperties: [],
-    onDeleteProperties: [],
-    onInsertFirstProperty: console.log,
-    onInsertMethods: [console.log, console.log],
-    onUpdateMethods: [console.log, console.log],
-    onDeleteMethods: [console.log, console.log],
-    onInsertFirstMethod: console.log,
+    onChangeProperties: console.log,
+    onChangeMethods: console.log,
+    newNodePosition: { x: 0, y: 0 },
     onPostNodeCreate: console.log,
     onPostNodeSelect: console.log,
-    children: <></>,
   },
 }

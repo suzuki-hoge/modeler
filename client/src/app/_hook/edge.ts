@@ -5,12 +5,12 @@ import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'react
 import { SelectorState } from '@/app/_hook/pane'
 import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
 import { ArrowType } from '@/app/_object/edge/type'
-import { PageSocket2 } from '@/app/_socket/page-socket'
-import { ProjectSocket2 } from '@/app/_socket/project-socket'
+import { PageSocket } from '@/app/_socket/page-socket'
+import { ProjectSocket } from '@/app/_socket/project-socket'
 import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnEdgesChange(store: PageStore, socket: PageSocket2): OnEdgesChange {
+export function useOnEdgesChange(store: PageStore, socket: PageSocket): OnEdgesChange {
   return (changes) => {
     for (const change of changes) {
       if (change.type === 'remove') {
@@ -37,9 +37,9 @@ interface OnConnect {
 
 export function useOnConnect(
   projectStore: ProjectStore,
-  projectSocket: ProjectSocket2,
+  projectSocket: ProjectSocket,
   pageStore: PageStore,
-  pageSocket: PageSocket2,
+  pageSocket: PageSocket,
   selectorState: SelectorState,
 ): OnConnect {
   const [source, setSource] = useState<DragSource | null>(null)

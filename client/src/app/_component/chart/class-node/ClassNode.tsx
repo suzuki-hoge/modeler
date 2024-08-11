@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { Node, NodeTypes, XYPosition } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
@@ -35,24 +35,10 @@ export const ClassNode = (props: Props) => {
   const headers = useMemo(() => projectStore.nodeHeaders, [projectStore.nodeHeaders])
   const icons = useMemo(() => projectStore.nodeIcons, [projectStore.nodeIcons])
 
-  const data = projectNode.data
   const newNodePosition = useMemo(
     () => ({ x: pageNode.position.x, y: pageNode.position.y + (pageNode.height || 0) + 30 }),
     [pageNode.position, pageNode.height],
   )
-
-  useEffect(
-    () => {
-      if (props.selected) {
-        pageSocket.lock(props.id)
-      } else {
-        pageSocket.unlock(props.id)
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [props.selected],
-  )
-  const isLocked = pageStore.isLocked(props.id)
 
   const onChangeName = useCallback(
     (name: string) => {
@@ -112,8 +98,7 @@ export const ClassNode = (props: Props) => {
       <ClassNodeInner
         id={props.id}
         isSelected={props.selected}
-        isLocked={isLocked}
-        data={data}
+        data={projectNode.data}
         headers={headers}
         icons={icons}
         onChangeName={onChangeName}
@@ -132,7 +117,6 @@ export const ClassNode = (props: Props) => {
 interface InnerProps {
   id: string
   isSelected: boolean
-  isLocked: boolean
   data: ProjectNodeData
   headers: NodeHeader[]
   icons: NodeIcon[]
@@ -148,7 +132,6 @@ interface InnerProps {
 export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
   const classNames = ['class-node', styles.component]
   if (props.isSelected) classNames.push(styles.selected)
-  if (props.isLocked) classNames.push(styles.locked)
 
   return (
     <div id={props.id} className={classNames.join(' ')}>

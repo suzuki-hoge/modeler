@@ -10,8 +10,6 @@ import { handleRemoveEdge, sendRemoveEdge } from '@/app/_socket/page/edge/remove
 import { handleAddNode, sendAddNode } from '@/app/_socket/page/node/add-node'
 import { handleMoveNode, sendMoveNode } from '@/app/_socket/page/node/move-node'
 import { handleRemoveNode, sendRemoveNode } from '@/app/_socket/page/node/remove-node'
-import { handleLock, sendLock } from '@/app/_socket/page/state/lock'
-import { handleUnlock, sendUnlock } from '@/app/_socket/page/state/unlock'
 import { PageStore } from '@/app/_store/page-store'
 
 type PageSocketWithState = {
@@ -24,10 +22,6 @@ type PageSocketWithState = {
   addEdge: (edge: Edge<PageEdgeData>) => void
   removeEdge: (objectId: string) => void
 
-  // state
-  lock: (objectId: string) => void
-  unlock: (objectId: string) => void
-
   // init
   sender: SendJsonMessage | null
   readyState: ReadyState
@@ -35,7 +29,7 @@ type PageSocketWithState = {
   initState: (readyState: ReadyState) => void
 }
 
-export type PageSocket2 = Omit<PageSocketWithState, 'sender' | 'readyState'>
+export type PageSocket = Omit<PageSocketWithState, 'sender' | 'readyState'>
 
 export const pageSocketSelector = (socket: PageSocketWithState) => ({
   // node
@@ -46,10 +40,6 @@ export const pageSocketSelector = (socket: PageSocketWithState) => ({
   // edge
   addEdge: socket.addEdge,
   removeEdge: socket.removeEdge,
-
-  // state
-  lock: socket.lock,
-  unlock: socket.unlock,
 
   // init
   initSender: socket.initSender,
@@ -76,14 +66,6 @@ export const usePageSocket = createWithEqualityFn<PageSocketWithState>((set, get
     get().sender && sendRemoveEdge(get().sender!, get().readyState, objectId)
   },
 
-  // state
-  lock: (objectId) => {
-    get().sender && sendLock(get().sender!, get().readyState, objectId)
-  },
-  unlock: (objectId) => {
-    get().sender && sendUnlock(get().sender!, get().readyState, objectId)
-  },
-
   // init
   sender: null,
   readyState: -1,
@@ -101,9 +83,5 @@ export function handlePageMessage(response: unknown, store: PageStore) {
     // edge
     handleAddEdge(response, store)
     handleRemoveEdge(response, store)
-
-    // state
-    handleLock(response, store)
-    handleUnlock(response, store)
   }
 }

@@ -1,10 +1,8 @@
-import { Set } from 'immutable'
 import { applyEdgeChanges, applyNodeChanges, Edge, EdgeChange, Node, NodeChange } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { PageEdgeData } from '@/app/_object/edge/type'
 import { PageNodeData } from '@/app/_object/node/type'
-import { LockIds } from '@/app/_object/state/type'
 
 type PageStoreWithState = {
   // node
@@ -24,18 +22,12 @@ type PageStoreWithState = {
   removeEdge: (id: string) => void
   applyEdgeChange: (change: EdgeChange) => void
 
-  // state
-  lockIds: LockIds
-  isLocked: (id: string) => boolean
-  lock: (id: string) => void
-  unlock: (id: string) => void
-
   // init
   putNodes: (nodes: Node<PageNodeData>[]) => void
   putEdges: (edges: Edge<PageEdgeData>[]) => void
 }
 
-export type PageStore = Omit<PageStoreWithState, 'nodes' | 'edges' | 'lockIds'>
+export type PageStore = Omit<PageStoreWithState, 'nodes' | 'edges'>
 
 export const pageStoreSelector = (store: PageStoreWithState) => ({
   // node
@@ -52,11 +44,6 @@ export const pageStoreSelector = (store: PageStoreWithState) => ({
   addEdge: store.addEdge,
   removeEdge: store.removeEdge,
   applyEdgeChange: store.applyEdgeChange,
-
-  // state
-  isLocked: store.isLocked,
-  lock: store.lock,
-  unlock: store.unlock,
 
   // init
   putNodes: store.putNodes,
@@ -88,12 +75,6 @@ export const usePageStore = createWithEqualityFn<PageStoreWithState>((set, get) 
   addEdge: (edge) => set({ edges: [...get().edges, edge] }),
   removeEdge: (id) => set({ edges: get().edges.filter((edge) => edge.id !== id) }),
   applyEdgeChange: (change) => set({ edges: applyEdgeChanges([change], get().edges) }),
-
-  // state
-  lockIds: Set(),
-  isLocked: (id) => get().lockIds.contains(id),
-  lock: (id) => set({ lockIds: get().lockIds.add(id) }),
-  unlock: (id) => set({ lockIds: get().lockIds.delete(id) }),
 
   // init
   putNodes: (nodes) => set({ nodes }),

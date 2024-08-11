@@ -44,7 +44,7 @@ type ProjectSocketWithState = {
   initState: (readyState: ReadyState) => void
 }
 
-export type ProjectSocket2 = Omit<ProjectSocketWithState, 'sender' | 'readyState'>
+export type ProjectSocket = Omit<ProjectSocketWithState, 'sender' | 'readyState'>
 
 export const projectSocketSelector = (socket: ProjectSocketWithState) => ({
   // node
