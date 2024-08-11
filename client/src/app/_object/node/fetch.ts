@@ -1,5 +1,5 @@
+import { Node } from '@xyflow/react'
 import axios from 'axios'
-import { Node } from 'reactflow'
 import useSWR from 'swr'
 
 import { NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'

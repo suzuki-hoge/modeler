@@ -1,7 +1,7 @@
 'use client'
 import * as crypto from 'crypto'
 
-import 'reactflow/dist/style.css'
+import '@xyflow/react/dist/style.css'
 import axios from 'axios'
 import Link from 'next/link'
 import React from 'react'

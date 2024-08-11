@@ -1,4 +1,4 @@
-import { Node, XYPosition } from 'reactflow'
+import { Node, XYPosition } from '@xyflow/react'
 
 import { NodeHeader, NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
 

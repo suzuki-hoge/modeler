@@ -1,6 +1,6 @@
+import { Edge, Node } from '@xyflow/react'
 import { ReadyState } from 'react-use-websocket/src/lib/constants'
 import { SendJsonMessage } from 'react-use-websocket/src/lib/types'
-import { Edge, Node } from 'reactflow'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { PageEdgeData } from '@/app/_object/edge/type'

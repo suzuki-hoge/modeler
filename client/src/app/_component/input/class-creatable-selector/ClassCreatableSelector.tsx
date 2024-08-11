@@ -1,5 +1,5 @@
 'use client'
-import { Node, XYPosition } from 'reactflow'
+import { Node, XYPosition } from '@xyflow/react'
 
 import { IconText } from '@/app/_component/icon/icon-text/IconText'
 import { CreatableSelector } from '@/app/_component/selector/CreatableSelector'

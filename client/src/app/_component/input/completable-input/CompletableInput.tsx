@@ -1,6 +1,6 @@
 'use client'
+import { Node, XYPosition } from '@xyflow/react'
 import React, { ChangeEvent, Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react'
-import { Node, XYPosition } from 'reactflow'
 
 import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
 import {

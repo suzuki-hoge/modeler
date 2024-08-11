@@ -1,5 +1,5 @@
+import { useReactFlow, XYPosition } from '@xyflow/react'
 import React, { Dispatch, SetStateAction, useState } from 'react'
-import { useReactFlow, XYPosition } from 'reactflow'
 
 export interface SelectorState {
   active: boolean

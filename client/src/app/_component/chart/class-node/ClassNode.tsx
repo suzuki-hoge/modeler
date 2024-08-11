@@ -1,5 +1,5 @@
+import { Node, NodeProps, NodeTypes, XYPosition } from '@xyflow/react'
 import React, { memo, useCallback, useMemo } from 'react'
-import { Node, NodeTypes, XYPosition } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import { Handles } from '@/app/_component/chart/class-node/Handles'
@@ -10,7 +10,7 @@ import { ClassName } from '@/app/_component/input/class-name/ClassName'
 import { CompletableInput } from '@/app/_component/input/completable-input/CompletableInput'
 import { createOnPostNodeCreate, createOnPostNodeSelect } from '@/app/_hook/node'
 import { deleteString, insertString, updateString } from '@/app/_object/node/function'
-import { NodeHeader, NodeIcon, ProjectNodeData } from '@/app/_object/node/type'
+import { NodeHeader, NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
 import { pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
 import { projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
 import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
@@ -18,12 +18,7 @@ import { projectStoreSelector, useProjectStore } from '@/app/_store/project-stor
 
 import styles from './class-node.module.scss'
 
-interface Props {
-  id: string
-  selected: boolean
-}
-
-export const ClassNode = (props: Props) => {
+export const ClassNode = (props: NodeProps<Node<PageNodeData>>) => {
   const projectStore = useProjectStore(projectStoreSelector, shallow)
   const pageStore = usePageStore(pageStoreSelector, shallow)
   const projectSocket = useProjectSocket(projectSocketSelector, shallow)
@@ -76,28 +71,20 @@ export const ClassNode = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
-  const onPostNodeCreate = createOnPostNodeCreate(
-    projectStore,
-    projectSocket,
-    pageStore,
-    pageSocket,
-    { id: props.id, arrowType: 'simple' },
-    () => {},
-  )
-  const onPostNodeSelect = createOnPostNodeSelect(
-    projectStore,
-    projectSocket,
-    pageStore,
-    pageSocket,
-    { id: props.id, arrowType: 'simple' },
-    () => {},
-  )
+  const onPostNodeCreate = createOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, {
+    id: props.id,
+    arrowType: 'simple',
+  })
+  const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, {
+    id: props.id,
+    arrowType: 'simple',
+  })
 
   return (
     <>
       <ClassNodeInner
         id={props.id}
-        isSelected={props.selected}
+        isSelected={props.selected || false}
         data={projectNode.data}
         headers={headers}
         icons={icons}
@@ -109,7 +96,7 @@ export const ClassNode = (props: Props) => {
         onPostNodeCreate={onPostNodeCreate}
         onPostNodeSelect={onPostNodeSelect}
       />
-      <Handles visible={props.selected} icon={'simple'} />
+      <Handles visible={props.selected || false} icon={'simple'} />
     </>
   )
 }

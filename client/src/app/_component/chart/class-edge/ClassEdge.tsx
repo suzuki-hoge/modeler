@@ -1,5 +1,5 @@
+import { BaseEdge, ConnectionLineType, DefaultEdgeOptions, Edge, EdgeProps, EdgeTypes } from '@xyflow/react'
 import { CSSProperties, memo, useCallback, useMemo } from 'react'
-import { BaseEdge, ConnectionLineType, DefaultEdgeOptions, EdgeProps, EdgeTypes } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import { EdgeLabel } from '@/app/_component/chart/class-edge/EdgeLabel'
@@ -11,7 +11,7 @@ import { projectSocketSelector, useProjectSocket } from '@/app/_socket/project-s
 import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
 import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
 
-export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
+export const ClassEdge = (props: EdgeProps<Edge<PageEdgeData>>) => {
   const projectStore = useProjectStore(projectStoreSelector, shallow)
   const pageStore = usePageStore(pageStoreSelector, shallow)
   const projectSocket = useProjectSocket(projectSocketSelector, shallow)
@@ -28,28 +28,24 @@ export const ClassEdge = (props: EdgeProps<PageEdgeData>) => {
         props.sourceY,
         sourcePageNode.position.x,
         sourcePageNode.position.y,
-        sourcePageNode.width!,
-        sourcePageNode.height!,
+        sourcePageNode.measured!.width!,
+        sourcePageNode.measured!.height!,
         props.targetX,
         props.targetY,
         targetPageNode.position.x,
         targetPageNode.position.y,
-        targetPageNode.width!,
-        targetPageNode.height!,
+        targetPageNode.measured!.width!,
+        targetPageNode.measured!.height!,
       ),
     [
       props.sourceX,
       props.sourceY,
-      sourcePageNode.position.x,
-      sourcePageNode.position.y,
-      sourcePageNode.width,
-      sourcePageNode.height,
+      sourcePageNode.position,
+      sourcePageNode.measured,
       props.targetX,
       props.targetY,
-      targetPageNode.position.x,
-      targetPageNode.position.y,
-      targetPageNode.width,
-      targetPageNode.height,
+      targetPageNode.position,
+      targetPageNode.measured,
     ],
   )
   const onRotate = useCallback(

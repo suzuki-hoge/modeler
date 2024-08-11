@@ -1,5 +1,5 @@
+import { EdgeLabelRenderer } from '@xyflow/react'
 import React from 'react'
-import { EdgeLabelRenderer } from 'reactflow'
 
 import { GeneralizationArrowIcon } from '@/app/_component/icon/generalization-arrow-icon/GeneralizationArrowIcon'
 import { RotateIcon } from '@/app/_component/icon/rotate-icon/RotateIcon'

@@ -1,5 +1,5 @@
+import { EdgeLabelRenderer } from '@xyflow/react'
 import { memo } from 'react'
-import { EdgeLabelRenderer } from 'reactflow'
 
 interface Props {
   x: number

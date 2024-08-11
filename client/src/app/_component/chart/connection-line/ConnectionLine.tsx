@@ -1,22 +1,15 @@
-import { BaseEdge, ConnectionLineComponentProps, getStraightPath, internalsSymbol, useNodes } from 'reactflow'
+import { BaseEdge, ConnectionLineComponent, ConnectionLineComponentProps, getStraightPath } from '@xyflow/react'
 
-import { ProjectNodeData } from '@/app/_object/node/type'
+export const ConnectionLine: ConnectionLineComponent = ({ fromNode, toX, toY }: ConnectionLineComponentProps) => {
+  const centerHandle = fromNode.internals.handleBounds?.source?.find((handle) => handle.id === 'center')
 
-export const ConnectionLine = ({ fromNode, toX, toY }: ConnectionLineComponentProps) => {
-  const handles = useNodes<ProjectNodeData>()
-    .filter((node) => node.selected || fromNode?.id === node.id)
-    .map((node) => ({
-      node,
-      handle: node[internalsSymbol]!.handleBounds!.source!.filter((handle) => handle.id === 'center')[0],
-    }))
-
-  return handles.map(({ node, handle }) => {
-    const fromHandleX = handle.x + handle.width / 2
-    const fromHandleY = handle.y + handle.height / 2
-    const sourceX = node.positionAbsolute!.x + fromHandleX
-    const sourceY = node.positionAbsolute!.y + fromHandleY
+  if (centerHandle) {
+    const sourceX = fromNode.position.x + centerHandle.x + centerHandle.width / 2
+    const sourceY = fromNode.position.y + centerHandle.y + centerHandle.height / 2
     const [edgePath] = getStraightPath({ sourceX, sourceY, targetX: toX, targetY: toY })
 
-    return <BaseEdge key={`${node.id}-${handle.id}`} path={edgePath} />
-  })
+    return <BaseEdge key={`${fromNode.id}-${centerHandle.id}`} path={edgePath} />
+  } else {
+    return <></>
+  }
 }

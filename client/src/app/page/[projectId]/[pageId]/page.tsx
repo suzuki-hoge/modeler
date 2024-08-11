@@ -1,10 +1,10 @@
 'use client'
-import 'reactflow/dist/style.css'
+import '@xyflow/react/dist/style.css'
 
 import { faker } from '@faker-js/faker'
+import { ReactFlow, Background, Panel, ReactFlowProvider } from '@xyflow/react'
 import React, { useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
-import ReactFlow, { Background, Panel, ReactFlowProvider } from 'reactflow'
 import { shallow } from 'zustand/shallow'
 
 import {
@@ -54,7 +54,7 @@ const Inner = (props: InnerProps) => {
 
   // edge
   const onEdgesChange = useOnEdgesChange(pageStore, pageSocket)
-  const { onConnectStart, onConnectEnd, source, setSource } = useOnConnect(
+  const { onConnectStart, onConnectEnd, source } = useOnConnect(
     projectStore,
     projectSocket,
     pageStore,
@@ -63,8 +63,8 @@ const Inner = (props: InnerProps) => {
   )
 
   // selector
-  const onPostNodeCreate = createOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
-  const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source, setSource)
+  const onPostNodeCreate = createOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source)
+  const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source)
 
   // init
   const [icons, isValidating1] = useNodeIcons(props.projectId)

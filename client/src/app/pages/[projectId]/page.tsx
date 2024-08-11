@@ -1,5 +1,5 @@
 'use client'
-import 'reactflow/dist/style.css'
+import '@xyflow/react/dist/style.css'
 import Link from 'next/link'
 import React from 'react'
 

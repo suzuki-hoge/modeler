@@ -1,5 +1,5 @@
+import { Edge } from '@xyflow/react'
 import axios from 'axios'
-import { Edge } from 'reactflow'
 import useSWR from 'swr'
 
 import { PageEdgeData, ProjectEdgeData } from '@/app/_object/edge/type'

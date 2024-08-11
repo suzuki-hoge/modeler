@@ -1,12 +1,11 @@
-export interface ProjectNodeData {
+export interface ProjectNodeData extends Record<string, unknown> {
   iconId: string
   name: string
   properties: string[]
   methods: string[]
 }
 
-// export type PageNodeData = Record<string, never>
-export interface PageNodeData {
+export interface PageNodeData extends Record<string, unknown> {
   modified: string
 }
 

@@ -1,8 +1,8 @@
 export type ArrowType = 'simple' | 'generalization'
 
-export interface ProjectEdgeData {
+export interface ProjectEdgeData extends Record<string, unknown> {
   arrowType: ArrowType
   label: string
 }
 
-export type PageEdgeData = Record<string, never>
+export type PageEdgeData = Record<string, unknown>

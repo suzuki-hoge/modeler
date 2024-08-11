@@ -1,4 +1,4 @@
-import { Edge, Node } from 'reactflow'
+import { Edge, Node } from '@xyflow/react'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { ProjectEdgeData } from '@/app/_object/edge/type'

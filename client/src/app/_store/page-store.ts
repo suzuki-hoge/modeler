@@ -1,4 +1,4 @@
-import { applyEdgeChanges, applyNodeChanges, Edge, EdgeChange, Node, NodeChange } from 'reactflow'
+import { applyEdgeChanges, applyNodeChanges, Edge, EdgeChange, Node, NodeChange } from '@xyflow/react'
 import { createWithEqualityFn } from 'zustand/traditional'
 
 import { PageEdgeData } from '@/app/_object/edge/type'
@@ -12,7 +12,7 @@ type PageStoreWithState = {
   addNode: (node: Node<PageNodeData>) => void
   removeNode: (id: string) => void
   moveNode: (id: string, x: number, y: number) => void
-  applyNodeChange: (change: NodeChange) => void
+  applyNodeChange: (change: NodeChange<Node<PageNodeData>>) => void
   modifyNode: (id: string) => void
 
   // edge

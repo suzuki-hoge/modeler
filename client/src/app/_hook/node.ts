@@ -1,5 +1,5 @@
-import { Dispatch, SetStateAction, useState } from 'react'
-import { Edge, Node, NodeDragHandler, OnNodesChange, XYPosition } from 'reactflow'
+import { Edge, Node, OnNodeDrag, OnNodesChange, XYPosition } from '@xyflow/react'
+import { MutableRefObject, useState } from 'react'
 
 import { DragSource } from '@/app/_hook/edge'
 import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
@@ -11,7 +11,7 @@ import { ProjectSocket } from '@/app/_socket/project-socket'
 import { PageStore } from '@/app/_store/page-store'
 import { ProjectStore } from '@/app/_store/project-store'
 
-export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesChange {
+export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesChange<Node<PageNodeData>> {
   return (changes) => {
     for (const change of changes) {
       if (change.type === 'remove') {
@@ -28,18 +28,18 @@ export function useOnNodesChange(store: PageStore, socket: PageSocket): OnNodesC
 }
 
 export function useOnNodeDrag(socket: PageSocket): {
-  onNodeDragStart: NodeDragHandler
-  onNodeDragStop: NodeDragHandler
+  onNodeDragStart: OnNodeDrag
+  onNodeDragStop: OnNodeDrag
 } {
   const [startX, setStartX] = useState(0)
   const [startY, setStartY] = useState(0)
 
-  const onNodeDragStart: NodeDragHandler = (event, node) => {
+  const onNodeDragStart: OnNodeDrag = (event, node) => {
     setStartX(node.position.x)
     setStartY(node.position.y)
     event.preventDefault()
   }
-  const onNodeDragStop: NodeDragHandler = (_event, node, nodes) => {
+  const onNodeDragStop: OnNodeDrag = (_event, node, nodes) => {
     if (startX !== node.position.x || startY !== node.position.y) {
       nodes.forEach((node) => socket.moveNode(node.id, node.position.x, node.position.y))
     }
@@ -53,8 +53,7 @@ export function createOnPostNodeCreate(
   projectSocket: ProjectSocket,
   pageStore: PageStore,
   pageSocket: PageSocket,
-  source: DragSource | null,
-  setSource: Dispatch<SetStateAction<DragSource | null>>,
+  source: MutableRefObject<DragSource | null>,
 ): (projectNode: Node<ProjectNodeData>, position: XYPosition) => void {
   return (projectNode, position) => {
     const pageNode = extractPageNode(projectNode, position)
@@ -62,19 +61,19 @@ export function createOnPostNodeCreate(
     projectStore.createNode(projectNode)
     projectSocket.createNode(projectNode)
 
-    if (source) {
-      const projectEdge = projectStore.findEdge(source.id, projectNode.id)
+    if (source.current) {
+      const projectEdge = projectStore.findEdge(source.current.id, projectNode.id)
       if (projectEdge) {
         edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
       } else {
-        newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, projectNode.id)
+        newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.current.id, projectNode.id)
       }
     } else {
       paneClicked(pageStore, pageSocket, pageNode)
     }
 
     // reset drag start
-    setSource(null)
+    source.current = null
   }
 }
 
@@ -83,27 +82,26 @@ export function createOnPostNodeSelect(
   projectSocket: ProjectSocket,
   pageStore: PageStore,
   pageSocket: PageSocket,
-  source: DragSource | null,
-  setSource: Dispatch<SetStateAction<DragSource | null>>,
+  source: MutableRefObject<DragSource | null>,
 ): (header: NodeHeader, position: XYPosition) => void {
   return (header, position) => {
     if (pageStore.isNodeExists(header.id)) return
 
     const pageNode = expandToPageNode(header, position)
 
-    if (source) {
-      const projectEdge = projectStore.findEdge(source.id, header.id)
+    if (source.current) {
+      const projectEdge = projectStore.findEdge(source.current.id, header.id)
       if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
         edgeDrawn(pageStore, pageSocket, pageNode, projectEdge)
       } else {
-        newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.id, header.id)
+        newEdgeDrawn(projectStore, projectSocket, pageStore, pageSocket, pageNode, source.current.id, header.id)
       }
     } else {
       paneClicked(pageStore, pageSocket, pageNode)
     }
 
     // reset drag start
-    setSource(null)
+    source.current = null
   }
 }
 

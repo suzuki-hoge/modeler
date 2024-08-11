@@ -1,4 +1,4 @@
-import { getStraightPath } from 'reactflow'
+import { getStraightPath } from '@xyflow/react'
 
 export type Line = { s: Point; d: Point }
 export type Point = { x: number; y: number }

@@ -1,5 +1,5 @@
+import { Handle, Position } from '@xyflow/react'
 import React, { memo } from 'react'
-import { Handle, Position } from 'reactflow'
 
 import { SimpleArrowIcon } from '@/app/_component/icon/simple-arrow-icon/SimpleArrowIcon'
 
@@ -11,20 +11,17 @@ interface Props {
 }
 
 export const Handles = memo(function _Handles(props: Props) {
+  const none = props.visible ? '' : ` ${styles.none}`
   return (
     <>
-      {props.visible && (
-        <>
-          <Handle type='source' className={styles.topHandle} position={Position.Top} />
-          <SimpleArrowIcon className={styles.topArrow} vector={'up'} />
-          <Handle type='source' className={styles.rightHandle} position={Position.Right} />
-          <SimpleArrowIcon className={styles.rightArrow} vector={'right'} />
-          <Handle type='source' className={styles.bottomHandle} position={Position.Bottom} />
-          <SimpleArrowIcon className={styles.bottomArrow} vector={'down'} />
-          <Handle type='source' className={styles.leftHandle} position={Position.Left} />
-          <SimpleArrowIcon className={styles.leftArrow} vector={'left'} />
-        </>
-      )}
+      <Handle type='source' className={styles.topHandle + none} position={Position.Top} />
+      <SimpleArrowIcon className={styles.topArrow + none} vector={'up'} />
+      <Handle type='source' className={styles.rightHandle + none} position={Position.Right} />
+      <SimpleArrowIcon className={styles.rightArrow + none} vector={'right'} />
+      <Handle type='source' className={styles.bottomHandle + none} position={Position.Bottom} />
+      <SimpleArrowIcon className={styles.bottomArrow + none} vector={'down'} />
+      <Handle type='source' className={styles.leftHandle + none} position={Position.Left} />
+      <SimpleArrowIcon className={styles.leftArrow + none} vector={'left'} />
 
       <Handle type='source' id={'center'} className={styles.centerHandle} position={Position.Bottom} />
       <Handle type='target' id={'center'} className={styles.centerHandle} position={Position.Bottom} />

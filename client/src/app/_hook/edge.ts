@@ -1,5 +1,5 @@
-import { Dispatch, SetStateAction, useState } from 'react'
-import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'reactflow'
+import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from '@xyflow/react'
+import { MutableRefObject, useCallback, useRef } from 'react'
 
 import { SelectorState } from '@/app/_hook/pane'
 import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
@@ -31,8 +31,7 @@ export interface DragSource {
 interface OnConnect {
   onConnectStart: OnConnectStart
   onConnectEnd: OnConnectEnd
-  source: DragSource | null
-  setSource: Dispatch<SetStateAction<DragSource | null>>
+  source: MutableRefObject<DragSource | null>
 }
 
 export function useOnConnect(
@@ -42,51 +41,61 @@ export function useOnConnect(
   pageSocket: PageSocket,
   selectorState: SelectorState,
 ): OnConnect {
-  const [source, setSource] = useState<DragSource | null>(null)
+  const source = useRef<DragSource | null>(null)
   const rf = useReactFlow()
 
-  const onConnectStart: OnConnectStart = (_, p) => {
-    setSource({ id: p.nodeId!, arrowType: p.handleId?.startsWith('simple') ? 'simple' : 'generalization' })
-  }
+  const onConnectStart: OnConnectStart = useCallback((_, p) => {
+    source.current = { id: p.nodeId!, arrowType: p.handleId?.startsWith('simple') ? 'simple' : 'generalization' }
+  }, [])
 
-  const onConnectEnd: OnConnectEnd = (e) => {
-    const event = e as MouseEvent
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (e) => {
+      const event = e as MouseEvent
 
-    const targetNodeIds = document
-      .elementsFromPoint(event.clientX, event.clientY)
-      .filter((e) => e.classList.contains('class-node'))
-      .map((e) => e.id)
+      const targetNodeIds = document
+        .elementsFromPoint(event.clientX, event.clientY)
+        .filter((e) => e.classList.contains('class-node'))
+        .map((e) => e.id)
 
-    if (targetNodeIds.length === 0) {
-      // create new node
-      const screen = { x: event.clientX, y: event.clientY }
-      const flow = rf.screenToFlowPosition(screen)
-      selectorState.setActive(true)
-      selectorState.setPosition({ screen, flow })
-    } else if (source!.id !== targetNodeIds[0]) {
-      // connect
-      const projectEdge = projectStore.findEdge(source!.id, targetNodeIds[0])
+      if (targetNodeIds.length === 0) {
+        // create new node
+        const screen = { x: event.clientX, y: event.clientY }
+        const flow = rf.screenToFlowPosition(screen)
+        selectorState.setActive(true)
+        selectorState.setPosition({ screen, flow })
+      } else if (source.current!.id !== targetNodeIds[0]) {
+        // connect
+        const projectEdge = projectStore.findEdge(source.current!.id, targetNodeIds[0])
 
-      if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
-        const pageEdge = extractPageEdge(projectEdge)
+        if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
+          const pageEdge = extractPageEdge(projectEdge)
 
-        pageStore.addEdge(pageEdge)
-        pageSocket.addEdge(pageEdge)
+          pageStore.addEdge(pageEdge)
+          pageSocket.addEdge(pageEdge)
+        } else {
+          const projectEdge = createEdge(
+            allocateEdgeId(),
+            source.current!.id,
+            targetNodeIds[0],
+            source.current!.arrowType,
+            '1',
+          )
+
+          projectStore.createEdge(projectEdge)
+          projectSocket.createEdge(projectEdge)
+
+          const pageEdge = extractPageEdge(projectEdge)
+
+          pageStore.addEdge(pageEdge)
+          pageSocket.addEdge(pageEdge)
+        }
       } else {
-        const projectEdge = createEdge(allocateEdgeId(), source!.id, targetNodeIds[0], source!.arrowType, '1')
-
-        projectStore.createEdge(projectEdge)
-        projectSocket.createEdge(projectEdge)
-
-        const pageEdge = extractPageEdge(projectEdge)
-
-        pageStore.addEdge(pageEdge)
-        pageSocket.addEdge(pageEdge)
+        // do nothing
       }
-    } else {
-      // do nothing
-    }
-  }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
-  return { onConnectStart, onConnectEnd, source, setSource }
+  return { onConnectStart, onConnectEnd, source }
 }

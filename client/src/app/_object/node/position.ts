@@ -1,4 +1,4 @@
-import { XYPosition } from 'reactflow'
+import { XYPosition } from '@xyflow/react'
 
 export function randomAround(x: number, y: number, w: number, h: number, d: number): XYPosition {
   const centerX = x + w / 2

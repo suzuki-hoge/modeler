@@ -1,5 +1,5 @@
+import { Edge } from '@xyflow/react'
 import { ReadyState } from 'react-use-websocket'
-import { Edge } from 'reactflow'
 import z from 'zod'
 
 import { updateEdge } from '@/app/_object/edge/function'

@@ -1,4 +1,4 @@
-import { Edge } from 'reactflow'
+import { Edge } from '@xyflow/react'
 
 import { ArrowType, PageEdgeData, ProjectEdgeData } from '@/app/_object/edge/type'
 

@@ -1,5 +1,5 @@
+import { Node } from '@xyflow/react'
 import { ReadyState } from 'react-use-websocket'
-import { Node } from 'reactflow'
 import z from 'zod'
 
 import { PageNodeData } from '@/app/_object/node/type'
