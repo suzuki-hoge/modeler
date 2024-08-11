@@ -27,8 +27,9 @@ pub fn find_all(conn: &mut Conn) -> Result<Vec<Project>, DatabaseError> {
     Ok(rows.into_iter().map(read).collect_vec())
 }
 
-pub fn create_project(conn: &mut Conn, project_id: &ProjectId, name: &String) -> Result<(), DatabaseError> {
-    let row = Row { project_id: project_id.clone(), name: name.clone() };
+#[allow(dead_code)]
+pub fn create_project(conn: &mut Conn, project_id: &ProjectId, name: &str) -> Result<(), DatabaseError> {
+    let row = Row { project_id: project_id.clone(), name: name.to_string() };
 
     insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 

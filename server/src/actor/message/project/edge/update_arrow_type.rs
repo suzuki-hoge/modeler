@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
+use crate::db::store::project::project_edge_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -34,6 +35,13 @@ impl Handler<UpdateArrowTypeRequest> for Server {
 
     fn handle(&mut self, request: UpdateArrowTypeRequest, _: &mut Context<Self>) {
         println!("accept update-arrow-type request");
+
+        project_edge_store::update_project_edge_arrow_type(
+            &mut self.pool.get().unwrap(),
+            &request.object_id,
+            &request.arrow_type,
+        )
+        .unwrap();
 
         let response = UpdateArrowTypeResponse::new(request.object_id, request.arrow_type);
         self.send_to_project(&request.project_id, response.into(), &request.session_id);

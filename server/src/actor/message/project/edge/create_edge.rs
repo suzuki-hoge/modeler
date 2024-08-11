@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
+use crate::db::store::project::project_edge_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -40,6 +41,17 @@ impl Handler<CreateEdgeRequest> for Server {
 
     fn handle(&mut self, request: CreateEdgeRequest, _: &mut Context<Self>) {
         println!("accept create-edge request");
+
+        project_edge_store::create_project_edge(
+            &mut self.pool.get().unwrap(),
+            &request.object_id,
+            &request.project_id,
+            &request.source,
+            &request.target,
+            &request.arrow_type,
+            &request.label,
+        )
+        .unwrap();
 
         let response = CreateEdgeResponse::new(
             request.object_id,

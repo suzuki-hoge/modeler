@@ -10,16 +10,18 @@ use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::User;
+use crate::db::Pool;
 
 pub struct Server {
+    pub pool: Pool,
     sessions: HashMap<SessionId, (Recipient<Response>, User)>,
     project_sessions: HashMap<ProjectId, Vec<SessionId>>,
     page_sessions: HashMap<PageId, Vec<SessionId>>,
 }
 
 impl Server {
-    pub fn new() -> Self {
-        Self { sessions: HashMap::new(), project_sessions: HashMap::new(), page_sessions: HashMap::new() }
+    pub fn new(pool: Pool) -> Self {
+        Self { pool, sessions: HashMap::new(), project_sessions: HashMap::new(), page_sessions: HashMap::new() }
     }
 }
 

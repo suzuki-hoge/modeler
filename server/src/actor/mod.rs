@@ -13,6 +13,7 @@ use crate::actor::session::{create_session_id, Session};
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::User;
+use crate::db::Pool;
 
 mod message;
 mod server;
@@ -41,6 +42,6 @@ pub async fn start_session(
     )
 }
 
-pub fn start_server() -> Addr<Server> {
-    Server::new().start()
+pub fn start_server(pool: Pool) -> Addr<Server> {
+    Server::new(pool).start()
 }

@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
+use crate::db::store::page::page_edge_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -36,6 +37,15 @@ impl Handler<AddEdgeRequest> for Server {
 
     fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
         println!("accept add-edge request");
+
+        page_edge_store::create_page_edge(
+            &mut self.pool.get().unwrap(),
+            &request.object_id,
+            &request.page_id,
+            &request.source,
+            &request.target,
+        )
+        .unwrap();
 
         let response = AddEdgeResponse::new(request.object_id, request.source, request.target);
         self.send_to_page(&request.page_id, response.into(), &request.session_id);

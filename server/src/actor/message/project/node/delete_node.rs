@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
+use crate::db::store::project::project_node_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -32,6 +33,8 @@ impl Handler<DeleteNodeRequest> for Server {
 
     fn handle(&mut self, request: DeleteNodeRequest, _: &mut Context<Self>) {
         println!("accept delete-node request");
+
+        project_node_store::delete_project_node(&mut self.pool.get().unwrap(), &request.object_id).unwrap();
 
         let response = DeleteNodeResponse::new(request.object_id);
         self.send_to_project(&request.project_id, response.into(), &request.session_id);

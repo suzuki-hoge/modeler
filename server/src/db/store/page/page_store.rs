@@ -50,13 +50,9 @@ pub fn exists(conn: &mut Conn, page_id: &PageId) -> Result<(), DatabaseError> {
     }
 }
 
-pub fn create_page(
-    conn: &mut Conn,
-    page_id: &PageId,
-    project_id: &ProjectId,
-    name: &String,
-) -> Result<(), DatabaseError> {
-    let row = Row { page_id: page_id.clone(), project_id: project_id.clone(), name: name.clone() };
+#[allow(dead_code)]
+pub fn create_page(conn: &mut Conn, page_id: &PageId, project_id: &ProjectId, name: &str) -> Result<(), DatabaseError> {
+    let row = Row { page_id: page_id.clone(), project_id: project_id.clone(), name: name.to_string() };
 
     insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 

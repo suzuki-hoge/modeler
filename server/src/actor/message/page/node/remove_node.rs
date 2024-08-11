@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
+use crate::db::store::page::page_node_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -32,6 +33,8 @@ impl Handler<RemoveNodeRequest> for Server {
 
     fn handle(&mut self, request: RemoveNodeRequest, _: &mut Context<Self>) {
         println!("accept remove-node request");
+
+        page_node_store::delete_page_node(&mut self.pool.get().unwrap(), &request.object_id, &request.page_id).unwrap();
 
         let response = RemoveNodeResponse::new(request.object_id);
         self.send_to_page(&request.page_id, response.into(), &request.session_id);

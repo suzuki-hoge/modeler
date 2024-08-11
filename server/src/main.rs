@@ -17,9 +17,9 @@ mod db;
 
 #[actix_web::main]
 async fn main() -> Result<(), String> {
-    let server = start_server();
-
     let pool = create_connection_pool()?;
+
+    let server = start_server(pool.clone());
 
     HttpServer::new(move || {
         let cors = Cors::default()

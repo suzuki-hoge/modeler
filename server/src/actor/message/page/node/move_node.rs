@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
+use crate::db::store::page::page_node_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -36,6 +37,15 @@ impl Handler<MoveNodeRequest> for Server {
 
     fn handle(&mut self, request: MoveNodeRequest, _: &mut Context<Self>) {
         println!("accept move-node request");
+
+        page_node_store::update_page_node_position(
+            &mut self.pool.get().unwrap(),
+            &request.object_id,
+            &request.page_id,
+            request.x,
+            request.y,
+        )
+        .unwrap();
 
         let response = MoveNodeResponse::new(request.object_id, request.x, request.y);
         self.send_to_page(&request.page_id, response.into(), &request.session_id);

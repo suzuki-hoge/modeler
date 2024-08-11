@@ -55,15 +55,15 @@ pub fn create_project_node(
     conn: &mut Conn,
     object_id: &ObjectId,
     project_id: &ProjectId,
-    name: &String,
-    icon_id: &String,
+    name: &str,
+    icon_id: &str,
 ) -> Result<(), DatabaseError> {
     let empty: Vec<String> = vec![];
     let row = Row {
         object_id: object_id.clone(),
         project_id: project_id.clone(),
-        name: name.clone(),
-        icon_id: icon_id.clone(),
+        name: name.to_string(),
+        icon_id: icon_id.to_string(),
         properties: to_json_string(&empty).unwrap(),
         methods: to_json_string(&empty).unwrap(),
     };
@@ -73,22 +73,18 @@ pub fn create_project_node(
     Ok(())
 }
 
-pub fn update_project_node_name(conn: &mut Conn, object_id: &ObjectId, name: &String) -> Result<(), DatabaseError> {
-    update_project_node(conn, object_id, schema::name.eq(name.clone()))
+pub fn update_project_node_name(conn: &mut Conn, object_id: &ObjectId, name: &str) -> Result<(), DatabaseError> {
+    update_project_node(conn, object_id, schema::name.eq(name.to_string()))
 }
 
-pub fn update_project_node_icon_id(
-    conn: &mut Conn,
-    object_id: &ObjectId,
-    icon_id: &String,
-) -> Result<(), DatabaseError> {
-    update_project_node(conn, object_id, schema::icon_id.eq(icon_id.clone()))
+pub fn update_project_node_icon_id(conn: &mut Conn, object_id: &ObjectId, icon_id: &str) -> Result<(), DatabaseError> {
+    update_project_node(conn, object_id, schema::icon_id.eq(icon_id.to_string()))
 }
 
 pub fn update_project_node_properties(
     conn: &mut Conn,
     object_id: &ObjectId,
-    properties: Vec<&String>,
+    properties: &[String],
 ) -> Result<(), DatabaseError> {
     let value = to_json_string(&properties).unwrap();
     update_project_node(conn, object_id, schema::properties.eq(value))
@@ -97,7 +93,7 @@ pub fn update_project_node_properties(
 pub fn update_project_node_methods(
     conn: &mut Conn,
     object_id: &ObjectId,
-    methods: Vec<&String>,
+    methods: &[String],
 ) -> Result<(), DatabaseError> {
     let value = to_json_string(&methods).unwrap();
     update_project_node(conn, object_id, schema::methods.eq(value))
@@ -181,21 +177,21 @@ mod tests {
         assert_eq!("icon2", &rows[0].data.icon_id);
 
         // update properties
-        update_project_node_properties(&mut conn, &object_id, vec![&s("property 1"), &s("property 2")])?;
+        update_project_node_properties(&mut conn, &object_id, &[s("property 1"), s("property 2")])?;
 
         // find
         let rows = find_project_nodes(&mut conn, &project_id)?;
         assert_eq!(vec!["property 1", "property 2"], rows[0].data.properties.iter().collect_vec());
 
         // update methods
-        update_project_node_methods(&mut conn, &object_id, vec![&s("method 1"), &s("method 2")])?;
+        update_project_node_methods(&mut conn, &object_id, &[s("method 1"), s("method 2")])?;
 
         // find
         let rows = find_project_nodes(&mut conn, &project_id)?;
         assert_eq!(vec!["method 1", "method 2"], rows[0].data.methods.iter().collect_vec());
 
         // update methods
-        update_project_node_methods(&mut conn, &object_id, vec![])?;
+        update_project_node_methods(&mut conn, &object_id, &[])?;
 
         // find
         let rows = find_project_nodes(&mut conn, &project_id)?;

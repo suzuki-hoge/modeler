@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
+use crate::db::store::project::project_node_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -34,6 +35,13 @@ impl Handler<UpdateMethodsRequest> for Server {
 
     fn handle(&mut self, request: UpdateMethodsRequest, _: &mut Context<Self>) {
         println!("accept update-methods request");
+
+        project_node_store::update_project_node_methods(
+            &mut self.pool.get().unwrap(),
+            &request.object_id,
+            &request.methods,
+        )
+        .unwrap();
 
         let response = UpdateMethodsResponse::new(request.object_id, request.methods);
         self.send_to_project(&request.project_id, response.into(), &request.session_id);

@@ -8,6 +8,7 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
+use crate::db::store::project::project_node_store;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -36,6 +37,15 @@ impl Handler<CreateNodeRequest> for Server {
 
     fn handle(&mut self, request: CreateNodeRequest, _: &mut Context<Self>) {
         println!("accept create-node request");
+
+        project_node_store::create_project_node(
+            &mut self.pool.get().unwrap(),
+            &request.object_id,
+            &request.project_id,
+            &request.name,
+            &request.icon_id,
+        )
+        .unwrap();
 
         let response = CreateNodeResponse::new(request.object_id, request.name, request.icon_id);
         self.send_to_project(&request.project_id, response.into(), &request.session_id);

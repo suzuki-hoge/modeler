@@ -53,16 +53,16 @@ pub fn create_project_edge(
     project_id: &ProjectId,
     source: &ObjectId,
     target: &ObjectId,
-    arrow_type: &String,
-    label: &String,
+    arrow_type: &str,
+    label: &str,
 ) -> Result<(), DatabaseError> {
     let row = Row {
         object_id: object_id.clone(),
         project_id: project_id.clone(),
         source: source.clone(),
         target: target.clone(),
-        arrow_type: arrow_type.clone(),
-        label: label.clone(),
+        arrow_type: arrow_type.to_string(),
+        label: label.to_string(),
     };
 
     insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
@@ -82,13 +82,13 @@ pub fn update_project_edge_connection(
 pub fn update_project_edge_arrow_type(
     conn: &mut Conn,
     object_id: &ObjectId,
-    arrow_type: &String,
+    arrow_type: &str,
 ) -> Result<(), DatabaseError> {
-    update_project_edge(conn, object_id, schema::arrow_type.eq(arrow_type.clone()))
+    update_project_edge(conn, object_id, schema::arrow_type.eq(arrow_type.to_string()))
 }
 
-pub fn update_project_edge_label(conn: &mut Conn, object_id: &ObjectId, label: &String) -> Result<(), DatabaseError> {
-    update_project_edge(conn, object_id, schema::label.eq(label.clone()))
+pub fn update_project_edge_label(conn: &mut Conn, object_id: &ObjectId, label: &str) -> Result<(), DatabaseError> {
+    update_project_edge(conn, object_id, schema::label.eq(label.to_string()))
 }
 
 fn update_project_edge<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), DatabaseError>
