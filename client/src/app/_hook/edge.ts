@@ -1,4 +1,3 @@
-import { Set } from 'immutable'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from 'reactflow'
 
@@ -14,8 +13,9 @@ export function useOnEdgesChange(store: PageStore, socket: PageSocket): OnEdgesC
   return (changes) => {
     for (const change of changes) {
       if (change.type === 'remove') {
-        socket.removeNode(change.id)
-        store.removeNode(change.id)
+        socket.removeEdge(change.id)
+        store.removeEdge(change.id)
+        store.applyEdgeChange(change)
       } else {
         store.applyEdgeChange(change)
       }
@@ -51,10 +51,6 @@ export function useOnConnect(
 
   const onConnectEnd: OnConnectEnd = (e) => {
     const event = e as MouseEvent
-    const sourceNodeIds = Set([
-      // ...projectStore.nodes.filter((node) => node.selected).map((node) => node.id),
-      // source!.id,
-    ])
 
     const targetNodeIds = document
       .elementsFromPoint(event.clientX, event.clientY)
@@ -67,28 +63,26 @@ export function useOnConnect(
       const flow = rf.screenToFlowPosition(screen)
       selectorState.setActive(true)
       selectorState.setPosition({ screen, flow })
-    } else if (source?.id !== targetNodeIds[0]) {
+    } else if (source!.id !== targetNodeIds[0]) {
       // connect
-      sourceNodeIds.forEach((sourceNodeId) => {
-        const projectEdge = projectStore.findEdge(sourceNodeId, targetNodeIds[0])
+      const projectEdge = projectStore.findEdge(source!.id, targetNodeIds[0])
 
-        if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
-          const pageEdge = extractPageEdge(projectEdge)
+      if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
+        const pageEdge = extractPageEdge(projectEdge)
 
-          pageStore.addEdge(pageEdge)
-          pageSocket.addEdge(pageEdge)
-        } else {
-          const projectEdge = createEdge(allocateEdgeId(), sourceNodeId, targetNodeIds[0], source!.arrowType, '1')
+        pageStore.addEdge(pageEdge)
+        pageSocket.addEdge(pageEdge)
+      } else {
+        const projectEdge = createEdge(allocateEdgeId(), source!.id, targetNodeIds[0], source!.arrowType, '1')
 
-          projectStore.createEdge(projectEdge)
-          projectSocket.createEdge(projectEdge)
+        projectStore.createEdge(projectEdge)
+        projectSocket.createEdge(projectEdge)
 
-          const pageEdge = extractPageEdge(projectEdge)
+        const pageEdge = extractPageEdge(projectEdge)
 
-          pageStore.addEdge(pageEdge)
-          pageSocket.addEdge(pageEdge)
-        }
-      })
+        pageStore.addEdge(pageEdge)
+        pageSocket.addEdge(pageEdge)
+      }
     } else {
       // do nothing
     }

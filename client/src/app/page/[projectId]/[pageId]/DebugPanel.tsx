@@ -6,10 +6,6 @@ import { shallow } from 'zustand/shallow'
 import { usePageStore } from '@/app/_store/page-store'
 import { useProjectStore } from '@/app/_store/project-store'
 
-function id(s: string): string {
-  return s.split('-')[0]
-}
-
 export const DebugPanel = () => {
   const projectNodes = useProjectStore((state) => state.nodes, shallow)
   const projectEdges = useProjectStore((state) => state.edges, shallow)
@@ -35,16 +31,20 @@ export const DebugPanel = () => {
       <div id='page' style={{ width: '50vw', height: '30vh', backgroundColor: 'lightgray' }}>
         {projectEdges.map((projectEdge) => (
           <p key={projectEdge.id} style={{ margin: 0 }}>
-            {`${id(projectEdge.id)}: ${id(projectEdge.source)} → ${id(projectEdge.target)}`}
+            {`${id(projectEdge.id)}: ${getProjectNode(projectEdge.source).data.name} → ${getProjectNode(projectEdge.target).data.name}`}
           </p>
         ))}
         <hr />
         {pageEdges.map((pageEdge) => (
           <p key={pageEdge.id} style={{ margin: 0 }}>
-            {`${id(pageEdge.id)}: ${id(pageEdge.source)} → ${id(pageEdge.target)}`}
+            {`${id(pageEdge.id)}: ${getProjectNode(pageEdge.source).data.name} → ${getProjectNode(pageEdge.target).data.name}`}
           </p>
         ))}
       </div>
     </div>
   )
+}
+
+function id(s: string): string {
+  return s.split('-')[0]
 }
