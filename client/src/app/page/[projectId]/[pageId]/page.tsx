@@ -77,35 +77,35 @@ const Inner = (props: InnerProps) => {
       if (!isValidating1) projectStore.putNodeIcons(icons!)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [icons],
+    [isValidating1],
   )
   useEffect(
     () => {
       if (!isValidating2) projectStore.putNodes(projectNodes!)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectNodes],
+    [isValidating2],
   )
   useEffect(
     () => {
       if (!isValidating3) projectStore.putEdges(projectEdges!)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [projectEdges],
+    [isValidating3],
   )
   useEffect(
     () => {
       if (!isValidating4) pageStore.putNodes(pageNodes!)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pageNodes],
+    [isValidating4],
   )
   useEffect(
     () => {
       if (!isValidating5) pageStore.putEdges(pageEdges!)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pageEdges],
+    [isValidating5],
   )
 
   if (isValidating1 || isValidating2 || isValidating3 || isValidating4 || isValidating5) {

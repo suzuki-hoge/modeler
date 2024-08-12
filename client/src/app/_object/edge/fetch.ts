@@ -1,33 +1,32 @@
 import { Edge } from '@xyflow/react'
 import axios from 'axios'
-import useSWR from 'swr'
+import useSWRImmutable from 'swr/immutable'
 
 import { PageEdgeData, ProjectEdgeData } from '@/app/_object/edge/type'
 
 export function useProjectEdges(projectId: string): [Edge<ProjectEdgeData>[] | undefined, boolean] {
+  type Fetched = Edge<ProjectEdgeData>[]
+  type Parsed = Edge<ProjectEdgeData>[]
+
   const url = `http://localhost:8080/project/${projectId}/edges`
 
-  const { data, isValidating } = useSWR(url, fetchProjectEdges)
+  const parser = (data: Fetched): Parsed => data
+  const fetcher = (url: string): Promise<Parsed> => axios.get<Fetched>(url).then((res) => parser(res.data))
+
+  const { data, isValidating } = useSWRImmutable(url, fetcher)
   return [data, isValidating]
 }
 
 export function usePageEdges(pageId: string): [Edge<PageEdgeData>[] | undefined, boolean] {
+  type Fetched = Edge<ProjectEdgeData>[]
+  type Parsed = Edge<ProjectEdgeData>[]
+
   const url = `http://localhost:8080/page/${pageId}/edges`
 
-  const { data, isValidating } = useSWR(url, fetchPageEdges)
+  const parser = (data: Fetched): Parsed =>
+    data.map((row) => ({ ...row, sourceHandle: 'center', targetHandle: 'center' }))
+  const fetcher = (url: string): Promise<Parsed> => axios.get<Fetched>(url).then((res) => parser(res.data))
+
+  const { data, isValidating } = useSWRImmutable(url, fetcher)
   return [data, isValidating]
-}
-
-// fetchers & parsers
-
-function fetchProjectEdges(url: string): Promise<Edge<ProjectEdgeData>[]> {
-  return axios.get<Edge<ProjectEdgeData>[]>(url).then((res) => res.data)
-}
-
-function fetchPageEdges(url: string): Promise<Edge<PageEdgeData>[]> {
-  return axios.get<Edge<PageEdgeData>[]>(url).then((res) => parsePageEdges(res.data))
-}
-
-function parsePageEdges(data: Edge<PageEdgeData>[]): Edge<PageEdgeData>[] {
-  return data.map((row) => ({ ...row, sourceHandle: 'center', targetHandle: 'center' }))
 }
