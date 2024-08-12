@@ -38,17 +38,20 @@ impl Handler<CreateNodeRequest> for Server {
     fn handle(&mut self, request: CreateNodeRequest, _: &mut Context<Self>) {
         println!("accept create-node request");
 
-        project_node_store::create_project_node(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.project_id,
-            &request.name,
-            &request.icon_id,
-        )
-        .unwrap();
+        let accept = || -> Result<CreateNodeResponse, String> {
+            project_node_store::create_project_node(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.project_id,
+                &request.name,
+                &request.icon_id,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = CreateNodeResponse::new(request.object_id, request.name, request.icon_id);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(CreateNodeResponse::new(request.object_id, request.name, request.icon_id))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

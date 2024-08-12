@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 pub mod connection;
+pub mod information;
 pub mod page;
 pub mod project;
 

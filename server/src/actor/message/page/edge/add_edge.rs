@@ -38,17 +38,20 @@ impl Handler<AddEdgeRequest> for Server {
     fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
         println!("accept add-edge request");
 
-        page_edge_store::create_page_edge(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.page_id,
-            &request.source,
-            &request.target,
-        )
-        .unwrap();
+        let accept = || -> Result<AddEdgeResponse, String> {
+            page_edge_store::create_page_edge(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.page_id,
+                &request.source,
+                &request.target,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = AddEdgeResponse::new(request.object_id, request.source, request.target);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+            Ok(AddEdgeResponse::new(request.object_id, request.source, request.target))
+        };
+
+        self.send_to_page(&request.page_id, accept(), &request.session_id)
     }
 }
 

@@ -18,4 +18,12 @@ impl DatabaseError {
     pub fn other(error: Error) -> Self {
         Self::Other { origin: error.to_string() }
     }
+
+    pub fn show(self) -> String {
+        match self {
+            DatabaseError::InvalidKey => String::from("invalid key"),
+            DatabaseError::UnexpectedRowMatched { .. } => String::from("unexpected row matched"),
+            DatabaseError::Other { origin } => origin,
+        }
+    }
 }

@@ -15,10 +15,9 @@ type DisconnectResponse = z.infer<typeof disconnectResponse>
 
 // handle
 
-export function handleDisconnect(response: unknown, handler: (response: DisconnectResponse) => void) {
+export function handleDisconnect(response: unknown) {
   if (isDisconnectResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
   }
 }
 

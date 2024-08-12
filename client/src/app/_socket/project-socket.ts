@@ -115,8 +115,8 @@ export const useProjectSocket = createWithEqualityFn<ProjectSocketWithState>((se
 export function handleProjectMessage(response: unknown, projectStore: ProjectStore, pageStore: PageStore) {
   if (response) {
     // connection
-    handleConnect(response, () => {})
-    handleDisconnect(response, () => {})
+    handleConnect(response)
+    handleDisconnect(response)
 
     // node
     handleCreateNode(response, projectStore)

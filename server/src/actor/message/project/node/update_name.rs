@@ -36,11 +36,14 @@ impl Handler<UpdateNameRequest> for Server {
     fn handle(&mut self, request: UpdateNameRequest, _: &mut Context<Self>) {
         println!("accept update-name request");
 
-        project_node_store::update_project_node_name(&mut self.pool.get().unwrap(), &request.object_id, &request.name)
-            .unwrap();
+        let accept = || -> Result<UpdateNameResponse, String> {
+            project_node_store::update_project_node_name(&mut self.get_conn()?, &request.object_id, &request.name)
+                .map_err(|e| e.show())?;
 
-        let response = UpdateNameResponse::new(request.object_id, request.name);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(UpdateNameResponse::new(request.object_id, request.name))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

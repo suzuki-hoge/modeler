@@ -22,10 +22,12 @@ impl Handler<DisconnectRequest> for Server {
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
         println!("accept disconnect request");
+
         let user = self.disconnect(request.session_id.clone(), request.page_id.clone(), request.project_id.clone());
 
         let response = DisconnectResponse::new(request.session_id.clone(), user);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+
+        self.send_to_page(&request.page_id, Ok(response), &request.session_id);
     }
 }
 

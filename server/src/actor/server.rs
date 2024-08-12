@@ -5,15 +5,16 @@ use std::io::Write;
 use actix::{Actor, Context, Recipient};
 use serde_json::{json, to_string as to_json_string};
 
+use crate::actor::message::information::error_information::ErrorInformationResponse;
 use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::User;
-use crate::db::Pool;
+use crate::db::{Conn, Pool};
 
 pub struct Server {
-    pub pool: Pool,
+    pool: Pool,
     sessions: HashMap<SessionId, (Recipient<Response>, User)>,
     project_sessions: HashMap<ProjectId, Vec<SessionId>>,
     page_sessions: HashMap<PageId, Vec<SessionId>>,
@@ -21,7 +22,14 @@ pub struct Server {
 
 impl Server {
     pub fn new(pool: Pool) -> Self {
-        Self { pool, sessions: HashMap::new(), project_sessions: HashMap::new(), page_sessions: HashMap::new() }
+        let server =
+            Self { pool, sessions: HashMap::new(), project_sessions: HashMap::new(), page_sessions: HashMap::new() };
+        server.dump();
+        server
+    }
+
+    pub fn get_conn(&self) -> Result<Conn, String> {
+        self.pool.get().map_err(|_| String::from("connection error"))
     }
 }
 
@@ -57,27 +65,45 @@ impl Server {
         user
     }
 
-    pub fn send_to_project(&self, project_id: &ProjectId, response: Response, skip_session_id: &SessionId) {
-        println!("accept response: {}", &response.json);
-        self.project_sessions.get(project_id).unwrap().iter().for_each(|session_id| {
-            if session_id != skip_session_id {
-                let (session_address, user) = self.sessions.get(session_id).unwrap();
-                println!("send project message to: {}", user);
-                session_address.do_send(response.clone());
-            }
-        });
-        self.dump();
+    pub fn send_to_project<R: Into<Response>>(
+        &self,
+        project_id: &ProjectId,
+        accepted: Result<R, String>,
+        skip_session_id: &SessionId,
+    ) {
+        self.send(accepted, self.project_sessions.get(project_id).unwrap(), skip_session_id);
     }
 
-    pub fn send_to_page(&self, page_id: &PageId, response: Response, skip_session_id: &SessionId) {
+    pub fn send_to_page<R: Into<Response>>(
+        &self,
+        page_id: &PageId,
+        accepted: Result<R, String>,
+        skip_session_id: &SessionId,
+    ) {
+        self.send(accepted, self.page_sessions.get(page_id).unwrap(), skip_session_id);
+    }
+
+    fn send<R: Into<Response>>(
+        &self,
+        accepted: Result<R, String>,
+        session_ids: &[SessionId],
+        skip_session_id: &SessionId,
+    ) {
+        let response = match accepted {
+            Ok(response) => response.into(),
+            Err(message) => ErrorInformationResponse::new(message).into(),
+        };
+
         println!("accept response: {}", &response.json);
-        self.page_sessions.get(page_id).unwrap().iter().for_each(|session_id| {
-            if session_id != skip_session_id {
-                let (session_address, user) = self.sessions.get(session_id).unwrap();
-                println!("send page message to: {}", user);
-                session_address.do_send(response.clone());
-            }
+
+        session_ids.iter().filter(|&session_id| session_id != skip_session_id).for_each(|session_id| {
+            let (session_address, user) = self.sessions.get(session_id).unwrap();
+
+            println!("send page message to: {}", user);
+
+            session_address.do_send(response.clone());
         });
+
         self.dump();
     }
 

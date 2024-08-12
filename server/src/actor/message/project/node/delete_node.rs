@@ -34,10 +34,13 @@ impl Handler<DeleteNodeRequest> for Server {
     fn handle(&mut self, request: DeleteNodeRequest, _: &mut Context<Self>) {
         println!("accept delete-node request");
 
-        project_node_store::delete_project_node(&mut self.pool.get().unwrap(), &request.object_id).unwrap();
+        let accept = || -> Result<DeleteNodeResponse, String> {
+            project_node_store::delete_project_node(&mut self.get_conn()?, &request.object_id).map_err(|e| e.show())?;
 
-        let response = DeleteNodeResponse::new(request.object_id);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(DeleteNodeResponse::new(request.object_id))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

@@ -34,10 +34,14 @@ impl Handler<RemoveEdgeRequest> for Server {
     fn handle(&mut self, request: RemoveEdgeRequest, _: &mut Context<Self>) {
         println!("accept remove-edge request");
 
-        page_edge_store::delete_page_edge(&mut self.pool.get().unwrap(), &request.object_id, &request.page_id).unwrap();
+        let accept = || -> Result<RemoveEdgeResponse, String> {
+            page_edge_store::delete_page_edge(&mut self.get_conn()?, &request.object_id, &request.page_id)
+                .map_err(|e| e.show())?;
 
-        let response = RemoveEdgeResponse::new(request.object_id);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+            Ok(RemoveEdgeResponse::new(request.object_id))
+        };
+
+        self.send_to_page(&request.page_id, accept(), &request.session_id)
     }
 }
 

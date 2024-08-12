@@ -40,15 +40,18 @@ impl Handler<UpdatePropertiesRequest> for Server {
     fn handle(&mut self, request: UpdatePropertiesRequest, _: &mut Context<Self>) {
         println!("accept update-properties request");
 
-        project_node_store::update_project_node_properties(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.properties,
-        )
-        .unwrap();
+        let accept = || -> Result<UpdatePropertiesResponse, String> {
+            project_node_store::update_project_node_properties(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.properties,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = UpdatePropertiesResponse::new(request.object_id, request.properties);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(UpdatePropertiesResponse::new(request.object_id, request.properties))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

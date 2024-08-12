@@ -4,6 +4,7 @@ import '@xyflow/react/dist/style.css'
 import { faker } from '@faker-js/faker'
 import { ReactFlow, Background, Panel, ReactFlowProvider } from '@xyflow/react'
 import React, { useEffect } from 'react'
+import { Toaster } from 'react-hot-toast'
 import useWebSocket from 'react-use-websocket'
 import { shallow } from 'zustand/shallow'
 
@@ -22,6 +23,7 @@ import { createOnPostNodeCreate, createOnPostNodeSelect, useOnNodeDrag, useOnNod
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { usePageEdges, useProjectEdges } from '@/app/_object/edge/fetch'
 import { useNodeIcons, usePageNodes, useProjectNodes } from '@/app/_object/node/fetch'
+import { handleErrorInformation } from '@/app/_socket/information/error-information'
 import { handlePageMessage, pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
 import { handleProjectMessage, projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
 import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
@@ -186,6 +188,7 @@ export default function Page(props: Props) {
     () => {
       handleProjectMessage(lastJsonMessage, projectStore, pageStore)
       handlePageMessage(lastJsonMessage, pageStore)
+      handleErrorInformation(lastJsonMessage)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lastJsonMessage],
@@ -197,8 +200,11 @@ export default function Page(props: Props) {
   pageSocket.initState(readyState)
 
   return (
-    <ReactFlowProvider>
-      <Inner {...props.params} />
-    </ReactFlowProvider>
+    <>
+      <ReactFlowProvider>
+        <Inner {...props.params} />
+      </ReactFlowProvider>
+      <Toaster position='top-right' reverseOrder={false} />
+    </>
   )
 }

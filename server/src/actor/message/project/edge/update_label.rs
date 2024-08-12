@@ -36,15 +36,14 @@ impl Handler<UpdateLabelRequest> for Server {
     fn handle(&mut self, request: UpdateLabelRequest, _: &mut Context<Self>) {
         println!("accept update-label request");
 
-        project_edge_store::update_project_edge_label(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.label,
-        )
-        .unwrap();
+        let accept = || -> Result<UpdateLabelResponse, String> {
+            project_edge_store::update_project_edge_label(&mut self.get_conn()?, &request.object_id, &request.label)
+                .map_err(|e| e.show())?;
 
-        let response = UpdateLabelResponse::new(request.object_id, request.label);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(UpdateLabelResponse::new(request.object_id, request.label))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

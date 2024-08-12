@@ -15,10 +15,9 @@ type ConnectResponse = z.infer<typeof connectResponse>
 
 // handle
 
-export function handleConnect(response: unknown, handler: (response: ConnectResponse) => void) {
+export function handleConnect(response: unknown) {
   if (isConnectResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    handler(response)
   }
 }
 

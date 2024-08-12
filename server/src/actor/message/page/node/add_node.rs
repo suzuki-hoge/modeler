@@ -38,17 +38,20 @@ impl Handler<AddNodeRequest> for Server {
     fn handle(&mut self, request: AddNodeRequest, _: &mut Context<Self>) {
         println!("accept add-node request");
 
-        page_node_store::create_page_node(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.page_id,
-            request.x,
-            request.y,
-        )
-        .unwrap();
+        let accept = || -> Result<AddNodeResponse, String> {
+            page_node_store::create_page_node(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.page_id,
+                request.x,
+                request.y,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = AddNodeResponse::new(request.object_id, request.x, request.y);
-        self.send_to_page(&request.page_id, response.into(), &request.session_id);
+            Ok(AddNodeResponse::new(request.object_id, request.x, request.y))
+        };
+
+        self.send_to_page(&request.page_id, accept(), &request.session_id)
     }
 }
 

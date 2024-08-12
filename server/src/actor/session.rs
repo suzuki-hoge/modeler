@@ -15,8 +15,6 @@ use crate::actor::message::page::edge::remove_edge::RemoveEdgeRequest;
 use crate::actor::message::page::node::add_node::AddNodeRequest;
 use crate::actor::message::page::node::move_node::MoveNodeRequest;
 use crate::actor::message::page::node::remove_node::RemoveNodeRequest;
-use crate::actor::message::page::state::lock::LockRequest;
-use crate::actor::message::page::state::unlock::UnlockRequest;
 use crate::actor::message::project::edge::create_edge::CreateEdgeRequest;
 use crate::actor::message::project::edge::delete_edge::DeleteEdgeRequest;
 use crate::actor::message::project::edge::update_arrow_type::UpdateArrowTypeRequest;
@@ -131,10 +129,6 @@ impl Session {
             Some("remove-edge") => {
                 self.server_address.do_send(RemoveEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-
-            // state
-            Some("lock") => self.server_address.do_send(LockRequest::parse(&self.session_id, &self.page_id, json)?),
-            Some("unlock") => self.server_address.do_send(UnlockRequest::parse(&self.session_id, &self.page_id, json)?),
 
             Some(s) => Err(format!("unexpected type: {s}"))?,
             None => Err(String::from("type missing"))?,

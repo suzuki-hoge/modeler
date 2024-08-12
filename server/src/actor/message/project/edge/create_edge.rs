@@ -42,25 +42,28 @@ impl Handler<CreateEdgeRequest> for Server {
     fn handle(&mut self, request: CreateEdgeRequest, _: &mut Context<Self>) {
         println!("accept create-edge request");
 
-        project_edge_store::create_project_edge(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.project_id,
-            &request.source,
-            &request.target,
-            &request.arrow_type,
-            &request.label,
-        )
-        .unwrap();
+        let accept = || -> Result<CreateEdgeResponse, String> {
+            project_edge_store::create_project_edge(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.project_id,
+                &request.source,
+                &request.target,
+                &request.arrow_type,
+                &request.label,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = CreateEdgeResponse::new(
-            request.object_id,
-            request.source,
-            request.target,
-            request.arrow_type,
-            request.label,
-        );
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(CreateEdgeResponse::new(
+                request.object_id,
+                request.source,
+                request.target,
+                request.arrow_type,
+                request.label,
+            ))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

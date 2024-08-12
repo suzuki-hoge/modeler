@@ -36,15 +36,18 @@ impl Handler<UpdateMethodsRequest> for Server {
     fn handle(&mut self, request: UpdateMethodsRequest, _: &mut Context<Self>) {
         println!("accept update-methods request");
 
-        project_node_store::update_project_node_methods(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.methods,
-        )
-        .unwrap();
+        let accept = || -> Result<UpdateMethodsResponse, String> {
+            project_node_store::update_project_node_methods(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.methods,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = UpdateMethodsResponse::new(request.object_id, request.methods);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(UpdateMethodsResponse::new(request.object_id, request.methods))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 

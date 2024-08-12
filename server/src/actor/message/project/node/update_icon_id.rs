@@ -36,15 +36,18 @@ impl Handler<UpdateIconIdRequest> for Server {
     fn handle(&mut self, request: UpdateIconIdRequest, _: &mut Context<Self>) {
         println!("accept update-icon-id request");
 
-        project_node_store::update_project_node_icon_id(
-            &mut self.pool.get().unwrap(),
-            &request.object_id,
-            &request.icon_id,
-        )
-        .unwrap();
+        let accept = || -> Result<UpdateIconIdResponse, String> {
+            project_node_store::update_project_node_icon_id(
+                &mut self.get_conn()?,
+                &request.object_id,
+                &request.icon_id,
+            )
+            .map_err(|e| e.show())?;
 
-        let response = UpdateIconIdResponse::new(request.object_id, request.icon_id);
-        self.send_to_project(&request.project_id, response.into(), &request.session_id);
+            Ok(UpdateIconIdResponse::new(request.object_id, request.icon_id))
+        };
+
+        self.send_to_project(&request.project_id, accept(), &request.session_id);
     }
 }
 
