@@ -45,9 +45,9 @@ diesel::table! {
         object_id -> Varchar,
         #[max_length = 36]
         page_id -> Varchar,
-        #[max_length = 10]
+        #[max_length = 36]
         x -> Varchar,
-        #[max_length = 10]
+        #[max_length = 36]
         y -> Varchar,
     }
 }
