@@ -1,21 +1,27 @@
 'use client'
 
 import React from 'react'
-import { PiArrowDownRightDuotone } from 'react-icons/pi'
+
+import { Symbol } from '@/app/_component/icon/symbol/Symbol'
 
 interface Props {
   className?: string
   vector: 'right' | 'down' | 'left' | 'up'
+  size?: 'small' | 'normal' | 'large'
+  border?: boolean
   onClick?: () => void
 }
 
-const deg = { right: -45, down: 45, left: 135, up: -135 }
+const deg = { right: 0, down: 90, left: 180, up: -90 }
 
 export const GeneralizationArrowIcon = (props: Props) => {
   return (
-    <PiArrowDownRightDuotone
+    <Symbol
+      name={'line_end_arrow'}
       className={props.className}
-      style={{ transform: `rotate(${deg[props.vector]}deg)` }}
+      size={props.size}
+      border={props.border}
+      deg={deg[props.vector]}
       onClick={props.onClick}
     />
   )

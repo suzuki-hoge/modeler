@@ -1,7 +1,7 @@
 @mixin handle {
   position: absolute;
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 0.75rem;
+  height: 0.75rem;
   background-color: transparent;
   border: none;
   z-index: 1;
@@ -10,54 +10,51 @@
 @mixin arrow {
   position: absolute;
   background-color: lightcyan;
-  border-radius: 50%;
-  border: 1px solid gray;
-  font-size: 0.8rem;
   z-index: 0;
 }
 
 .topHandle {
   @include handle;
-  top: -20px;
+  top: -13px;
 }
 
 .topArrow {
   @include arrow;
   top: -20px;
-  left: calc(50% - 8px);
+  left: calc(50% - 7px);
 }
 
 .rightHandle {
   @include handle;
-  right: -20px;
+  right: -13px;
 }
 
 .rightArrow {
   @include arrow;
   right: -20px;
-  top: calc(50% - 8px);
+  top: calc(50% - 7px);
 }
 
 .bottomHandle {
   @include handle;
-  bottom: -20px;
+  bottom: -13px;
 }
 
 .bottomArrow {
   @include arrow;
   bottom: -20px;
-  right: calc(50% - 8px);
+  right: calc(50% - 7px);
 }
 
 .leftHandle {
   @include handle;
-  left: -20px;
+  left: -13px;
 }
 
 .leftArrow {
   @include arrow;
   left: -20px;
-  top: calc(50% - 8px);
+  top: calc(50% - 7px);
 }
 
 .centerHandle {

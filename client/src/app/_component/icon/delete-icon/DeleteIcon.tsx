@@ -1,14 +1,13 @@
 'use client'
 
 import React from 'react'
-import { AiOutlineDelete } from 'react-icons/ai'
 
-import styles from './delete-icon.module.scss'
+import { Symbol } from '@/app/_component/icon/symbol/Symbol'
 
 interface Props {
   onClick: () => void
 }
 
 export const DeleteIcon = (props: Props) => {
-  return <AiOutlineDelete className={styles.component} onClick={props.onClick} />
+  return <Symbol name={'delete_forever'} onClick={props.onClick} />
 }
