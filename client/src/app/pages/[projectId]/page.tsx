@@ -1,9 +1,10 @@
 'use client'
 import '@xyflow/react/dist/style.css'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { usePages } from '@/app/_object/page/fetch'
+import { fetchPages } from '@/app/_object/page/fetch'
+import { Page as PageType } from '@/app/_object/page/type'
 
 interface Props {
   params: {
@@ -12,15 +13,19 @@ interface Props {
 }
 
 export default function Page(props: Props) {
-  const [pages, validating] = usePages(props.params.projectId)
+  const [pages, setPages] = useState<PageType[]>([])
 
-  if (validating) {
-    return <p>loading...</p>
-  }
+  useEffect(
+    () => {
+      void fetchPages(props.params.projectId).then(setPages)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   return (
     <ul>
-      {pages!.map((page) => (
+      {pages.map((page) => (
         <li key={page.pageId}>
           <Link href={`/page/${page.projectId}/${page.pageId}`}>{page.name}</Link>
         </li>

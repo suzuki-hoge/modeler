@@ -1,44 +1,34 @@
 import { Node } from '@xyflow/react'
 import axios from 'axios'
-import useSWRImmutable from 'swr/immutable'
 
 import { NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
 
-export function useNodeIcons(projectId: string): [NodeIcon[] | undefined, boolean] {
+export function fetchNodeIcons(projectId: string): Promise<NodeIcon[]> {
   type Fetched = NodeIcon[]
-  type Parsed = NodeIcon[]
 
-  const url = `http://localhost:8080/project/${projectId}/icons`
-
-  const parser = (data: Fetched): Parsed => data
-  const fetcher = (url: string): Promise<Parsed> => axios.get<Fetched>(url).then((res) => parser(res.data))
-
-  const { data, isValidating } = useSWRImmutable<NodeIcon[]>(url, fetcher)
-  return [data, isValidating]
+  return axios.get<Fetched>(`http://localhost:8080/project/${projectId}/icons`).then((response) => response.data)
 }
 
-export function useProjectNodes(projectId: string): [Node<ProjectNodeData>[] | undefined, boolean] {
+export function fetchProjectNodes(projectId: string): Promise<Node<ProjectNodeData>[]> {
   type Fetched = Omit<Node<ProjectNodeData>, 'position'>[]
   type Parsed = Node<ProjectNodeData>[]
 
-  const url = `http://localhost:8080/project/${projectId}/nodes`
+  const parse = (data: Fetched): Parsed => data.map((row) => ({ ...row, position: { x: 0, y: 0 } }))
 
-  const parser = (data: Fetched): Parsed => data.map((row) => ({ ...row, position: { x: 0, y: 0 } }))
-  const fetcher = (url: string): Promise<Parsed> => axios.get<Fetched>(url).then((res) => parser(res.data))
-
-  const { data, isValidating } = useSWRImmutable(url, fetcher)
-  return [data, isValidating]
+  return axios
+    .get<Fetched>(`http://localhost:8080/project/${projectId}/nodes`)
+    .then((response) => response.data)
+    .then(parse)
 }
 
-export function usePageNodes(pageId: string): [Node<PageNodeData>[] | undefined, boolean] {
+export function fetchPageNodes(pageId: string): Promise<Node<PageNodeData>[]> {
   type Fetched = Omit<Node<PageNodeData>, 'data'>[]
   type Parsed = Node<PageNodeData>[]
 
-  const url = `http://localhost:8080/page/${pageId}/nodes`
+  const parse = (data: Fetched): Parsed => data.map((row) => ({ ...row, data: { modified: '' } }))
 
-  const parser = (data: Fetched): Parsed => data.map((row) => ({ ...row, data: { modified: '' } }))
-  const fetcher = (url: string): Promise<Parsed> => axios.get<Fetched>(url).then((res) => parser(res.data))
-
-  const { data, isValidating } = useSWRImmutable(url, fetcher)
-  return [data, isValidating]
+  return axios
+    .get<Fetched>(`http://localhost:8080/page/${pageId}/nodes`)
+    .then((response) => response.data)
+    .then(parse)
 }

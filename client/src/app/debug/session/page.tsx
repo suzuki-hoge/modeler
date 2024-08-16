@@ -4,21 +4,30 @@ import * as crypto from 'crypto'
 import '@xyflow/react/dist/style.css'
 import axios from 'axios'
 import Link from 'next/link'
-import React from 'react'
-import useSWR from 'swr'
+import React, { useEffect, useState } from 'react'
 
 import styles from './page.module.scss'
 
 export default function Page() {
-  const [data, validating] = useDebugSession(false)
+  const [debugSession, setDebugSession] = useState<DebugSession>(mock)
+  const [loading, setLoading] = useState(true)
 
-  if (validating) {
-    return <p>loading...</p>
-  }
+  useEffect(
+    () => {
+      void fetchDebugSession(false).then((debugSession) => {
+        setDebugSession(debugSession)
+        setLoading(false)
+      })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+
+  if (loading) return <p>Loading...</p>
 
   return (
     <div className={styles.component}>
-      {data!.projects.map((project) => (
+      {debugSession.projects.map((project) => (
         <div key={project.projectId} className={styles.project}>
           <span>
             <Link href={`/pages/${project.projectId}`}>
@@ -26,9 +35,9 @@ export default function Page() {
             </Link>
           </span>
           <div className={styles.sessions}>
-            {(data!.sessions.projectSessions[project.projectId] || []).map((sessionId) => (
+            {(debugSession.sessions.projectSessions[project.projectId] || []).map((sessionId) => (
               <div key={sessionId} className={styles.session} style={{ backgroundColor: hashedColor(sessionId) }}>
-                {shorten(sessionId)}: {data!.sessions.users[sessionId]}
+                {shorten(sessionId)}: {debugSession.sessions.users[sessionId]}
               </div>
             ))}
           </div>
@@ -40,9 +49,9 @@ export default function Page() {
                 </Link>
               </span>
               <div className={styles.sessions}>
-                {(data!.sessions.pageSessions[page.pageId] || []).map((sessionId) => (
+                {(debugSession.sessions.pageSessions[page.pageId] || []).map((sessionId) => (
                   <div key={sessionId} className={styles.session} style={{ backgroundColor: hashedColor(sessionId) }}>
-                    {shorten(sessionId)}: {data!.sessions.users[sessionId]}
+                    {shorten(sessionId)}: {debugSession.sessions.users[sessionId]}
                   </div>
                 ))}
               </div>
@@ -74,14 +83,10 @@ function shorten(s: string): string {
   return s.split('-')[0]
 }
 
-function useDebugSession(isMock: boolean): [DebugSession | undefined, boolean] {
-  const url = `http://localhost:8080/debug/session`
-
-  const { data, isValidating } = useSWR<DebugSession>(url, (url: string) =>
-    axios.get<DebugSession>(url).then((res) => res.data),
-  )
-
-  return isMock ? [mock, false] : [data, isValidating]
+function fetchDebugSession(isMock: boolean): Promise<DebugSession> {
+  return isMock
+    ? Promise.resolve(mock)
+    : axios.get<DebugSession>(`http://localhost:8080/debug/session`).then((response) => response.data)
 }
 
 const mock: DebugSession = {

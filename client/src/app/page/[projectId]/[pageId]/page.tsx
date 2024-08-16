@@ -3,7 +3,7 @@ import '@xyflow/react/dist/style.css'
 
 import { faker } from '@faker-js/faker'
 import { ReactFlow, Background, Panel, ReactFlowProvider } from '@xyflow/react'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import useWebSocket from 'react-use-websocket'
 import { shallow } from 'zustand/shallow'
@@ -21,8 +21,10 @@ import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-s
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { createOnPostNodeCreate, createOnPostNodeSelect, useOnNodeDrag, useOnNodesChange } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
-import { usePageEdges, useProjectEdges } from '@/app/_object/edge/fetch'
-import { useNodeIcons, usePageNodes, useProjectNodes } from '@/app/_object/node/fetch'
+import { fetchPageEdges, fetchProjectEdges } from '@/app/_object/edge/fetch'
+import { fetchNodeIcons, fetchPageNodes, fetchProjectNodes } from '@/app/_object/node/fetch'
+import { fetchPage } from '@/app/_object/page/fetch'
+import { Page as PageType } from '@/app/_object/page/type'
 import { handleErrorInformation } from '@/app/_socket/information/error-information'
 import { handlePageMessage, pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
 import { handleProjectMessage, projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
@@ -36,6 +38,10 @@ interface InnerProps {
 }
 
 const Inner = (props: InnerProps) => {
+  // state
+  const [page, setPage] = useState<PageType>()
+  const [loading, setLoading] = useState(true)
+
   // store
   const projectStore = useProjectStore(projectStoreSelector, shallow)
   const pageStore = usePageStore(pageStoreSelector, shallow)
@@ -69,48 +75,30 @@ const Inner = (props: InnerProps) => {
   const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source)
 
   // init
-  const [icons, isValidating1] = useNodeIcons(props.projectId)
-  const [projectNodes, isValidating2] = useProjectNodes(props.projectId)
-  const [projectEdges, isValidating3] = useProjectEdges(props.projectId)
-  const [pageNodes, isValidating4] = usePageNodes(props.pageId)
-  const [pageEdges, isValidating5] = usePageEdges(props.pageId)
   useEffect(
     () => {
-      if (!isValidating1) projectStore.putNodeIcons(icons!)
+      void Promise.all([
+        fetchPage(props.pageId),
+        fetchNodeIcons(props.projectId),
+        fetchProjectNodes(props.projectId),
+        fetchProjectEdges(props.projectId),
+        fetchPageNodes(props.pageId),
+        fetchPageEdges(props.pageId),
+      ]).then(([page, nodeIcons, projectNodes, projectEdges, pageNodes, pageEdges]) => {
+        setPage(page)
+        projectStore.putNodeIcons(nodeIcons)
+        projectStore.putNodes(projectNodes)
+        projectStore.putEdges(projectEdges)
+        pageStore.putNodes(pageNodes)
+        pageStore.putEdges(pageEdges)
+        setLoading(false)
+      })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidating1],
-  )
-  useEffect(
-    () => {
-      if (!isValidating2) projectStore.putNodes(projectNodes!)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidating2],
-  )
-  useEffect(
-    () => {
-      if (!isValidating3) projectStore.putEdges(projectEdges!)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidating3],
-  )
-  useEffect(
-    () => {
-      if (!isValidating4) pageStore.putNodes(pageNodes!)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidating4],
-  )
-  useEffect(
-    () => {
-      if (!isValidating5) pageStore.putEdges(pageEdges!)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isValidating5],
+    [],
   )
 
-  if (isValidating1 || isValidating2 || isValidating3 || isValidating4 || isValidating5) {
+  if (loading) {
     return <p>Loading...</p>
   }
 
@@ -143,7 +131,7 @@ const Inner = (props: InnerProps) => {
           selectionOnDrag={true}
           onPaneClick={onPaneClick}
         >
-          <Panel position='top-left'>クラス図名クラス図名クラス図名</Panel>
+          <Panel position='top-left'>{page?.name || 'Loading...'}</Panel>
           <Background />
         </ReactFlow>
         <Arrows />

@@ -8,15 +8,18 @@ export function getInnerProps(
   sourceHandleY: number,
   sourceNodeX: number,
   sourceNodeY: number,
-  sourceNodeW: number,
-  sourceNodeH: number,
+  sourceNodeW: number | undefined,
+  sourceNodeH: number | undefined,
   targetHandleX: number,
   targetHandleY: number,
   targetNodeX: number,
   targetNodeY: number,
-  targetNodeW: number,
-  targetNodeH: number,
+  targetNodeW: number | undefined,
+  targetNodeH: number | undefined,
 ): { edgePath: string; palettePoint: Point; labelPoint: Point } | null {
+  if (sourceNodeW == undefined || sourceNodeH == undefined || targetNodeW == undefined || targetNodeH == undefined)
+    return null
+
   const edge = { s: { x: sourceHandleX, y: sourceHandleY - 4 }, d: { x: targetHandleX, y: targetHandleY - 4 } }
 
   // collision

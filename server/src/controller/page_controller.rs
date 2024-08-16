@@ -3,8 +3,16 @@ use actix_web::HttpResponse;
 
 use crate::controller::respond;
 use crate::data::page::PageId;
-use crate::db::store::page::{page_edge_store, page_node_store};
+use crate::db::store::page::{page_edge_store, page_node_store, page_store};
 use crate::db::Pool;
+
+pub async fn get_page(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
+    let page_id = path.into_inner();
+
+    println!("/page/{page_id}");
+
+    respond(page_store::find_page(&mut pool.get().unwrap(), &page_id))
+}
 
 pub async fn get_nodes(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
     let page_id = path.into_inner();

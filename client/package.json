@@ -24,7 +24,6 @@
     "react-hot-toast": "^2.4.1",
     "react-select": "^5.8.0",
     "react-use-websocket": "^4.8.1",
-    "swr": "^2.2.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -39,6 +39,7 @@ async fn main() -> Result<(), String> {
             .route("/project/{project_id}/icons", web::get().to(project_controller::get_icons))
             .route("/project/{project_id}/nodes", web::get().to(project_controller::get_nodes))
             .route("/project/{project_id}/edges", web::get().to(project_controller::get_edges))
+            .route("/page/{page_id}", web::get().to(page_controller::get_page))
             .route("/page/{page_id}/nodes", web::get().to(page_controller::get_nodes))
             .route("/page/{page_id}/edges", web::get().to(page_controller::get_edges))
             .route("/debug/session", web::get().to(debug_controller::session))

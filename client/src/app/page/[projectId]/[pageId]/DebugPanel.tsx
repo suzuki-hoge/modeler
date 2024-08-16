@@ -1,6 +1,6 @@
 'use client'
 import '@xyflow/react/dist/style.css'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { shallow } from 'zustand/shallow'
 
 import { usePageStore } from '@/app/_store/page-store'
@@ -12,18 +12,6 @@ export const DebugPanel = () => {
   const getProjectNode = useProjectStore((state) => state.getNode, shallow)
   const pageNodes = usePageStore((state) => state.nodes, shallow)
   const pageEdges = usePageStore((state) => state.edges, shallow)
-
-  useEffect(
-    () => {
-      console.log('debug panel')
-      console.log(projectNodes)
-      console.log(pageNodes)
-      console.log(projectEdges)
-      console.log(pageEdges)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  )
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row', columnGap: '1rem' }}>

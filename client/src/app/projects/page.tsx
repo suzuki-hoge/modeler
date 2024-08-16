@@ -1,20 +1,25 @@
 'use client'
 import '@xyflow/react/dist/style.css'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { useProjects } from '@/app/_object/project/fetch'
+import { fetchProjects } from '@/app/_object/project/fetch'
+import { Project } from '@/app/_object/project/type'
 
 export default function Page() {
-  const [projects, validating] = useProjects()
+  const [projects, setProjects] = useState<Project[]>([])
 
-  if (validating) {
-    return <p>loading...</p>
-  }
+  useEffect(
+    () => {
+      void fetchProjects().then(setProjects)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   return (
     <ul>
-      {projects!.map((project) => (
+      {projects.map((project) => (
         <li key={project.projectId}>
           <Link href={`/pages/${project.projectId}`}>{project.name}</Link>
         </li>
