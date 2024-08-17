@@ -2,7 +2,7 @@ import { Edge } from '@xyflow/react'
 import { ReadyState } from 'react-use-websocket'
 import z from 'zod'
 
-import { createEdge } from '@/app/_object/edge/function'
+import { createProjectEdge } from '@/app/_object/edge/function'
 import { ProjectEdgeData } from '@/app/_object/edge/type'
 import { ProjectStore } from '@/app/_store/project-store'
 
@@ -52,7 +52,7 @@ export function handleCreateEdge(response: unknown, store: ProjectStore) {
   if (isCreateEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
     store.createEdge(
-      createEdge(response.objectId, response.source, response.target, response.arrowType, response.label),
+      createProjectEdge(response.objectId, response.source, response.target, response.arrowType, response.label),
     )
   }
 }

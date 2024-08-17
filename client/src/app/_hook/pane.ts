@@ -20,6 +20,7 @@ export function useOnPaneClick(selectorState: SelectorState): (event: React.Mous
   return (e) => {
     // Windows control or macOS Command
     if ((e.ctrlKey && !e.metaKey) || (!e.ctrlKey && e.metaKey)) {
+      // open selector
       const screen = { x: e.clientX, y: e.clientY }
       const flow = rf.screenToFlowPosition(screen)
       selectorState.setActive(true)

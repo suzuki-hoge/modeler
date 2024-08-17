@@ -2,7 +2,7 @@ import { Edge } from '@xyflow/react'
 import { ReadyState } from 'react-use-websocket'
 import z from 'zod'
 
-import { updateEdge } from '@/app/_object/edge/function'
+import { updateProjectEdge } from '@/app/_object/edge/function'
 import { ProjectEdgeData } from '@/app/_object/edge/type'
 import { ProjectStore } from '@/app/_store/project-store'
 
@@ -45,7 +45,7 @@ export function sendUpdateLabel(sender: Sender, state: ReadyState, edge: Edge<Pr
 export function handleUpdateLabel(response: unknown, store: ProjectStore) {
   if (isUpdateLabelResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    store.updateEdge(response.objectId, (edge) => updateEdge(edge, response))
+    store.updateEdge(response.objectId, (edge) => updateProjectEdge(edge, response))
   }
 }
 

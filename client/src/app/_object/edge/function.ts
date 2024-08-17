@@ -6,7 +6,7 @@ export function allocateEdgeId(): string {
   return crypto.randomUUID()
 }
 
-export function createEdge(
+export function createProjectEdge(
   id: string,
   src: string,
   dst: string,
@@ -43,7 +43,7 @@ interface Change {
   label?: string
 }
 
-export function updateEdge(edge: Edge<ProjectEdgeData>, change: Change): Edge<ProjectEdgeData> {
+export function updateProjectEdge(edge: Edge<ProjectEdgeData>, change: Change): Edge<ProjectEdgeData> {
   if (change.source) edge.source = change.source
   if (change.target) edge.target = change.target
   if (change.arrowType) {

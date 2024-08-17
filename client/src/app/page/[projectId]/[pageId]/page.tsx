@@ -17,9 +17,9 @@ import {
 import { nodeTypes } from '@/app/_component/chart/class-node/ClassNode'
 import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
 import Arrows from '@/app/_component/chart/marker/Arrows'
-import { ClassCreatableSelector } from '@/app/_component/input/class-creatable-selector/ClassCreatableSelector'
+import { ClassSelectorToUpdatePage } from '@/app/_component/input/class-selector/ClassSelectorToUpdatePage'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
-import { createOnPostNodeCreate, createOnPostNodeSelect, useOnNodeDrag, useOnNodesChange } from '@/app/_hook/node'
+import { useOnNodeDrag, useOnNodesChange } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
 import { fetchPageEdges, fetchProjectEdges } from '@/app/_object/edge/fetch'
 import { fetchNodeIcons, fetchPageNodes, fetchProjectNodes } from '@/app/_object/node/fetch'
@@ -62,17 +62,13 @@ const Inner = (props: InnerProps) => {
 
   // edge
   const onEdgesChange = useOnEdgesChange(pageStore, pageSocket)
-  const { onConnectStart, onConnectEnd, source } = useOnConnect(
+  const { onConnectStart, onConnectEnd, dragSource } = useOnConnect(
     projectStore,
     projectSocket,
     pageStore,
     pageSocket,
     selectorState,
   )
-
-  // selector
-  const onPostNodeCreate = createOnPostNodeCreate(projectStore, projectSocket, pageStore, pageSocket, source)
-  const onPostNodeSelect = createOnPostNodeSelect(projectStore, projectSocket, pageStore, pageSocket, source)
 
   // init
   useEffect(
@@ -102,7 +98,7 @@ const Inner = (props: InnerProps) => {
     return <p>Loading...</p>
   }
 
-  const debug = true
+  const debug = false
 
   return (
     <>
@@ -136,14 +132,11 @@ const Inner = (props: InnerProps) => {
         </ReactFlow>
         <Arrows />
         {selectorState.active && (
-          <ClassCreatableSelector
+          <ClassSelectorToUpdatePage
             x={`${selectorState.position.screen.x}px`}
             y={`${selectorState.position.screen.y}px`}
-            headers={projectStore.nodeHeaders}
-            icons={projectStore.nodeIcons}
+            dragSource={dragSource.current}
             newNodePosition={selectorState.position.flow}
-            onSelect={onPostNodeSelect}
-            onPostNodeCreate={onPostNodeCreate}
             onClose={() => selectorState.setActive(false)}
           />
         )}

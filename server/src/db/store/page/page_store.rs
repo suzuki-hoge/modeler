@@ -5,10 +5,10 @@ use itertools::Itertools;
 
 use crate::data::page::{Page, PageId};
 use crate::data::project::ProjectId;
-use crate::db::Conn;
 use crate::db::schema::page as schema;
-use crate::db::store::DatabaseError;
 use crate::db::store::project::project_store;
+use crate::db::store::DatabaseError;
+use crate::db::Conn;
 
 #[derive(Queryable, Selectable, Insertable, Debug)]
 #[diesel(table_name = schema)]
@@ -73,14 +73,14 @@ pub fn create_page(conn: &mut Conn, page_id: &PageId, project_id: &ProjectId, na
 
 #[cfg(test)]
 mod tests {
-    use diesel::{RunQueryDsl, sql_query};
     use diesel::sql_types::Text;
+    use diesel::{sql_query, RunQueryDsl};
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
-    use crate::db::store::DatabaseError;
     use crate::db::store::page::page_store::{create_page, find_pages};
     use crate::db::store::project::project_store::create_project;
+    use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
         String::from(value)

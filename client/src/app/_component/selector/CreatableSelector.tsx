@@ -45,9 +45,13 @@ export function CreatableSelector<Choice>(props: CreatableSelectorProps<Choice>)
   const options: Option<Choice>[] = sortOptions(selectOptions, props.sortKey, props.defaultId)
 
   const ref = useRef<SelectBase<Option<Choice>>>(null)
-  useEffect(() => {
-    if (props?.onClose) ref.current?.focus()
-  })
+  useEffect(
+    () => {
+      ref.current?.focus()
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   return (
     <div style={{ position: 'absolute', left: `calc(${props.x})`, top: `calc(${props.y})`, zIndex: 10 }}>

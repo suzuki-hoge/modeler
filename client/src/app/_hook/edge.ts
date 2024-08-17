@@ -2,7 +2,7 @@ import { OnConnectEnd, OnConnectStart, OnEdgesChange, useReactFlow } from '@xyfl
 import { MutableRefObject, useCallback, useRef } from 'react'
 
 import { SelectorState } from '@/app/_hook/pane'
-import { allocateEdgeId, createEdge, extractPageEdge } from '@/app/_object/edge/function'
+import { allocateEdgeId, createProjectEdge, extractPageEdge } from '@/app/_object/edge/function'
 import { ArrowType } from '@/app/_object/edge/type'
 import { PageSocket } from '@/app/_socket/page-socket'
 import { ProjectSocket } from '@/app/_socket/project-socket'
@@ -31,7 +31,7 @@ export interface DragSource {
 interface OnConnect {
   onConnectStart: OnConnectStart
   onConnectEnd: OnConnectEnd
-  source: MutableRefObject<DragSource | null>
+  dragSource: MutableRefObject<DragSource | null>
 }
 
 export function useOnConnect(
@@ -41,11 +41,11 @@ export function useOnConnect(
   pageSocket: PageSocket,
   selectorState: SelectorState,
 ): OnConnect {
-  const source = useRef<DragSource | null>(null)
+  const dragSource = useRef<DragSource | null>(null)
   const rf = useReactFlow()
 
   const onConnectStart: OnConnectStart = useCallback((_, p) => {
-    source.current = { id: p.nodeId!, arrowType: p.handleId?.startsWith('simple') ? 'simple' : 'generalization' }
+    dragSource.current = { id: p.nodeId!, arrowType: p.handleId?.startsWith('simple') ? 'simple' : 'generalization' }
   }, [])
 
   const onConnectEnd: OnConnectEnd = useCallback(
@@ -58,44 +58,37 @@ export function useOnConnect(
         .map((e) => e.id)
 
       if (targetNodeIds.length === 0) {
-        // create new node
+        // mouse up on pane, open selector
         const screen = { x: event.clientX, y: event.clientY }
         const flow = rf.screenToFlowPosition(screen)
         selectorState.setActive(true)
         selectorState.setPosition({ screen, flow })
-      } else if (source.current!.id !== targetNodeIds[0]) {
-        // connect
-        const projectEdge = projectStore.findEdge(source.current!.id, targetNodeIds[0])
+      } else if (dragSource.current!.id === targetNodeIds[0]) {
+        // mouse up on drag-source, do nothing
+      } else if (dragSource.current!.id !== targetNodeIds[0]) {
+        // mouse up on other node, connect
+        const source = dragSource.current!
+
+        const projectEdge = projectStore.findEdge(source.id, targetNodeIds[0])
 
         if (projectEdge && !pageStore.isEdgeExists(projectEdge.id)) {
           const pageEdge = extractPageEdge(projectEdge)
-
           pageStore.addEdge(pageEdge)
           pageSocket.addEdge(pageEdge)
         } else {
-          const projectEdge = createEdge(
-            allocateEdgeId(),
-            source.current!.id,
-            targetNodeIds[0],
-            source.current!.arrowType,
-            '1',
-          )
-
+          const projectEdge = createProjectEdge(allocateEdgeId(), source.id, targetNodeIds[0], source.arrowType, '1')
           projectStore.createEdge(projectEdge)
           projectSocket.createEdge(projectEdge)
 
           const pageEdge = extractPageEdge(projectEdge)
-
           pageStore.addEdge(pageEdge)
           pageSocket.addEdge(pageEdge)
         }
-      } else {
-        // do nothing
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
 
-  return { onConnectStart, onConnectEnd, source }
+  return { onConnectStart, onConnectEnd, dragSource }
 }

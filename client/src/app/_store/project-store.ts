@@ -29,12 +29,10 @@ type ProjectStoreWithState = {
   putEdges: (edges: Edge<ProjectEdgeData>[]) => void
 }
 
-export type ProjectStore = Omit<ProjectStoreWithState, 'nodes' | 'edges'>
+export type ProjectStore = Omit<ProjectStoreWithState, 'nodes' | 'edges' | 'nodeHeaders' | 'nodeIcons'>
 
 export const projectStoreSelector = (store: ProjectStoreWithState) => ({
   // node
-  nodeHeaders: store.nodeHeaders,
-  nodeIcons: store.nodeIcons,
   getNode: store.getNode,
   createNode: store.createNode,
   deleteNode: store.deleteNode,
