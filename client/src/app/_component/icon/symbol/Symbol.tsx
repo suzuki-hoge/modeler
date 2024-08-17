@@ -30,6 +30,6 @@ export const Symbol = (props: Props) => {
 
 function variant(size?: 'small' | 'normal' | 'large'): [number, number] {
   if (size === 'small') return [1, 0.75]
-  else if (size === 'large') return [2, 1.25]
+  else if (size === 'large') return [2, 2]
   else return [1, 1]
 }

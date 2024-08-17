@@ -1,0 +1,22 @@
+.component {
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  column-gap: 0.5rem;
+  align-items: flex-end;
+  border-radius: 5px;
+  border: solid 2px lightgray;
+  padding: 0.2rem;
+}
+
+.panels {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+
+  .config {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.2rem;
+  }
+}

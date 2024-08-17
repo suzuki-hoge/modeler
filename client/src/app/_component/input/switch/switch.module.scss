@@ -1,0 +1,38 @@
+.input {
+  display: none;
+}
+
+// background
+.content {
+  position: relative;
+  background-color: #dddddd;
+  border-radius: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  width: 2.5rem;
+  height: 1.5rem;
+}
+
+// background ( on )
+.input:checked + .content {
+  background-color: #35c659;
+}
+
+// dot
+.content::before {
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  content: '';
+  width: 1.1rem;
+  height: 1.1rem;
+  left: 0.2rem;
+  transition: 0.2s ease-out;
+}
+
+// dot ( on )
+.input:checked + .content::before {
+  left: 1.2rem;
+}

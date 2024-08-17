@@ -17,6 +17,7 @@ import {
 import { nodeTypes } from '@/app/_component/chart/class-node/ClassNode'
 import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
 import Arrows from '@/app/_component/chart/marker/Arrows'
+import { ConfigPanel } from '@/app/_component/config-panel/ConfigPanel'
 import { ClassSelectorToUpdatePage } from '@/app/_component/input/class-selector/ClassSelectorToUpdatePage'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { useOnNodeDrag, useOnNodesChange } from '@/app/_hook/node'
@@ -128,6 +129,9 @@ const Inner = (props: InnerProps) => {
           onPaneClick={onPaneClick}
         >
           <Panel position='top-left'>{page?.name || 'Loading...'}</Panel>
+          <Panel position='bottom-left'>
+            <ConfigPanel />
+          </Panel>
           <Background />
         </ReactFlow>
         <Arrows />
