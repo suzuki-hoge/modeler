@@ -1,7 +1,6 @@
 'use client'
 import '@xyflow/react/dist/style.css'
 
-import { faker } from '@faker-js/faker'
 import { ReactFlow, Background, Panel, ReactFlowProvider } from '@xyflow/react'
 import React, { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
@@ -26,14 +25,18 @@ import { fetchPageEdges, fetchProjectEdges } from '@/app/_object/edge/fetch'
 import { fetchNodeIcons, fetchPageNodes, fetchProjectNodes } from '@/app/_object/node/fetch'
 import { fetchPage } from '@/app/_object/page/fetch'
 import { Page as PageType } from '@/app/_object/page/type'
+import { fetchUserConfig } from '@/app/_object/user/config/fetch'
 import { handleErrorInformation } from '@/app/_socket/information/error-information'
 import { handlePageMessage, pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
 import { handleProjectMessage, projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
+import { userSocketSelector, useUserSocket } from '@/app/_socket/user-socket'
 import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
 import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
+import { userStoreSelector, useUserStore } from '@/app/_store/user-store'
 import { DebugPanel } from '@/app/page/[projectId]/[pageId]/DebugPanel'
 
 interface InnerProps {
+  userId: string
   projectId: string
   pageId: string
 }
@@ -44,6 +47,7 @@ const Inner = (props: InnerProps) => {
   const [loading, setLoading] = useState(true)
 
   // store
+  const userStore = useUserStore(userStoreSelector, shallow)
   const projectStore = useProjectStore(projectStoreSelector, shallow)
   const pageStore = usePageStore(pageStoreSelector, shallow)
   const pageNodes2 = usePageStore((state) => state.nodes, shallow)
@@ -75,13 +79,20 @@ const Inner = (props: InnerProps) => {
   useEffect(
     () => {
       void Promise.all([
+        fetchUserConfig(props.userId),
         fetchPage(props.pageId),
         fetchNodeIcons(props.projectId),
         fetchProjectNodes(props.projectId),
         fetchProjectEdges(props.projectId),
         fetchPageNodes(props.pageId),
         fetchPageEdges(props.pageId),
-      ]).then(([page, nodeIcons, projectNodes, projectEdges, pageNodes, pageEdges]) => {
+      ]).then(([config, page, nodeIcons, projectNodes, projectEdges, pageNodes, pageEdges]) => {
+        userStore.putUser(
+          props.userId,
+          'ぺん',
+          'https://i.pinimg.com/236x/a4/da/f1/a4daf1f9d6e4acf13ff81d708edfe415.jpg',
+        )
+        userStore.setConfig(config)
         setPage(page)
         projectStore.putNodeIcons(nodeIcons)
         projectStore.putNodes(projectNodes)
@@ -157,17 +168,19 @@ interface Props {
   }
 }
 
-const user = faker.person.firstName()
-
 export default function Page(props: Props) {
+  const userId = '189b0fba-6ad3-44d8-ac65-0d8cde285a44'
+
   const { lastJsonMessage, sendJsonMessage, readyState } = useWebSocket<unknown>(
-    `ws://127.0.0.1:8080/ws/${props.params.projectId}/${props.params.pageId}/${user}`,
+    `ws://127.0.0.1:8080/ws/${props.params.projectId}/${props.params.pageId}/${userId}`,
   )
 
-  const projectSocket = useProjectSocket(projectSocketSelector, shallow)
-  const pageSocket = usePageSocket(pageSocketSelector, shallow)
   const projectStore = useProjectStore(projectStoreSelector, shallow)
   const pageStore = usePageStore(pageStoreSelector, shallow)
+
+  const userSocket = useUserSocket(userSocketSelector, shallow)
+  const projectSocket = useProjectSocket(projectSocketSelector, shallow)
+  const pageSocket = usePageSocket(pageSocketSelector, shallow)
 
   useEffect(
     () => {
@@ -179,6 +192,8 @@ export default function Page(props: Props) {
     [lastJsonMessage],
   )
 
+  userSocket.initSender(sendJsonMessage)
+  userSocket.initState(readyState)
   projectSocket.initSender(sendJsonMessage)
   projectSocket.initState(readyState)
   pageSocket.initSender(sendJsonMessage)
@@ -187,7 +202,7 @@ export default function Page(props: Props) {
   return (
     <>
       <ReactFlowProvider>
-        <Inner {...props.params} />
+        <Inner userId={userId} {...props.params} />
       </ReactFlowProvider>
       <Toaster position='top-right' reverseOrder={false} />
     </>

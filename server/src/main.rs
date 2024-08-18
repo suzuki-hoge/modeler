@@ -7,7 +7,7 @@ use actix_web::{
 };
 
 use crate::actor::{start_server, start_session};
-use crate::controller::{debug_controller, page_controller, project_controller};
+use crate::controller::{debug_controller, page_controller, project_controller, user_controller};
 use crate::db::create_connection_pool;
 
 mod actor;
@@ -33,7 +33,8 @@ async fn main() -> Result<(), String> {
             .wrap(cors)
             .app_data(Data::new(server.clone()))
             .app_data(Data::new(pool.clone()))
-            .service(resource("/ws/{project_id}/{page_id}/{user}").to(start_session))
+            .service(resource("/ws/{project_id}/{page_id}/{user_id}").to(start_session))
+            .route("/user/{user_id}/config", web::get().to(user_controller::get_user_config))
             .route("/projects", web::get().to(project_controller::get_projects))
             .route("/project/{project_id}/pages", web::get().to(project_controller::get_pages))
             .route("/project/{project_id}/icons", web::get().to(project_controller::get_icons))

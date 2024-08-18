@@ -20,8 +20,6 @@ type UpdateArrowTypeRequest = z.infer<typeof updateArrowTypeRequest>
 const updateArrowTypeResponse = updateArrowTypeRequest
 type UpdateArrowTypeResponse = z.infer<typeof updateArrowTypeResponse>
 
-export type UpdateArrowType = (edge: Edge<ProjectEdgeData>) => void
-
 // send
 
 type Sender = (request: UpdateArrowTypeRequest) => void

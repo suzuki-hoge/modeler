@@ -21,8 +21,6 @@ type UpdateConnectionRequest = z.infer<typeof updateConnectionRequest>
 const updateConnectionResponse = updateConnectionRequest
 type UpdateConnectionResponse = z.infer<typeof updateConnectionResponse>
 
-export type UpdateConnection = (edge: Edge<ProjectEdgeData>) => void
-
 // send
 
 type Sender = (request: UpdateConnectionRequest) => void

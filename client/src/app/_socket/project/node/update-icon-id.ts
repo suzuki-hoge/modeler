@@ -18,8 +18,6 @@ type UpdateIconIdRequest = z.infer<typeof updateIconRequest>
 const updateIconResponse = updateIconRequest
 type UpdateIconIdResponse = z.infer<typeof updateIconResponse>
 
-export type UpdateIconId = (objectId: string, iconId: string) => void
-
 // send
 
 type Sender = (request: UpdateIconIdRequest) => void

@@ -18,8 +18,6 @@ type UpdatePropertiesRequest = z.infer<typeof updatePropertiesRequest>
 const updatePropertiesResponse = updatePropertiesRequest
 type UpdatePropertiesResponse = z.infer<typeof updatePropertiesResponse>
 
-export type UpdateProperties = (objectId: string, properties: string[]) => void
-
 // send
 
 type Sender = (request: UpdatePropertiesRequest) => void

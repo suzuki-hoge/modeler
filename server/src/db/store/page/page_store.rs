@@ -24,15 +24,7 @@ fn read(row: Row) -> Page {
 }
 
 pub fn find_page(conn: &mut Conn, page_id: &PageId) -> Result<Page, DatabaseError> {
-    let rows = schema::table
-        .filter(schema::page_id.eq(page_id))
-        .select(Row::as_select())
-        .order_by(schema::name.asc())
-        .load(conn)
-        .map_err(DatabaseError::other)?;
-    let len = rows.len();
-
-    rows.into_iter().map(read).next().ok_or(DatabaseError::unexpected_row_matched(len))
+    schema::table.find(page_id).first(conn).map(read).map_err(DatabaseError::other)
 }
 
 pub fn find_pages(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<Page>, DatabaseError> {

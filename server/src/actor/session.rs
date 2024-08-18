@@ -26,11 +26,13 @@ use crate::actor::message::project::node::update_icon_id::UpdateIconIdRequest;
 use crate::actor::message::project::node::update_methods::UpdateMethodsRequest;
 use crate::actor::message::project::node::update_name::UpdateNameRequest;
 use crate::actor::message::project::node::update_properties::UpdatePropertiesRequest;
+use crate::actor::message::user::config::update_user_config::UpdateUserConfigRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
+use crate::data::user::UserId;
 
 pub fn create_session_id() -> SessionId {
     Uuid::new_v4().to_string()
@@ -42,7 +44,7 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub struct Session {
     pub session_id: SessionId,
-    pub user: String,
+    pub user_id: UserId,
     pub project_id: ProjectId,
     pub page_id: PageId,
     pub server_address: Addr<Server>,
@@ -70,6 +72,11 @@ impl Session {
 
     fn handle_json(&mut self, json: Json) -> Result<(), String> {
         match json.get("type").and_then(|v| v.as_str()) {
+            // user
+
+            // config
+            Some("update-user-config") => self.server_address.do_send(UpdateUserConfigRequest::parse(json)?),
+
             // project
 
             // node
@@ -147,7 +154,7 @@ impl Actor for Session {
         self.server_address
             .send(ConnectRequest {
                 session_id: self.session_id.clone(),
-                user: self.user.clone(),
+                user_id: self.user_id.clone(),
                 project_id: self.project_id.clone(),
                 page_id: self.page_id.clone(),
                 session_address: session_address.recipient(),

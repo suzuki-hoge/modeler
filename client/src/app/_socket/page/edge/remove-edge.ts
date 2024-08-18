@@ -16,8 +16,6 @@ type RemoveEdgeRequest = z.infer<typeof removeEdgeRequest>
 const removeEdgeResponse = removeEdgeRequest
 type RemoveEdgeResponse = z.infer<typeof removeEdgeResponse>
 
-export type RemoveEdge = (objectId: string) => void
-
 // send
 
 type Sender = (request: RemoveEdgeRequest) => void

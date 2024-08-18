@@ -18,8 +18,6 @@ type MoveNodeRequest = z.infer<typeof moveNodeRequest>
 const moveNodeResponse = moveNodeRequest
 type MoveNodeResponse = z.infer<typeof moveNodeResponse>
 
-export type MoveNode = (objectId: string, x: number, y: number) => void
-
 // send
 
 type Sender = (request: MoveNodeRequest) => void

@@ -18,8 +18,6 @@ type UpdateNameRequest = z.infer<typeof updateNameRequest>
 const updateNameResponse = updateNameRequest
 type UpdateNameResponse = z.infer<typeof updateNameResponse>
 
-export type UpdateName = (objectId: string, name: string) => void
-
 // send
 
 type Sender = (request: UpdateNameRequest) => void

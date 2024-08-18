@@ -20,8 +20,6 @@ type UpdateLabelRequest = z.infer<typeof updateLabelRequest>
 const updateLabelResponse = updateLabelRequest
 type UpdateLabelResponse = z.infer<typeof updateLabelResponse>
 
-export type UpdateLabel = (edge: Edge<ProjectEdgeData>) => void
-
 // send
 
 type Sender = (request: UpdateLabelRequest) => void

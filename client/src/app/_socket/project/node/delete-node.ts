@@ -16,8 +16,6 @@ type DeleteNodeRequest = z.infer<typeof deleteNodeRequest>
 const deleteNodeResponse = deleteNodeRequest
 type DeleteNodeResponse = z.infer<typeof deleteNodeResponse>
 
-export type DeleteNode = (objectId: string) => void
-
 // send
 
 type Sender = (request: DeleteNodeRequest) => void

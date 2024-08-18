@@ -10,12 +10,12 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
-use crate::data::User;
+use crate::data::user::UserId;
 use crate::db::{Conn, Pool};
 
 pub struct Server {
     pool: Pool,
-    sessions: HashMap<SessionId, (Recipient<Response>, User)>,
+    sessions: HashMap<SessionId, (Recipient<Response>, UserId)>,
     project_sessions: HashMap<ProjectId, Vec<SessionId>>,
     page_sessions: HashMap<PageId, Vec<SessionId>>,
 }
@@ -37,18 +37,18 @@ impl Server {
     pub fn connect(
         &mut self,
         session_id: SessionId,
-        user: User,
+        user_id: UserId,
         project_id: ProjectId,
         page_id: PageId,
         session_address: Recipient<Response>,
     ) {
-        self.sessions.insert(session_id.clone(), (session_address, user));
+        self.sessions.insert(session_id.clone(), (session_address, user_id));
         self.project_sessions.entry(project_id.clone()).or_default().push(session_id.clone());
         self.page_sessions.entry(page_id.clone()).or_default().push(session_id.clone());
     }
 
-    pub fn disconnect(&mut self, session_id: SessionId, page_id: PageId, project_id: ProjectId) -> User {
-        let (_, user) = self.sessions.remove(&session_id).unwrap();
+    pub fn disconnect(&mut self, session_id: SessionId, page_id: PageId, project_id: ProjectId) -> UserId {
+        let (_, user_id) = self.sessions.remove(&session_id).unwrap();
 
         let project_sessions = self.project_sessions.entry(project_id.clone()).or_default();
         project_sessions.retain(|id| id != &session_id);
@@ -62,7 +62,7 @@ impl Server {
             self.page_sessions.remove(&project_id);
         }
 
-        user
+        user_id
     }
 
     pub fn send_to_project<R: Into<Response>>(
@@ -97,9 +97,9 @@ impl Server {
         println!("accept response: {}", &response.json);
 
         session_ids.iter().filter(|&session_id| session_id != skip_session_id).for_each(|session_id| {
-            let (session_address, user) = self.sessions.get(session_id).unwrap();
+            let (session_address, user_id) = self.sessions.get(session_id).unwrap();
 
-            println!("send page message to: {}", user);
+            println!("send page message to: {}", user_id);
 
             session_address.do_send(response.clone());
         });
@@ -108,7 +108,7 @@ impl Server {
     }
 
     fn dump(&self) {
-        let users: HashMap<SessionId, User> = self.sessions.iter().map(|(k, v)| (k.clone(), v.1.clone())).collect();
+        let users: HashMap<SessionId, UserId> = self.sessions.iter().map(|(k, v)| (k.clone(), v.1.clone())).collect();
 
         let json = json!({
             "projectSessions": self.project_sessions,

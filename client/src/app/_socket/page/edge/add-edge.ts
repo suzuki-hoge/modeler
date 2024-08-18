@@ -20,8 +20,6 @@ type AddEdgeRequest = z.infer<typeof addEdgeRequest>
 const addEdgeResponse = addEdgeRequest
 type AddEdgeResponse = z.infer<typeof addEdgeResponse>
 
-export type AddEdge = (edge: Edge<PageEdgeData>) => void
-
 // send
 
 type Sender = (request: AddEdgeRequest) => void

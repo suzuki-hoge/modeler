@@ -93,6 +93,27 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    user (user_id) {
+        #[max_length = 36]
+        user_id -> Varchar,
+        #[max_length = 36]
+        name -> Nullable<Varchar>,
+        #[max_length = 256]
+        icon -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
+    user_config (user_id) {
+        #[max_length = 36]
+        user_id -> Varchar,
+        reflect_page_object_on_text_input -> Bool,
+        show_base_type_attributes -> Bool,
+        show_in_second_language -> Bool,
+    }
+}
+
 diesel::joinable!(node_icon -> project (project_id));
 diesel::joinable!(page -> project (project_id));
 diesel::joinable!(page_edge -> page (page_id));
@@ -101,6 +122,7 @@ diesel::joinable!(page_node -> page (page_id));
 diesel::joinable!(page_node -> project_node (object_id));
 diesel::joinable!(project_edge -> project (project_id));
 diesel::joinable!(project_node -> project (project_id));
+diesel::joinable!(user_config -> user (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     node_icon,
@@ -110,4 +132,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     project,
     project_edge,
     project_node,
+    user,
+    user_config,
 );

@@ -7,13 +7,13 @@ use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
-use crate::data::User;
+use crate::data::user::UserId;
 
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 pub struct ConnectRequest {
     pub session_id: SessionId,
-    pub user: User,
+    pub user_id: UserId,
     pub project_id: ProjectId,
     pub page_id: PageId,
     pub session_address: Recipient<Response>,
@@ -27,13 +27,13 @@ impl Handler<ConnectRequest> for Server {
 
         self.connect(
             request.session_id.clone(),
-            request.user.clone(),
+            request.user_id.clone(),
             request.project_id.clone(),
             request.page_id.clone(),
             request.session_address,
         );
 
-        let response = ConnectResponse::new(request.session_id.clone(), request.user);
+        let response = ConnectResponse::new(request.session_id.clone(), request.user_id);
 
         self.send_to_page(&request.page_id, Ok(response), &request.session_id);
     }
@@ -44,12 +44,12 @@ impl Handler<ConnectRequest> for Server {
 pub struct ConnectResponse {
     r#type: String,
     session_id: SessionId,
-    user: User,
+    user_id: UserId,
 }
 
 impl ConnectResponse {
-    fn new(session_id: SessionId, user: User) -> Self {
-        Self { r#type: String::from("connect"), session_id, user }
+    fn new(session_id: SessionId, user_id: UserId) -> Self {
+        Self { r#type: String::from("connect"), session_id, user_id }
     }
 }
 

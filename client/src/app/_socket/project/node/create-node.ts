@@ -21,8 +21,6 @@ type CreateNodeRequest = z.infer<typeof createNodeRequest>
 const createNodeResponse = createNodeRequest
 type CreateNodeResponse = z.infer<typeof createNodeResponse>
 
-export type CreateNode = (node: Node<ProjectNodeData>) => void
-
 // send
 
 type Sender = (request: CreateNodeRequest) => void

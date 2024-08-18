@@ -2,6 +2,7 @@ use diesel::result::Error;
 
 pub mod page;
 pub mod project;
+pub mod user;
 
 #[derive(Debug)]
 pub enum DatabaseError {

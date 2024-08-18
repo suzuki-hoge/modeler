@@ -20,8 +20,6 @@ type AddNodeRequest = z.infer<typeof addNodeRequest>
 const addNodeResponse = addNodeRequest
 type AddNodeResponse = z.infer<typeof addNodeResponse>
 
-export type AddNode = (node: Node<PageNodeData>) => void
-
 // send
 
 type Sender = (request: AddNodeRequest) => void
@@ -46,7 +44,12 @@ export function sendAddNode(sender: Sender, state: ReadyState, node: Node<PageNo
 export function handleAddNode(response: unknown, store: PageStore) {
   if (isAddNodeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    store.addNode({ id: response.objectId, type: 'class', position: { x: response.x, y: response.y }, data: {} })
+    store.addNode({
+      id: response.objectId,
+      type: 'class',
+      position: { x: response.x, y: response.y },
+      data: { modified: '' },
+    })
   }
 }
 
