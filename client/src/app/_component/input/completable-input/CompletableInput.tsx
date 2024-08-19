@@ -1,8 +1,9 @@
 'use client'
+import { XYPosition } from '@xyflow/react'
 import React, { ChangeEvent, Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react'
 import { shallow } from 'zustand/shallow'
 
-import { ClassSelectorToUpdateProject } from '@/app/_component/input/class-selector/ClassSelectorToUpdateProject'
+import { ClassSelectorInText } from '@/app/_component/input/class-selector/ClassSelectorInText'
 import {
   changedByInput,
   changedBySelect,
@@ -27,6 +28,7 @@ interface Props {
   inner: string
   onTextChange: (inner: string) => void
   sourceNodeId: string
+  newNodePosition: XYPosition
 }
 
 export const CompletableInput = (props: Props) => {
@@ -38,7 +40,7 @@ export const CompletableInput = (props: Props) => {
   const [cursor, setCursor] = useState<Cursor>({ s: 0, e: 0, d: 'none' })
   const [refString, setRefString] = useState(innerToRef(props.inner, headers))
   const [isEditing, setIsEditing] = useState(false)
-  const [selectorTopNodeId, setSelectorTopNodeId] = useState<string | undefined>(undefined)
+  const [selectorTopNodeId, setSelectorTopNodeId] = useState('')
   const { popupState, openPopup, closePopup } = usePopup()
 
   useEffect(() => {
@@ -74,22 +76,23 @@ export const CompletableInput = (props: Props) => {
             inputRef={inputRef}
           />
           <Popup popupState={popupState} closePopup={closePopup} focusBackRef={inputRef}>
-            <ClassSelectorToUpdateProject
+            <ClassSelectorInText
               x={x}
               y={y}
               defaultId={selectorTopNodeId}
               sourceNodeId={props.sourceNodeId}
-              onSelect={(header) => {
+              newNodePosition={props.newNodePosition}
+              onPostCreate={(node) => {
                 setRefString((prev) => {
-                  const [nextRefString, nextCursor] = changedBySelect(prev, headers, header.id, header.name, cursor.s)
+                  const [nextRefString, nextCursor] = changedBySelect(prev, headers, node.id, node.data.name, cursor.s)
                   setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
                   return nextRefString
                 })
                 props.onTextChange(refString.inner)
               }}
-              onCreate={(node) => {
+              onPostSelect={(header) => {
                 setRefString((prev) => {
-                  const [nextRefString, nextCursor] = changedBySelect(prev, headers, node.id, node.data.name, cursor.s)
+                  const [nextRefString, nextCursor] = changedBySelect(prev, headers, header.id, header.name, cursor.s)
                   setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
                   return nextRefString
                 })
@@ -111,7 +114,7 @@ interface InputProps {
   setRefString: Dispatch<SetStateAction<RefString>>
   isEditing: boolean
   setIsEditing: Dispatch<SetStateAction<boolean>>
-  setSelectorTopNodeId: Dispatch<SetStateAction<string | undefined>>
+  setSelectorTopNodeId: Dispatch<SetStateAction<string>>
   setCursor: Dispatch<SetStateAction<Cursor>>
   onChange: (inner: string) => void
   popupState: PopupState
@@ -147,11 +150,11 @@ const Input = (props: InputProps) => {
         const ref = refPositions.find(({ frontS, frontE }) => frontS < s && s <= frontE)
 
         if (ref) {
-          props.openPopup()
           props.setSelectorTopNodeId(ref.header.id)
+          props.openPopup()
         } else {
+          props.setSelectorTopNodeId('')
           props.closePopup()
-          props.setSelectorTopNodeId(undefined)
         }
       }}
       onBlur={() => {

@@ -31,8 +31,8 @@ export interface CreatableSelectorProps<Choice> {
   searchKeys: (keyof Choice)[]
   uniqueKey: keyof Choice
   sortKey: keyof Choice
-  onSelect: (choice: Choice) => void
   onCreate: (value: string) => void
+  onSelect: (choice: Choice) => void
   onClose?: () => void
 }
 

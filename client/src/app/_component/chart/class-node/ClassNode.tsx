@@ -177,6 +177,7 @@ const Property = memo(function _Property(props: PropertyProps) {
         inner={props.inner}
         onTextChange={(inner) => props.onChangeProperties(updateString(props.properties, inner, props.n))}
         sourceNodeId={props.sourceNodeId}
+        newNodePosition={{ x: 0, y: 0 }}
       />
       <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={() => props.onChangeProperties(insertString(props.properties, '', props.n))} />
@@ -202,6 +203,7 @@ const Method = memo(function _Method(props: MethodProps) {
         inner={props.inner}
         onTextChange={(inner) => props.onChangeMethods(updateString(props.methods, inner, props.n))}
         sourceNodeId={props.sourceNodeId}
+        newNodePosition={{ x: 0, y: 0 }}
       />
       <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={() => props.onChangeMethods(insertString(props.methods, '', props.n))} />

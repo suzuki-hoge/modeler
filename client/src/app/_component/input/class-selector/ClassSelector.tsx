@@ -12,8 +12,8 @@ interface Props {
   x: string
   y: string
   defaultId?: string
-  onSelect: (choice: NodeHeader) => void
   onCreate: (name: string) => void
+  onSelect: (choice: NodeHeader) => void
   onClose?: () => void
 }
 
@@ -37,8 +37,8 @@ export const ClassSelector = (props: Props) => {
       searchKeys={['name']}
       uniqueKey={'id'}
       sortKey={'name'}
-      onSelect={props.onSelect}
       onCreate={props.onCreate}
+      onSelect={props.onSelect}
       onClose={props.onClose}
     />
   )

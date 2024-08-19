@@ -17,7 +17,7 @@ import { nodeTypes } from '@/app/_component/chart/class-node/ClassNode'
 import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
 import Arrows from '@/app/_component/chart/marker/Arrows'
 import { ConfigPanel } from '@/app/_component/config-panel/ConfigPanel'
-import { ClassSelectorToUpdatePage } from '@/app/_component/input/class-selector/ClassSelectorToUpdatePage'
+import { ClassSelectorOnPane } from '@/app/_component/input/class-selector/ClassSelectorOnPane'
 import { useOnConnect, useOnEdgesChange } from '@/app/_hook/edge'
 import { useOnNodeDrag, useOnNodesChange } from '@/app/_hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_hook/pane'
@@ -147,10 +147,10 @@ const Inner = (props: InnerProps) => {
         </ReactFlow>
         <Arrows />
         {selectorState.active && (
-          <ClassSelectorToUpdatePage
+          <ClassSelectorOnPane
             x={`${selectorState.position.screen.x}px`}
             y={`${selectorState.position.screen.y}px`}
-            dragSource={dragSource.current}
+            dragSource={dragSource}
             newNodePosition={selectorState.position.flow}
             onClose={() => selectorState.setActive(false)}
           />
