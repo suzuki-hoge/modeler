@@ -48,7 +48,7 @@ export function handleAddNode(response: unknown, store: PageStore) {
       id: response.objectId,
       type: 'class',
       position: { x: response.x, y: response.y },
-      data: { modified: '' },
+      data: { created: Date.now(), modified: '' },
     })
   }
 }

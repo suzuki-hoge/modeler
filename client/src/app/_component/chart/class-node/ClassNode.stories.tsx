@@ -14,17 +14,13 @@ export const Node: Story = {
   args: {
     id: 'store',
     isSelected: false,
+    isNew: false,
     data: {
       iconId: 'store',
       name: 'ItemStore',
       properties: [],
       methods: ['findAll(): List<ref#item#>', 'save(item: ref#item#)'],
     },
-    headers: [
-      { id: 'usecase', iconId: 'usecase', name: 'ItemUseCase' },
-      { id: 'store', iconId: 'store', name: 'ItemStore' },
-      { id: 'item', iconId: 'data', name: 'Item' },
-    ],
     icons: [
       { id: 'usecase', preview: 'UC', desc: 'UseCase', color: 'lightcyan' },
       { id: 'store', preview: 'S', desc: 'Store', color: 'lightgreen' },
@@ -34,8 +30,5 @@ export const Node: Story = {
     onChangeIconId: console.log,
     onChangeProperties: console.log,
     onChangeMethods: console.log,
-    newNodePosition: { x: 0, y: 0 },
-    onPostNodeCreate: console.log,
-    onPostNodeSelect: console.log,
   },
 }

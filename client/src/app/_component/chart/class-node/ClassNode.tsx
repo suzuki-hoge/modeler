@@ -69,6 +69,7 @@ export const ClassNode = (props: NodeProps<Node<PageNodeData>>) => {
       <ClassNodeInner
         id={props.id}
         isSelected={props.selected || false}
+        isNew={(props.data.created || Number.MAX_VALUE) < Date.now() + 1000}
         data={data}
         icons={icons}
         onChangeName={onChangeName}
@@ -84,6 +85,7 @@ export const ClassNode = (props: NodeProps<Node<PageNodeData>>) => {
 interface InnerProps {
   id: string
   isSelected: boolean
+  isNew: boolean
   data: ProjectNodeData
   icons: NodeIcon[]
   onChangeName: (name: string) => void
@@ -95,6 +97,7 @@ interface InnerProps {
 export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
   const classNames = ['class-node', styles.component]
   if (props.isSelected) classNames.push(styles.selected)
+  if (props.isNew) classNames.push(styles.new)
 
   return (
     <div id={props.id} className={classNames.join(' ')}>

@@ -6,6 +6,7 @@ export interface ProjectNodeData extends Record<string, unknown> {
 }
 
 export interface PageNodeData extends Record<string, unknown> {
+  created?: number
   modified: string
 }
 

@@ -20,7 +20,7 @@ export function createProjectNode(id: string, name: string): Node<ProjectNodeDat
 }
 
 export function extractPageNode(node: Node<ProjectNodeData>, position: XYPosition): Node<PageNodeData> {
-  return { id: node.id, type: 'class', position, data: { modified: '' } }
+  return { id: node.id, type: 'class', position, data: { created: Date.now(), modified: '' } }
 }
 
 export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
@@ -28,7 +28,7 @@ export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
 }
 
 export function expandToPageNode(header: NodeHeader, position: XYPosition): Node<PageNodeData> {
-  return { id: header.id, type: 'class', position, data: { modified: '' } }
+  return { id: header.id, type: 'class', position, data: { created: Date.now(), modified: '' } }
 }
 
 export function insertString(values: string[], value: string, n: number): string[] {

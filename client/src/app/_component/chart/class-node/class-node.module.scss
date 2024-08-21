@@ -6,6 +6,19 @@
   padding: 0.5rem;
 }
 
+.new {
+  animation: new 0.7s 3;
+}
+
+@keyframes new {
+  0% {
+    border: 2px solid dodgerblue;
+  }
+  100% {
+    border: 2px solid gray;
+  }
+}
+
 .selected {
   border: 2px solid dodgerblue;
 }
