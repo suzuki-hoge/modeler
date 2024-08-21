@@ -1,4 +1,4 @@
-import { Node, NodeProps, NodeTypes } from '@xyflow/react'
+import { Node, NodeProps, NodeTypes, XYPosition } from '@xyflow/react'
 import React, { memo, useCallback, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
@@ -24,6 +24,16 @@ export const ClassNode = (props: NodeProps<Node<PageNodeData>>) => {
 
   const projectNode = projectStore.getNode(props.id)
   const data = useMemo(() => projectNode.data, [projectNode.data])
+
+  const pageNode = pageStore.getNode(props.id)
+  const newNodePositionBase = useMemo(
+    () => ({
+      x: pageNode.position.x,
+      y: pageNode.position.y,
+      distance: Math.max(pageNode.measured?.width || 0, pageNode.measured?.height || 0) + 32,
+    }),
+    [pageNode.position, pageNode.measured],
+  )
 
   const icons = useProjectStore((state) => state.nodeIcons, shallow)
 
@@ -76,6 +86,7 @@ export const ClassNode = (props: NodeProps<Node<PageNodeData>>) => {
         onChangeIconId={onChangeIconId}
         onChangeProperties={onChangeProperties}
         onChangeMethods={onChangeMethods}
+        newNodePositionBase={newNodePositionBase}
       />
       <Handles visible={props.selected || false} icon={'simple'} />
     </>
@@ -92,6 +103,7 @@ interface InnerProps {
   onChangeIconId: (iconId: string) => void
   onChangeProperties: (properties: string[]) => void
   onChangeMethods: (methods: string[]) => void
+  newNodePositionBase: XYPosition & { distance: number }
 }
 
 export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
@@ -118,6 +130,7 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           n={n}
           onChangeProperties={props.onChangeProperties}
           sourceNodeId={props.id}
+          newNodePositionBase={props.newNodePositionBase}
         />
       ))}
       {props.data.properties.length === 0 && (
@@ -133,6 +146,7 @@ export const ClassNodeInner = memo(function _ClassNodeInner(props: InnerProps) {
           n={n}
           onChangeMethods={props.onChangeMethods}
           sourceNodeId={props.id}
+          newNodePositionBase={props.newNodePositionBase}
         />
       ))}
       {props.data.methods.length === 0 && (
@@ -171,6 +185,7 @@ interface PropertyProps {
   n: number
   onChangeProperties: (properties: string[]) => void
   sourceNodeId: string
+  newNodePositionBase: XYPosition & { distance: number }
 }
 
 const Property = memo(function _Property(props: PropertyProps) {
@@ -180,7 +195,7 @@ const Property = memo(function _Property(props: PropertyProps) {
         inner={props.inner}
         onTextChange={(inner) => props.onChangeProperties(updateString(props.properties, inner, props.n))}
         sourceNodeId={props.sourceNodeId}
-        newNodePosition={{ x: 0, y: 0 }}
+        newNodePositionBase={props.newNodePositionBase}
       />
       <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={() => props.onChangeProperties(insertString(props.properties, '', props.n))} />
@@ -197,6 +212,7 @@ interface MethodProps {
   n: number
   onChangeMethods: (methods: string[]) => void
   sourceNodeId: string
+  newNodePositionBase: XYPosition & { distance: number }
 }
 
 const Method = memo(function _Method(props: MethodProps) {
@@ -206,7 +222,7 @@ const Method = memo(function _Method(props: MethodProps) {
         inner={props.inner}
         onTextChange={(inner) => props.onChangeMethods(updateString(props.methods, inner, props.n))}
         sourceNodeId={props.sourceNodeId}
-        newNodePosition={{ x: 0, y: 0 }}
+        newNodePositionBase={props.newNodePositionBase}
       />
       <div className={props.isSelected ? styles.activeButtons : styles.inactiveButtons}>
         <AddIcon onClick={() => props.onChangeMethods(insertString(props.methods, '', props.n))} />

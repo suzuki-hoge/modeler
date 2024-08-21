@@ -22,7 +22,7 @@ interface Props {
   y: string
   defaultId: string
   sourceNodeId: string
-  newNodePosition: XYPosition
+  newNodePositionBase: XYPosition & { distance: number }
   onPostCreate: (projectNode: Node<ProjectNodeData>) => void
   onPostSelect: (choice: NodeHeader) => void
   onClose: () => void
@@ -52,7 +52,7 @@ export const ClassSelectorInText = (props: Props) => {
             pageSocket,
             name,
             props.sourceNodeId,
-            props.newNodePosition,
+            around(props.newNodePositionBase),
           )
           props.onPostCreate(projectNode)
         } else {
@@ -69,7 +69,7 @@ export const ClassSelectorInText = (props: Props) => {
             pageSocket,
             header,
             props.sourceNodeId,
-            props.newNodePosition,
+            around(props.newNodePositionBase),
           )
           props.onPostSelect(header)
         } else {
@@ -80,4 +80,10 @@ export const ClassSelectorInText = (props: Props) => {
       onClose={props.onClose}
     />
   )
+}
+
+function around(base: XYPosition & { distance: number }): XYPosition {
+  const angle = Math.random() * 2 * Math.PI
+
+  return { x: base.x + base.distance * Math.cos(angle), y: base.y + base.distance * Math.sin(angle) }
 }

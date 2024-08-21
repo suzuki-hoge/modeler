@@ -28,7 +28,7 @@ interface Props {
   inner: string
   onTextChange: (inner: string) => void
   sourceNodeId: string
-  newNodePosition: XYPosition
+  newNodePositionBase: XYPosition & { distance: number }
 }
 
 export const CompletableInput = (props: Props) => {
@@ -81,7 +81,7 @@ export const CompletableInput = (props: Props) => {
               y={y}
               defaultId={selectorTopNodeId}
               sourceNodeId={props.sourceNodeId}
-              newNodePosition={props.newNodePosition}
+              newNodePositionBase={props.newNodePositionBase}
               onPostCreate={(node) => {
                 setRefString((prev) => {
                   const [nextRefString, nextCursor] = changedBySelect(prev, headers, node.id, node.data.name, cursor.s)
