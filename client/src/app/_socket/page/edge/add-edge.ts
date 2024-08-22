@@ -2,8 +2,9 @@ import { Edge } from '@xyflow/react'
 import { ReadyState } from 'react-use-websocket'
 import z from 'zod'
 
+// types
 import { PageEdgeData } from '@/app/_object/edge/type'
-import { PageStore } from '@/app/_store/page-store' // types
+import { PageStore } from '@/app/_store/page-store'
 
 // types
 
@@ -44,7 +45,14 @@ export function sendAddEdge(sender: Sender, state: ReadyState, edge: Edge<PageEd
 export function handleAddEdge(response: unknown, store: PageStore) {
   if (isAddEdgeResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
-    store.addEdge({ id: response.objectId, source: response.source, target: response.target, data: {} })
+    store.addEdge({
+      id: response.objectId,
+      source: response.source,
+      target: response.target,
+      sourceHandle: 'center',
+      targetHandle: 'center',
+      data: {},
+    })
   }
 }
 
