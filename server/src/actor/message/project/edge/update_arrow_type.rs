@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::store::project::project_edge_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "update-arrow-type";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct UpdateArrowTypeRequest {
     pub session_id: SessionId,
@@ -34,7 +37,7 @@ impl Handler<UpdateArrowTypeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateArrowTypeRequest, _: &mut Context<Self>) {
-        println!("accept update-arrow-type request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateArrowTypeResponse, String> {
             project_edge_store::update_project_edge_arrow_type(
@@ -61,12 +64,12 @@ pub struct UpdateArrowTypeResponse {
 
 impl UpdateArrowTypeResponse {
     fn new(object_id: ObjectId, arrow_type: String) -> Self {
-        Self { r#type: String::from("update-arrow-type"), object_id, arrow_type }
+        Self { r#type: TYPE.to_string(), object_id, arrow_type }
     }
 }
 
 impl From<UpdateArrowTypeResponse> for Response {
     fn from(value: UpdateArrowTypeResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

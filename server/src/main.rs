@@ -14,12 +14,15 @@ mod actor;
 mod controller;
 mod data;
 mod db;
+mod logger;
 
 #[actix_web::main]
 async fn main() -> Result<(), String> {
     let pool = create_connection_pool()?;
 
     let server = start_server(pool.clone());
+
+    logger::init();
 
     HttpServer::new(move || {
         let cors = Cors::default()

@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
 use crate::db::store::page::page_node_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "add-node";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct AddNodeRequest {
     pub session_id: SessionId,
@@ -38,7 +41,7 @@ impl Handler<AddNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: AddNodeRequest, _: &mut Context<Self>) {
-        println!("accept add-node request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<AddNodeResponse, String> {
             page_node_store::create_page_node(
@@ -70,12 +73,12 @@ pub struct AddNodeResponse {
 
 impl AddNodeResponse {
     fn new(object_id: ObjectId, object_type: String, x: f64, y: f64) -> Self {
-        Self { r#type: String::from("add-node"), object_id, object_type, x, y }
+        Self { r#type: TYPE.to_string(), object_id, object_type, x, y }
     }
 }
 
 impl From<AddNodeResponse> for Response {
     fn from(value: AddNodeResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

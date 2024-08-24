@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::store::project::project_node_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "update-methods";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct UpdateMethodsRequest {
     pub session_id: SessionId,
@@ -34,7 +37,7 @@ impl Handler<UpdateMethodsRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateMethodsRequest, _: &mut Context<Self>) {
-        println!("accept update-methods request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateMethodsResponse, String> {
             project_node_store::update_project_node_methods(
@@ -61,12 +64,12 @@ pub struct UpdateMethodsResponse {
 
 impl UpdateMethodsResponse {
     fn new(object_id: ObjectId, methods: Vec<String>) -> Self {
-        Self { r#type: String::from("update-methods"), object_id, methods }
+        Self { r#type: TYPE.to_string(), object_id, methods }
     }
 }
 
 impl From<UpdateMethodsResponse> for Response {
     fn from(value: UpdateMethodsResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::store::project::project_edge_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "update-connection";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct UpdateConnectionRequest {
     pub session_id: SessionId,
@@ -40,7 +43,7 @@ impl Handler<UpdateConnectionRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateConnectionRequest, _: &mut Context<Self>) {
-        println!("accept update-connection request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateConnectionResponse, String> {
             project_edge_store::update_project_edge_connection(
@@ -69,12 +72,12 @@ pub struct UpdateConnectionResponse {
 
 impl UpdateConnectionResponse {
     fn new(object_id: ObjectId, source: ObjectId, target: ObjectId) -> Self {
-        Self { r#type: String::from("update-connection"), object_id, source, target }
+        Self { r#type: TYPE.to_string(), object_id, source, target }
     }
 }
 
 impl From<UpdateConnectionResponse> for Response {
     fn from(value: UpdateConnectionResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

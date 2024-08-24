@@ -19,7 +19,7 @@ mod message;
 mod server;
 mod session;
 
-type SessionId = String;
+pub type SessionId = String;
 
 pub async fn start_session(
     request: HttpRequest,

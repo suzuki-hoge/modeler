@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::store::project::project_node_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "update-icon-id";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct UpdateIconIdRequest {
     pub session_id: SessionId,
@@ -34,7 +37,7 @@ impl Handler<UpdateIconIdRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateIconIdRequest, _: &mut Context<Self>) {
-        println!("accept update-icon-id request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateIconIdResponse, String> {
             project_node_store::update_project_node_icon_id(
@@ -61,12 +64,12 @@ pub struct UpdateIconIdResponse {
 
 impl UpdateIconIdResponse {
     fn new(object_id: ObjectId, icon_id: String) -> Self {
-        Self { r#type: String::from("update-icon-id"), object_id, icon_id }
+        Self { r#type: TYPE.to_string(), object_id, icon_id }
     }
 }
 
 impl From<UpdateIconIdResponse> for Response {
     fn from(value: UpdateIconIdResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

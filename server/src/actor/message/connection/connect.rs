@@ -8,14 +8,18 @@ use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::user::UserId;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "connect";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct ConnectRequest {
     pub session_id: SessionId,
     pub user_id: UserId,
     pub project_id: ProjectId,
     pub page_id: PageId,
+    #[serde(skip_serializing)]
     pub session_address: Recipient<Response>,
 }
 
@@ -23,7 +27,7 @@ impl Handler<ConnectRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: ConnectRequest, _: &mut Context<Self>) {
-        println!("accept connect request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         self.connect(
             request.session_id.clone(),
@@ -49,12 +53,12 @@ pub struct ConnectResponse {
 
 impl ConnectResponse {
     fn new(session_id: SessionId, user_id: UserId) -> Self {
-        Self { r#type: String::from("connect"), session_id, user_id }
+        Self { r#type: TYPE.to_string(), session_id, user_id }
     }
 }
 
 impl From<ConnectResponse> for Response {
     fn from(value: ConnectResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

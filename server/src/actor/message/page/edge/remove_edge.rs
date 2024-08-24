@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::ObjectId;
 use crate::db::store::page::page_edge_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "remove-edge";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct RemoveEdgeRequest {
     pub session_id: SessionId,
@@ -32,7 +35,7 @@ impl Handler<RemoveEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: RemoveEdgeRequest, _: &mut Context<Self>) {
-        println!("accept remove-edge request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<RemoveEdgeResponse, String> {
             page_edge_store::delete_page_edge(&mut self.get_conn()?, &request.object_id, &request.page_id)
@@ -54,12 +57,12 @@ pub struct RemoveEdgeResponse {
 
 impl RemoveEdgeResponse {
     fn new(object_id: ObjectId) -> Self {
-        Self { r#type: String::from("remove-edge"), object_id }
+        Self { r#type: TYPE.to_string(), object_id }
     }
 }
 
 impl From<RemoveEdgeResponse> for Response {
     fn from(value: RemoveEdgeResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

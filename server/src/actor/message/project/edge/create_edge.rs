@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::store::project::project_edge_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "create-edge";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct CreateEdgeRequest {
     pub session_id: SessionId,
@@ -46,7 +49,7 @@ impl Handler<CreateEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: CreateEdgeRequest, _: &mut Context<Self>) {
-        println!("accept create-edge request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<CreateEdgeResponse, String> {
             project_edge_store::create_project_edge(
@@ -105,7 +108,7 @@ impl CreateEdgeResponse {
         label: String,
     ) -> Self {
         Self {
-            r#type: String::from("create-edge"),
+            r#type: TYPE.to_string(),
             object_id,
             object_type,
             source,
@@ -120,6 +123,6 @@ impl CreateEdgeResponse {
 
 impl From<CreateEdgeResponse> for Response {
     fn from(value: CreateEdgeResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

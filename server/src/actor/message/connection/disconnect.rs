@@ -8,8 +8,11 @@ use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::user::UserId;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "disconnect";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct DisconnectRequest {
     pub session_id: SessionId,
@@ -21,7 +24,7 @@ impl Handler<DisconnectRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
-        println!("accept disconnect request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let user_id = self.disconnect(request.session_id.clone(), request.page_id.clone(), request.project_id.clone());
 
@@ -41,12 +44,12 @@ pub struct DisconnectResponse {
 
 impl DisconnectResponse {
     fn new(session_id: SessionId, user_id: UserId) -> Self {
-        Self { r#type: String::from("disconnect"), session_id, user_id }
+        Self { r#type: TYPE.to_string(), session_id, user_id }
     }
 }
 
 impl From<DisconnectResponse> for Response {
     fn from(value: DisconnectResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

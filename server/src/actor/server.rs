@@ -12,6 +12,7 @@ use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::user::UserId;
 use crate::db::{Conn, Pool};
+use crate::logger;
 
 pub struct Server {
     pool: Pool,
@@ -94,12 +95,10 @@ impl Server {
             Err(message) => ErrorInformationResponse::new(message).into(),
         };
 
-        println!("accept response: {}", &response.json);
-
         session_ids.iter().filter(|&session_id| session_id != skip_session_id).for_each(|session_id| {
-            let (session_address, user_id) = self.sessions.get(session_id).unwrap();
+            let (session_address, _) = self.sessions.get(session_id).unwrap();
 
-            println!("send page message to: {}", user_id);
+            logger::broadcast("john".to_string(), &response.r#type, session_id, &response.json);
 
             session_address.do_send(response.clone());
         });

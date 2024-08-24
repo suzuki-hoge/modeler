@@ -3,6 +3,8 @@ use serde_json::to_string as to_json_string;
 
 use crate::actor::session::Response;
 
+pub const TYPE: &str = "error-information";
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorInformationResponse {
@@ -12,12 +14,12 @@ pub struct ErrorInformationResponse {
 
 impl ErrorInformationResponse {
     pub fn new(message: String) -> Self {
-        Self { r#type: String::from("error-information"), message }
+        Self { r#type: TYPE.to_string(), message }
     }
 }
 
 impl From<ErrorInformationResponse> for Response {
     fn from(value: ErrorInformationResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

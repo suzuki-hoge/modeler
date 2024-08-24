@@ -1,11 +1,14 @@
-use actix::{Context, Handler, Message as ActixMessage};
-
 use crate::actor::message::{parse_bool, parse_string, Json};
 use crate::actor::server::Server;
 use crate::data::user::UserId;
 use crate::db::store::user::user_config_store;
+use crate::logger;
+use actix::{Context, Handler, Message as ActixMessage};
+use serde::Serialize;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "update-user-config";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct UpdateUserConfigRequest {
     pub user_id: UserId,
@@ -29,7 +32,7 @@ impl Handler<UpdateUserConfigRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateUserConfigRequest, _: &mut Context<Self>) {
-        println!("accept update-user-config request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<(), String> {
             user_config_store::update_user_config(

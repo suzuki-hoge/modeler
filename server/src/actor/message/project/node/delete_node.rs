@@ -9,8 +9,11 @@ use crate::actor::SessionId;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::store::project::project_node_store;
+use crate::logger;
 
-#[derive(ActixMessage)]
+pub const TYPE: &str = "delete-node";
+
+#[derive(ActixMessage, Serialize)]
 #[rtype(result = "()")]
 pub struct DeleteNodeRequest {
     pub session_id: SessionId,
@@ -32,7 +35,7 @@ impl Handler<DeleteNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DeleteNodeRequest, _: &mut Context<Self>) {
-        println!("accept delete-node request");
+        logger::accept("john".to_string(), TYPE, &request);
 
         let accept = || -> Result<DeleteNodeResponse, String> {
             project_node_store::delete_project_node(&mut self.get_conn()?, &request.object_id).map_err(|e| e.show())?;
@@ -53,12 +56,12 @@ pub struct DeleteNodeResponse {
 
 impl DeleteNodeResponse {
     fn new(object_id: ObjectId) -> Self {
-        Self { r#type: String::from("delete-node"), object_id }
+        Self { r#type: TYPE.to_string(), object_id }
     }
 }
 
 impl From<DeleteNodeResponse> for Response {
     fn from(value: DeleteNodeResponse) -> Self {
-        Self { json: to_json_string(&value).unwrap() }
+        Self { r#type: TYPE.to_string(), json: to_json_string(&value).unwrap() }
     }
 }

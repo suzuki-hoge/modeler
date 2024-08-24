@@ -9,9 +9,10 @@ use serde_json::{from_reader, json, Value};
 use crate::db::store::page::page_store;
 use crate::db::store::project::project_store;
 use crate::db::Pool;
+use crate::logger;
 
 pub async fn session(pool: Data<Pool>) -> HttpResponse {
-    println!("/debug/session");
+    logger::get("john".to_string(), "/debug/session");
 
     let projects = project_store::find_all(&mut pool.get().unwrap())
         .unwrap()

@@ -12,20 +12,29 @@ use crate::actor::message::connection::connect::ConnectRequest;
 use crate::actor::message::connection::disconnect::DisconnectRequest;
 use crate::actor::message::page::edge::add_edge::AddEdgeRequest;
 use crate::actor::message::page::edge::remove_edge::RemoveEdgeRequest;
+use crate::actor::message::page::edge::{add_edge, remove_edge};
 use crate::actor::message::page::node::add_node::AddNodeRequest;
 use crate::actor::message::page::node::move_node::MoveNodeRequest;
 use crate::actor::message::page::node::remove_node::RemoveNodeRequest;
+use crate::actor::message::page::node::{add_node, move_node, remove_node};
 use crate::actor::message::project::edge::create_edge::CreateEdgeRequest;
 use crate::actor::message::project::edge::delete_edge::DeleteEdgeRequest;
 use crate::actor::message::project::edge::update_arrow_type::UpdateArrowTypeRequest;
 use crate::actor::message::project::edge::update_connection::UpdateConnectionRequest;
 use crate::actor::message::project::edge::update_label::UpdateLabelRequest;
+use crate::actor::message::project::edge::{
+    create_edge, delete_edge, update_arrow_type, update_connection, update_label,
+};
 use crate::actor::message::project::node::create_node::CreateNodeRequest;
 use crate::actor::message::project::node::delete_node::DeleteNodeRequest;
 use crate::actor::message::project::node::update_icon_id::UpdateIconIdRequest;
 use crate::actor::message::project::node::update_methods::UpdateMethodsRequest;
 use crate::actor::message::project::node::update_name::UpdateNameRequest;
 use crate::actor::message::project::node::update_properties::UpdatePropertiesRequest;
+use crate::actor::message::project::node::{
+    create_node, delete_node, update_icon_id, update_methods, update_name, update_properties,
+};
+use crate::actor::message::user::config::update_user_config;
 use crate::actor::message::user::config::update_user_config::UpdateUserConfigRequest;
 use crate::actor::message::Json;
 use crate::actor::server::Server;
@@ -75,65 +84,65 @@ impl Session {
             // user
 
             // config
-            Some("update-user-config") => self.server_address.do_send(UpdateUserConfigRequest::parse(json)?),
+            Some(update_user_config::TYPE) => self.server_address.do_send(UpdateUserConfigRequest::parse(json)?),
 
             // project
 
             // node
-            Some("create-node") => {
+            Some(create_node::TYPE) => {
                 self.server_address.do_send(CreateNodeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("delete-node") => {
+            Some(delete_node::TYPE) => {
                 self.server_address.do_send(DeleteNodeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-name") => {
+            Some(update_name::TYPE) => {
                 self.server_address.do_send(UpdateNameRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-icon-id") => {
+            Some(update_icon_id::TYPE) => {
                 self.server_address.do_send(UpdateIconIdRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-properties") => {
+            Some(update_properties::TYPE) => {
                 self.server_address.do_send(UpdatePropertiesRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-methods") => {
+            Some(update_methods::TYPE) => {
                 self.server_address.do_send(UpdateMethodsRequest::parse(&self.session_id, &self.project_id, json)?)
             }
 
             // edge
-            Some("create-edge") => {
+            Some(create_edge::TYPE) => {
                 self.server_address.do_send(CreateEdgeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-connection") => {
+            Some(update_connection::TYPE) => {
                 self.server_address.do_send(UpdateConnectionRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-arrow-type") => {
+            Some(update_arrow_type::TYPE) => {
                 self.server_address.do_send(UpdateArrowTypeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("update-label") => {
+            Some(update_label::TYPE) => {
                 self.server_address.do_send(UpdateLabelRequest::parse(&self.session_id, &self.project_id, json)?)
             }
-            Some("delete-edge") => {
+            Some(delete_edge::TYPE) => {
                 self.server_address.do_send(DeleteEdgeRequest::parse(&self.session_id, &self.project_id, json)?)
             }
 
             // page
 
             // node
-            Some("add-node") => {
+            Some(add_node::TYPE) => {
                 self.server_address.do_send(AddNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-            Some("remove-node") => {
+            Some(remove_node::TYPE) => {
                 self.server_address.do_send(RemoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-            Some("move-node") => {
+            Some(move_node::TYPE) => {
                 self.server_address.do_send(MoveNodeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
 
             // edge
-            Some("add-edge") => {
+            Some(add_edge::TYPE) => {
                 self.server_address.do_send(AddEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
-            Some("remove-edge") => {
+            Some(remove_edge::TYPE) => {
                 self.server_address.do_send(RemoveEdgeRequest::parse(&self.session_id, &self.page_id, json)?)
             }
 
@@ -213,6 +222,7 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
 #[derive(ActixMessage, Clone)]
 #[rtype(result = "()")]
 pub struct Response {
+    pub r#type: String,
     pub json: String,
 }
 
