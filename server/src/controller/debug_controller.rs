@@ -12,7 +12,7 @@ use crate::db::Pool;
 use crate::logger;
 
 pub async fn session(pool: Data<Pool>) -> HttpResponse {
-    logger::get("john".to_string(), "/debug/session");
+    logger::get(&"john".to_string(), "/debug/session");
 
     let projects = project_store::find_all(&mut pool.get().unwrap())
         .unwrap()

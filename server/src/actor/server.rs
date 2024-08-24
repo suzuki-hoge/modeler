@@ -66,40 +66,25 @@ impl Server {
         user_id
     }
 
-    pub fn send_to_project<R: Into<Response>>(
-        &self,
-        project_id: &ProjectId,
-        accepted: Result<R, String>,
-        skip_session_id: &SessionId,
-    ) {
-        self.send(accepted, self.project_sessions.get(project_id).unwrap(), skip_session_id);
+    pub fn send_to_project<R: Into<Response>>(&self, project_id: &ProjectId, response: R, skip: &SessionId) {
+        self.send_to_sessions(response.into(), self.project_sessions.get(project_id).unwrap(), skip);
     }
 
-    pub fn send_to_page<R: Into<Response>>(
-        &self,
-        page_id: &PageId,
-        accepted: Result<R, String>,
-        skip_session_id: &SessionId,
-    ) {
-        self.send(accepted, self.page_sessions.get(page_id).unwrap(), skip_session_id);
+    pub fn send_to_page<R: Into<Response>>(&self, page_id: &PageId, response: R, skip: &SessionId) {
+        self.send_to_sessions(response.into(), self.page_sessions.get(page_id).unwrap(), skip);
     }
 
-    fn send<R: Into<Response>>(
-        &self,
-        accepted: Result<R, String>,
-        session_ids: &[SessionId],
-        skip_session_id: &SessionId,
-    ) {
-        let response = match accepted {
-            Ok(response) => response.into(),
-            Err(message) => ErrorInformationResponse::new(message).into(),
-        };
+    pub fn send_to_self<S: Into<String>>(&self, message: S, self_session_id: &SessionId) {
+        let response: Response = ErrorInformationResponse::new(message).into();
+        let (session_address, _) = self.sessions.get(self_session_id).unwrap();
+        logger::error(&"john".to_string(), &response.r#type, &response.json);
+        session_address.do_send(response);
+    }
 
-        session_ids.iter().filter(|&session_id| session_id != skip_session_id).for_each(|session_id| {
+    fn send_to_sessions(&self, response: Response, session_ids: &[SessionId], skip: &SessionId) {
+        session_ids.iter().filter(|&session_id| session_id != skip).for_each(|session_id| {
             let (session_address, _) = self.sessions.get(session_id).unwrap();
-
-            logger::broadcast("john".to_string(), &response.r#type, session_id, &response.json);
-
+            logger::broadcast(&"john".to_string(), &response.r#type, session_id, &response.json);
             session_address.do_send(response.clone());
         });
 

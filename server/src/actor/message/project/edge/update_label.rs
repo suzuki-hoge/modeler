@@ -37,7 +37,7 @@ impl Handler<UpdateLabelRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateLabelRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateLabelResponse, String> {
             project_edge_store::update_project_edge_label(&mut self.get_conn()?, &request.object_id, &request.label)
@@ -46,7 +46,10 @@ impl Handler<UpdateLabelRequest> for Server {
             Ok(UpdateLabelResponse::new(request.object_id, request.label))
         };
 
-        self.send_to_project(&request.project_id, accept(), &request.session_id);
+        match accept() {
+            Ok(response) => self.send_to_project(&request.project_id, response, &request.session_id),
+            Err(message) => self.send_to_self(message, &request.session_id),
+        }
     }
 }
 

@@ -24,13 +24,13 @@ impl Handler<DisconnectRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let user_id = self.disconnect(request.session_id.clone(), request.page_id.clone(), request.project_id.clone());
 
         let response = DisconnectResponse::new(request.session_id.clone(), user_id);
 
-        self.send_to_page(&request.page_id, Ok(response), &request.session_id);
+        self.send_to_page(&request.page_id, response, &request.session_id);
     }
 }
 

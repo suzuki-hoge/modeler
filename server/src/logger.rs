@@ -31,29 +31,29 @@ pub fn init() {
     let _ = remove_file("/tmp/modeler-server.log");
 }
 
-pub fn get<S: Into<String>>(user: String, url: S) {
-    out(user, Log::Get { url: url.into() }, true);
+pub fn get<S: Into<String>>(user_id: &String, url: S) {
+    out(user_id, Log::Get { url: url.into() }, true);
 }
 
-pub fn accept<Request: Serialize>(user: String, r#type: &str, request: &Request) {
-    out(user, Log::Accept { r#type: r#type.to_string(), body: to_json_string(request).unwrap() }, true);
+pub fn accept<Request: Serialize>(user_id: &String, r#type: &str, request: &Request) {
+    out(user_id, Log::Accept { r#type: r#type.to_string(), body: to_json_string(request).unwrap() }, true);
 }
 
-pub fn broadcast(user: String, r#type: &String, to: &SessionId, json: &String) {
-    out(user, Log::Broadcast { r#type: r#type.to_string(), to: to.to_string(), body: json.to_string() }, true);
+pub fn broadcast(user_id: &String, r#type: &String, to: &SessionId, json: &String) {
+    out(user_id, Log::Broadcast { r#type: r#type.to_string(), to: to.to_string(), body: json.to_string() }, true);
 }
 
-pub fn information<Response: Serialize>(user: String, r#type: &String, response: &Response) {
-    out(user, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, true);
+pub fn information<Response: Serialize>(user_id: &String, r#type: &String, response: &Response) {
+    out(user_id, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, true);
 }
 
-pub fn error<Response: Serialize>(user: String, r#type: &str, response: &Response) {
-    out(user, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, false);
+pub fn error<Response: Serialize>(user_id: &String, r#type: &str, response: &Response) {
+    out(user_id, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, false);
 }
 
-fn out(user: String, log: Log, success: bool) {
+fn out(user_id: &String, log: Log, success: bool) {
     let now = Utc::now().with_timezone(&FixedOffset::east_opt(9 * 3600).unwrap()).format("%Y/%m/%d %H:%M:%S");
-    let line = format!("time:{}\tuser:{}\t{}", now, user, log.ltsv());
+    let line = format!("time:{}\tuser_id:{}\t{}", now, user_id, log.ltsv());
 
     if true {
         local_stdout(&line, success);

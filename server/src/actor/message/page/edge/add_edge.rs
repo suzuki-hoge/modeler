@@ -45,7 +45,7 @@ impl Handler<AddEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<AddEdgeResponse, String> {
             page_edge_store::create_page_edge(
@@ -70,7 +70,10 @@ impl Handler<AddEdgeRequest> for Server {
             ))
         };
 
-        self.send_to_page(&request.page_id, accept(), &request.session_id)
+        match accept() {
+            Ok(response) => self.send_to_page(&request.page_id, response, &request.session_id),
+            Err(message) => self.send_to_self(message, &request.session_id),
+        }
     }
 }
 

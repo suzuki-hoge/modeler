@@ -32,7 +32,7 @@ impl Handler<UpdateUserConfigRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateUserConfigRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<(), String> {
             user_config_store::update_user_config(

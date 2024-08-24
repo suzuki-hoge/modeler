@@ -27,7 +27,7 @@ impl Handler<ConnectRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: ConnectRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         self.connect(
             request.session_id.clone(),
@@ -39,7 +39,7 @@ impl Handler<ConnectRequest> for Server {
 
         let response = ConnectResponse::new(request.session_id.clone(), request.user_id);
 
-        self.send_to_page(&request.page_id, Ok(response), &request.session_id);
+        self.send_to_page(&request.page_id, response, &request.session_id);
     }
 }
 

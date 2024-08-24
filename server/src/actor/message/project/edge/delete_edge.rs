@@ -35,7 +35,7 @@ impl Handler<DeleteEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DeleteEdgeRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<DeleteEdgeResponse, String> {
             project_edge_store::delete_project_edge(&mut self.get_conn()?, &request.object_id).map_err(|e| e.show())?;
@@ -43,7 +43,10 @@ impl Handler<DeleteEdgeRequest> for Server {
             Ok(DeleteEdgeResponse::new(request.object_id))
         };
 
-        self.send_to_project(&request.project_id, accept(), &request.session_id);
+        match accept() {
+            Ok(response) => self.send_to_project(&request.project_id, response, &request.session_id),
+            Err(message) => self.send_to_self(message, &request.session_id),
+        }
     }
 }
 

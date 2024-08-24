@@ -39,7 +39,7 @@ impl Handler<MoveNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: MoveNodeRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<MoveNodeResponse, String> {
             page_node_store::update_page_node_position(
@@ -54,7 +54,10 @@ impl Handler<MoveNodeRequest> for Server {
             Ok(MoveNodeResponse::new(request.object_id.clone(), request.x, request.y))
         };
 
-        self.send_to_page(&request.page_id, accept(), &request.session_id)
+        match accept() {
+            Ok(response) => self.send_to_page(&request.page_id, response, &request.session_id),
+            Err(message) => self.send_to_self(message, &request.session_id),
+        }
     }
 }
 

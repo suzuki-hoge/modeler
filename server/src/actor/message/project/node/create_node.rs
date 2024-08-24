@@ -41,7 +41,7 @@ impl Handler<CreateNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: CreateNodeRequest, _: &mut Context<Self>) {
-        logger::accept("john".to_string(), TYPE, &request);
+        logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<CreateNodeResponse, String> {
             project_node_store::create_project_node(
@@ -57,7 +57,10 @@ impl Handler<CreateNodeRequest> for Server {
             Ok(CreateNodeResponse::new(request.object_id, request.object_type, request.name, request.icon_id))
         };
 
-        self.send_to_project(&request.project_id, accept(), &request.session_id);
+        match accept() {
+            Ok(response) => self.send_to_project(&request.project_id, response, &request.session_id),
+            Err(message) => self.send_to_self(message, &request.session_id),
+        }
     }
 }
 

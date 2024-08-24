@@ -10,7 +10,7 @@ use crate::logger;
 pub async fn get_user_config(pool: Data<Pool>, path: Path<UserId>) -> HttpResponse {
     let user_id = path.into_inner();
 
-    logger::get("john".to_string(), format!("/user/{user_id}/config"));
+    logger::get(&"john".to_string(), format!("/user/{user_id}/config"));
 
     respond(user_config_store::find(&mut pool.get().unwrap(), &user_id))
 }
