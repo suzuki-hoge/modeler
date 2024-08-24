@@ -19,6 +19,8 @@ pub struct CreateEdgeRequest {
     pub object_type: String,
     pub source: ObjectId,
     pub target: ObjectId,
+    pub source_handle: String,
+    pub target_handle: String,
     pub arrow_type: String,
     pub label: String,
 }
@@ -32,6 +34,8 @@ impl CreateEdgeRequest {
             object_type: parse_string(&json, "objectType")?,
             source: parse_string(&json, "source")?,
             target: parse_string(&json, "target")?,
+            source_handle: parse_string(&json, "sourceHandle")?,
+            target_handle: parse_string(&json, "targetHandle")?,
             arrow_type: parse_string(&json, "arrowType")?,
             label: parse_string(&json, "label")?,
         })
@@ -52,6 +56,8 @@ impl Handler<CreateEdgeRequest> for Server {
                 &request.object_type,
                 &request.source,
                 &request.target,
+                &request.source_handle,
+                &request.target_handle,
                 &request.arrow_type,
                 &request.label,
             )
@@ -62,6 +68,8 @@ impl Handler<CreateEdgeRequest> for Server {
                 request.object_type,
                 request.source,
                 request.target,
+                request.source_handle,
+                request.target_handle,
                 request.arrow_type,
                 request.label,
             ))
@@ -79,6 +87,8 @@ pub struct CreateEdgeResponse {
     object_type: String,
     source: ObjectId,
     target: ObjectId,
+    source_handle: String,
+    target_handle: String,
     arrow_type: String,
     label: String,
 }
@@ -89,10 +99,22 @@ impl CreateEdgeResponse {
         object_type: String,
         source: ObjectId,
         target: ObjectId,
+        source_handle: String,
+        target_handle: String,
         arrow_type: String,
         label: String,
     ) -> Self {
-        Self { r#type: String::from("create-edge"), object_id, object_type, source, target, arrow_type, label }
+        Self {
+            r#type: String::from("create-edge"),
+            object_id,
+            object_type,
+            source,
+            target,
+            source_handle,
+            target_handle,
+            arrow_type,
+            label,
+        }
     }
 }
 

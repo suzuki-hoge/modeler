@@ -16,6 +16,8 @@ const createEdgeRequest = z.object({
   objectType: z.string(),
   source: z.string(),
   target: z.string(),
+  sourceHandle: z.string(),
+  targetHandle: z.string(),
   arrowType: z.union([z.literal('simple'), z.literal('generalization')]),
   label: z.string(),
 })
@@ -36,6 +38,8 @@ export function sendCreateEdge(sender: Sender, state: ReadyState, edge: Edge<Pro
       objectType: edge.type || 'unknown',
       source: edge.source,
       target: edge.target,
+      sourceHandle: edge.sourceHandle || 'unknown',
+      targetHandle: edge.targetHandle || 'unknown',
       arrowType: edge.data!.arrowType,
       label: edge.data!.label,
     }

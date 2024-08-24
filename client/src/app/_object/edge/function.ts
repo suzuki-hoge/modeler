@@ -3,6 +3,7 @@ import { Edge } from '@xyflow/react'
 import { ArrowType, PageEdgeData, ProjectEdgeData } from '@/app/_object/edge/type'
 
 const classEdgeType = { type: 'class' }
+const classEdgeHandles = { sourceHandle: 'center', targetHandle: 'center' }
 
 export function allocateEdgeId(): string {
   return crypto.randomUUID()
@@ -19,9 +20,8 @@ export function createProjectEdge(
     id,
     ...classEdgeType,
     source: src,
-    sourceHandle: 'center',
     target: dst,
-    targetHandle: 'center',
+    ...classEdgeHandles,
     markerEnd: arrowType,
     data: { arrowType, label },
   }
@@ -33,8 +33,7 @@ export function extractPageEdge(edge: Edge<ProjectEdgeData>): Edge<PageEdgeData>
     ...classEdgeType,
     source: edge.source,
     target: edge.target,
-    sourceHandle: edge.sourceHandle,
-    targetHandle: edge.targetHandle,
+    ...classEdgeHandles,
     markerEnd: edge.markerEnd,
     data: {},
   }

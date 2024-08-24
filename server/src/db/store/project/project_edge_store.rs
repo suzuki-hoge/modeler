@@ -21,6 +21,8 @@ struct Row {
     object_type: String,
     source: ObjectId,
     target: ObjectId,
+    source_handle: String,
+    target_handle: String,
     arrow_type: String,
     label: String,
 }
@@ -31,6 +33,8 @@ fn read(row: Row) -> ProjectEdge {
         r#type: row.object_type,
         source: row.source,
         target: row.target,
+        source_handle: row.source_handle,
+        target_handle: row.target_handle,
         marker_end: row.arrow_type.clone(),
         data: EdgeData { arrow_type: row.arrow_type, label: row.label },
     }
@@ -55,6 +59,8 @@ pub fn create_project_edge(
     object_type: &str,
     source: &ObjectId,
     target: &ObjectId,
+    source_handle: &str,
+    target_handle: &str,
     arrow_type: &str,
     label: &str,
 ) -> Result<(), DatabaseError> {
@@ -64,6 +70,8 @@ pub fn create_project_edge(
         object_type: object_type.to_string(),
         source: source.clone(),
         target: target.clone(),
+        source_handle: source_handle.to_string(),
+        target_handle: target_handle.to_string(),
         arrow_type: arrow_type.to_string(),
         label: label.to_string(),
     };
@@ -160,6 +168,8 @@ mod tests {
             &s("class"),
             &node_id1,
             &node_id2,
+            &s("center"),
+            &s("center"),
             &s("arrow 1"),
             &s("1"),
         )?;

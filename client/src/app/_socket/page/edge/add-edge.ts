@@ -16,6 +16,8 @@ const addEdgeRequest = z.object({
   objectType: z.string(),
   source: z.string(),
   target: z.string(),
+  sourceHandle: z.string(),
+  targetHandle: z.string(),
 })
 type AddEdgeRequest = z.infer<typeof addEdgeRequest>
 
@@ -34,6 +36,8 @@ export function sendAddEdge(sender: Sender, state: ReadyState, edge: Edge<PageEd
       objectType: edge.type || 'unknown',
       source: edge.source,
       target: edge.target,
+      sourceHandle: edge.sourceHandle || 'unknown',
+      targetHandle: edge.targetHandle || 'unknown',
     }
     console.log(`--> ${JSON.stringify(request)}`)
     sender(request)
@@ -52,8 +56,8 @@ export function handleAddEdge(response: unknown, store: PageStore) {
       type: response.objectType,
       source: response.source,
       target: response.target,
-      sourceHandle: 'center',
-      targetHandle: 'center',
+      sourceHandle: response.sourceHandle,
+      targetHandle: response.targetHandle,
       data: {},
     })
   }

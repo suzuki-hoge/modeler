@@ -19,10 +19,19 @@ struct Row {
     object_type: String,
     source: ObjectId,
     target: ObjectId,
+    source_handle: String,
+    target_handle: String,
 }
 
 fn read(row: Row) -> PageEdge {
-    PageEdge { id: row.object_id, r#type: row.object_type, source: row.source, target: row.target }
+    PageEdge {
+        id: row.object_id,
+        r#type: row.object_type,
+        source: row.source,
+        target: row.target,
+        source_handle: row.source_handle,
+        target_handle: row.target_handle,
+    }
 }
 
 pub fn find_page_edges(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageEdge>, DatabaseError> {
@@ -44,6 +53,8 @@ pub fn create_page_edge(
     object_type: &str,
     source: &ObjectId,
     target: &ObjectId,
+    source_handle: &str,
+    target_handle: &str,
 ) -> Result<(), DatabaseError> {
     let row = Row {
         object_id: object_id.clone(),
@@ -51,6 +62,8 @@ pub fn create_page_edge(
         object_type: object_type.to_string(),
         source: source.clone(),
         target: target.clone(),
+        source_handle: source_handle.to_string(),
+        target_handle: target_handle.to_string(),
     };
 
     insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
@@ -106,6 +119,8 @@ mod tests {
             &s("class"),
             &node_id1,
             &node_id2,
+            &s("center"),
+            &s("center"),
             &s("simple"),
             &s("1"),
         )?;
@@ -115,7 +130,16 @@ mod tests {
         assert_eq!(0, rows.len());
 
         // create
-        create_page_edge(&mut conn, &object_id, &page_id, &s("class"), &node_id1, &node_id2)?;
+        create_page_edge(
+            &mut conn,
+            &object_id,
+            &page_id,
+            &s("class"),
+            &node_id1,
+            &node_id2,
+            &s("center"),
+            &s("center"),
+        )?;
 
         // find
         let rows = find_page_edges(&mut conn, &page_id)?;

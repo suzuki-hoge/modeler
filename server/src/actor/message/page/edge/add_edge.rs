@@ -19,6 +19,8 @@ pub struct AddEdgeRequest {
     pub object_type: String,
     pub source: ObjectId,
     pub target: ObjectId,
+    pub source_handle: String,
+    pub target_handle: String,
 }
 
 impl AddEdgeRequest {
@@ -30,6 +32,8 @@ impl AddEdgeRequest {
             object_type: parse_string(&json, "objectType")?,
             source: parse_string(&json, "source")?,
             target: parse_string(&json, "target")?,
+            source_handle: parse_string(&json, "sourceHandle")?,
+            target_handle: parse_string(&json, "targetHandle")?,
         })
     }
 }
@@ -48,10 +52,19 @@ impl Handler<AddEdgeRequest> for Server {
                 &request.object_type,
                 &request.source,
                 &request.target,
+                &request.source_handle,
+                &request.target_handle,
             )
             .map_err(|e| e.show())?;
 
-            Ok(AddEdgeResponse::new(request.object_id, request.object_type, request.source, request.target))
+            Ok(AddEdgeResponse::new(
+                request.object_id,
+                request.object_type,
+                request.source,
+                request.target,
+                request.source_handle,
+                request.target_handle,
+            ))
         };
 
         self.send_to_page(&request.page_id, accept(), &request.session_id)
@@ -66,11 +79,20 @@ pub struct AddEdgeResponse {
     object_type: String,
     source: ObjectId,
     target: ObjectId,
+    source_handle: String,
+    target_handle: String,
 }
 
 impl AddEdgeResponse {
-    fn new(object_id: ObjectId, object_type: String, source: ObjectId, target: ObjectId) -> Self {
-        Self { r#type: String::from("add-edge"), object_id, object_type, source, target }
+    fn new(
+        object_id: ObjectId,
+        object_type: String,
+        source: ObjectId,
+        target: ObjectId,
+        source_handle: String,
+        target_handle: String,
+    ) -> Self {
+        Self { r#type: String::from("add-edge"), object_id, object_type, source, target, source_handle, target_handle }
     }
 }
 

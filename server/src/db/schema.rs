@@ -38,6 +38,10 @@ diesel::table! {
         source -> Varchar,
         #[max_length = 36]
         target -> Varchar,
+        #[max_length = 36]
+        source_handle -> Varchar,
+        #[max_length = 36]
+        target_handle -> Varchar,
     }
 }
 
@@ -77,6 +81,10 @@ diesel::table! {
         source -> Varchar,
         #[max_length = 36]
         target -> Varchar,
+        #[max_length = 36]
+        source_handle -> Varchar,
+        #[max_length = 36]
+        target_handle -> Varchar,
         #[max_length = 36]
         arrow_type -> Varchar,
         #[max_length = 36]

@@ -11,13 +11,6 @@ export function fetchProjectEdges(projectId: string): Promise<Edge<ProjectEdgeDa
 
 export function fetchPageEdges(pageId: string): Promise<Edge<PageEdgeData>[]> {
   type Fetched = Edge<ProjectEdgeData>[]
-  type Parsed = Edge<ProjectEdgeData>[]
 
-  const parse = (data: Fetched): Parsed =>
-    data.map((row) => ({ ...row, sourceHandle: 'center', targetHandle: 'center' }))
-
-  return axios
-    .get<Fetched>(`http://localhost:8080/page/${pageId}/edges`)
-    .then((response) => response.data)
-    .then(parse)
+  return axios.get<Fetched>(`http://localhost:8080/page/${pageId}/edges`).then((response) => response.data)
 }
