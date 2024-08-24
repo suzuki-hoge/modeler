@@ -97,6 +97,7 @@ pub struct CreateEdgeResponse {
 }
 
 impl CreateEdgeResponse {
+    #[allow(clippy::too_many_arguments)]
     fn new(
         object_id: ObjectId,
         object_type: String,

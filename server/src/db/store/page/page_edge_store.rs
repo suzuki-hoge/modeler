@@ -46,6 +46,7 @@ pub fn find_page_edges(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageEdge
     Ok(rows.into_iter().map(read).collect_vec())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn create_page_edge(
     conn: &mut Conn,
     object_id: &ObjectId,
