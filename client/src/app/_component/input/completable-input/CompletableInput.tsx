@@ -44,6 +44,10 @@ export const CompletableInput = (props: Props) => {
   const { popupState, openPopup, closePopup } = usePopup()
 
   useEffect(() => {
+    setRefString(innerToRef(props.inner, headers))
+  }, [props.inner, headers])
+
+  useEffect(() => {
     if (isEditing) inputRef.current?.focus()
   }, [isEditing])
 
@@ -83,20 +87,16 @@ export const CompletableInput = (props: Props) => {
               sourceNodeId={props.sourceNodeId}
               newNodePositionBase={props.newNodePositionBase}
               onPostCreate={(node) => {
-                setRefString((prev) => {
-                  const [nextRefString, nextCursor] = changedBySelect(prev, headers, node.id, node.data.name, cursor.s)
-                  setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
-                  return nextRefString
-                })
-                props.onTextChange(refString.inner)
+                const [newRefString, newCursor] = changedBySelect(refString, headers, node.id, node.data.name, cursor.s)
+                setRefString(newRefString)
+                setCursor({ s: newCursor, e: newCursor, d: 'none' })
+                props.onTextChange(newRefString.inner)
               }}
               onPostSelect={(header) => {
-                setRefString((prev) => {
-                  const [nextRefString, nextCursor] = changedBySelect(prev, headers, header.id, header.name, cursor.s)
-                  setCursor({ s: nextCursor, e: nextCursor, d: 'none' })
-                  return nextRefString
-                })
-                props.onTextChange(refString.inner)
+                const [newRefString, newCursor] = changedBySelect(refString, headers, header.id, header.name, cursor.s)
+                setRefString(newRefString)
+                setCursor({ s: newCursor, e: newCursor, d: 'none' })
+                props.onTextChange(newRefString.inner)
               }}
               onClose={() => setIsEditing(false)}
             />

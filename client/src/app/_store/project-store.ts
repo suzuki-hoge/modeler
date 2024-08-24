@@ -67,10 +67,10 @@ export const useProjectStore = createWithEqualityFn<ProjectStoreWithState>((set,
       nodes: get().nodes.filter((node) => node.id !== id),
       nodeHeaders: get().nodeHeaders.filter((header) => header.id !== id),
     }),
-  updateNodeData: (id, updater) =>
-    set({
-      nodes: get().nodes.map((node) => (node.id === id ? { ...node, ...{ data: updater(node.data) } } : node)),
-    }),
+  updateNodeData: (id, updater) => {
+    const nodes = get().nodes.map((node) => (node.id === id ? { ...node, ...{ data: updater(node.data) } } : node))
+    set({ nodes, nodeHeaders: nodes.map(extractNodeHeader) })
+  },
 
   // edge
   edges: [],

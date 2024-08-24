@@ -12,7 +12,10 @@ create table node_icon
 
 insert into node_icon (project_id, id, preview, `desc`, color)
 values ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'default', 'C', 'Class', 'lightgray'),
-       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'fb951145-bea1-4934-b44f-bdaa63c79763', 'C', 'Controller', 'lightgray'),
-       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '9a64593c-98d7-4420-b5ae-d2b022b345f9', 'UC', 'UseCase', 'lightcyan'),
-       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '50c9f120-6d07-4bb2-a935-bc674e18d137', 'S', 'Store', 'lightgreen'),
-       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '5cc0cdfc-fd4f-405c-b383-1d54f3f1c4b7', 'D', 'Data', 'lightpink');
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'f57d01c9-fe47-4d2e-95f3-b20791ee9b14', 'C', 'Controller', 'lightblue'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '99c20c2b-b397-49a2-a4f3-9f4bda5305e8', 'UC', 'UseCase', 'lightcoral'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'b06e9df5-7976-4c86-93a4-0da098048495', 'R', 'Repository', 'lightcyan'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'b1de2c12-e5f4-4c26-9d61-4684d9093dd5', 'E', 'Entity', 'lightgreen'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '9e82d42d-65f7-4c48-9901-9fcbdd4e3f74', 'E', 'Enum', 'lightpink'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '9568e792-ea60-4244-8d57-b6336b1e0ca1', 'ID', 'Identity', 'lightsalmon'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'ea054564-ab75-4839-88df-a92c981588a3', 'VO', 'ValueObject', 'lightpink');
