@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 use crate::actor::message::connection::connect::ConnectRequest;
 use crate::actor::message::connection::disconnect::DisconnectRequest;
+use crate::actor::message::information::error_information::ErrorInformationResponse;
 use crate::actor::message::page::edge::add_edge::AddEdgeRequest;
 use crate::actor::message::page::edge::remove_edge::RemoveEdgeRequest;
 use crate::actor::message::page::edge::{add_edge, remove_edge};
@@ -42,6 +43,7 @@ use crate::actor::SessionId;
 use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::user::UserId;
+use crate::logger;
 
 pub fn create_session_id() -> SessionId {
     Uuid::new_v4().to_string()
@@ -198,7 +200,11 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                     let json: Json = from_json_str(byte.trim()).unwrap();
                     match self.handle_json(json) {
                         Ok(_) => {}
-                        Err(e) => println!("some errors occurred: {e}"),
+                        Err(message) => {
+                            let response = ErrorInformationResponse::new(message);
+                            logger::error("john".to_string(), &response.r#type, &response);
+                            context.text(Response::from(response).json)
+                        }
                     }
                 }
                 WsMessage::Binary(_) => {

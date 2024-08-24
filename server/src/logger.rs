@@ -47,7 +47,7 @@ pub fn information<Response: Serialize>(user: String, r#type: &String, response:
     out(user, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, true);
 }
 
-pub fn error<Response: Serialize>(user: String, r#type: &String, response: &Response) {
+pub fn error<Response: Serialize>(user: String, r#type: &str, response: &Response) {
     out(user, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, false);
 }
 
