@@ -12,6 +12,7 @@ const type = 'add-node'
 const addNodeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
+  objectType: z.string(),
   x: z.number(),
   y: z.number(),
 })
@@ -29,6 +30,7 @@ export function sendAddNode(sender: Sender, state: ReadyState, node: Node<PageNo
     const request = {
       type,
       objectId: node.id,
+      objectType: node.type || 'unknown',
       x: node.position.x,
       y: node.position.y,
     }
@@ -46,7 +48,7 @@ export function handleAddNode(response: unknown, store: PageStore) {
     console.log(`<-- ${JSON.stringify(response)}`)
     store.addNode({
       id: response.objectId,
-      type: 'class',
+      type: response.objectType,
       position: { x: response.x, y: response.y },
       data: { created: Date.now(), modified: '' },
     })

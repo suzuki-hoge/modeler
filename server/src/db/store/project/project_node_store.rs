@@ -20,6 +20,7 @@ use crate::db::Conn;
 struct Row {
     object_id: ObjectId,
     project_id: ProjectId,
+    object_type: String,
     name: String,
     icon_id: String,
     properties: String,
@@ -29,7 +30,7 @@ struct Row {
 fn read(row: Row) -> ProjectNode {
     ProjectNode {
         id: row.object_id,
-        r#type: String::from("class"),
+        r#type: row.object_type,
         data: NodeData {
             name: row.name,
             icon_id: row.icon_id,
@@ -55,6 +56,7 @@ pub fn create_project_node(
     conn: &mut Conn,
     object_id: &ObjectId,
     project_id: &ProjectId,
+    object_type: &str,
     name: &str,
     icon_id: &str,
 ) -> Result<(), DatabaseError> {
@@ -62,6 +64,7 @@ pub fn create_project_node(
     let row = Row {
         object_id: object_id.clone(),
         project_id: project_id.clone(),
+        object_type: object_type.to_string(),
         name: name.to_string(),
         icon_id: icon_id.to_string(),
         properties: to_json_string(&empty).unwrap(),
@@ -154,7 +157,7 @@ mod tests {
         assert_eq!(0, rows.len());
 
         // create
-        create_project_node(&mut conn, &object_id, &project_id, &s("name1"), &s("icon1"))?;
+        create_project_node(&mut conn, &object_id, &project_id, &s("class"), &s("name1"), &s("icon1"))?;
 
         // find
         let rows = find_project_nodes(&mut conn, &project_id)?;

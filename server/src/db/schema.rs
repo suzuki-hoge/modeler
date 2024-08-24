@@ -33,6 +33,8 @@ diesel::table! {
         #[max_length = 36]
         page_id -> Varchar,
         #[max_length = 36]
+        object_type -> Varchar,
+        #[max_length = 36]
         source -> Varchar,
         #[max_length = 36]
         target -> Varchar,
@@ -45,6 +47,8 @@ diesel::table! {
         object_id -> Varchar,
         #[max_length = 36]
         page_id -> Varchar,
+        #[max_length = 36]
+        object_type -> Varchar,
         #[max_length = 36]
         x -> Varchar,
         #[max_length = 36]
@@ -68,6 +72,8 @@ diesel::table! {
         #[max_length = 36]
         project_id -> Varchar,
         #[max_length = 36]
+        object_type -> Varchar,
+        #[max_length = 36]
         source -> Varchar,
         #[max_length = 36]
         target -> Varchar,
@@ -84,6 +90,8 @@ diesel::table! {
         object_id -> Varchar,
         #[max_length = 36]
         project_id -> Varchar,
+        #[max_length = 36]
+        object_type -> Varchar,
         #[max_length = 36]
         name -> Varchar,
         #[max_length = 36]

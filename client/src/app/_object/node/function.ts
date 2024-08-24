@@ -2,6 +2,8 @@ import { Node, XYPosition } from '@xyflow/react'
 
 import { NodeHeader, NodeIcon, PageNodeData, ProjectNodeData } from '@/app/_object/node/type'
 
+const classNodeType = { type: 'class' }
+
 export function allocateNodeId(): string {
   return crypto.randomUUID()
 }
@@ -13,14 +15,14 @@ export function getIcon(iconId: string, icons: NodeIcon[]): NodeIcon {
 export function createProjectNode(id: string, name: string): Node<ProjectNodeData> {
   return {
     id,
-    type: 'class',
+    ...classNodeType,
     position: { x: 0, y: 0 },
     data: { iconId: 'default', name, properties: [], methods: [] },
   }
 }
 
 export function extractPageNode(node: Node<ProjectNodeData>, position: XYPosition): Node<PageNodeData> {
-  return { id: node.id, type: 'class', position, data: { created: Date.now(), modified: '' } }
+  return { id: node.id, ...classNodeType, position, data: { created: Date.now(), modified: '' } }
 }
 
 export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
@@ -28,7 +30,7 @@ export function extractNodeHeader(node: Node<ProjectNodeData>): NodeHeader {
 }
 
 export function expandToPageNode(header: NodeHeader, position: XYPosition): Node<PageNodeData> {
-  return { id: header.id, type: 'class', position, data: { created: Date.now(), modified: '' } }
+  return { id: header.id, ...classNodeType, position, data: { created: Date.now(), modified: '' } }
 }
 
 export function insertString(values: string[], value: string, n: number): string[] {

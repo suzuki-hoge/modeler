@@ -16,6 +16,7 @@ use crate::db::Conn;
 struct Row {
     object_id: String,
     page_id: String,
+    object_type: String,
     x: String,
     y: String,
 }
@@ -23,7 +24,7 @@ struct Row {
 fn read(row: Row) -> PageNode {
     PageNode {
         id: row.object_id,
-        r#type: String::from("class"),
+        r#type: row.object_type,
         position: Position { x: row.x.parse().unwrap(), y: row.y.parse().unwrap() },
     }
 }
@@ -44,10 +45,17 @@ pub fn create_page_node(
     conn: &mut Conn,
     object_id: &ObjectId,
     page_id: &PageId,
+    object_type: &str,
     x: f64,
     y: f64,
 ) -> Result<(), DatabaseError> {
-    let row = Row { object_id: object_id.clone(), page_id: page_id.clone(), x: x.to_string(), y: y.to_string() };
+    let row = Row {
+        object_id: object_id.clone(),
+        page_id: page_id.clone(),
+        object_type: object_type.to_string(),
+        x: x.to_string(),
+        y: y.to_string(),
+    };
 
     insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
@@ -112,14 +120,14 @@ mod tests {
         // setup parent table
         create_project(&mut conn, &project_id, &s("project 1"))?;
         create_page(&mut conn, &page_id, &project_id, &s("project 1"))?;
-        create_project_node(&mut conn, &object_id, &project_id, &s("node 1"), &s("icon 1"))?;
+        create_project_node(&mut conn, &object_id, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
 
         // find
         let rows = find_page_nodes(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_page_node(&mut conn, &object_id, &page_id, 1.0, 2.0)?;
+        create_page_node(&mut conn, &object_id, &page_id, &s("class"), 1.0, 2.0)?;
 
         // find
         let rows = find_page_nodes(&mut conn, &page_id)?;

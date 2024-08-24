@@ -18,6 +18,7 @@ use crate::db::Conn;
 struct Row {
     object_id: ObjectId,
     project_id: ProjectId,
+    object_type: String,
     source: ObjectId,
     target: ObjectId,
     arrow_type: String,
@@ -27,7 +28,7 @@ struct Row {
 fn read(row: Row) -> ProjectEdge {
     ProjectEdge {
         id: row.object_id,
-        r#type: String::from("class"),
+        r#type: row.object_type,
         source: row.source,
         target: row.target,
         marker_end: row.arrow_type.clone(),
@@ -51,6 +52,7 @@ pub fn create_project_edge(
     conn: &mut Conn,
     object_id: &ObjectId,
     project_id: &ProjectId,
+    object_type: &str,
     source: &ObjectId,
     target: &ObjectId,
     arrow_type: &str,
@@ -59,6 +61,7 @@ pub fn create_project_edge(
     let row = Row {
         object_id: object_id.clone(),
         project_id: project_id.clone(),
+        object_type: object_type.to_string(),
         source: source.clone(),
         target: target.clone(),
         arrow_type: arrow_type.to_string(),
@@ -142,15 +145,24 @@ mod tests {
 
         // setup parent table
         create_project(&mut conn, &project_id, &s("project 1"))?;
-        create_project_node(&mut conn, &node_id1, &project_id, &s("node 1"), &s("icon 1"))?;
-        create_project_node(&mut conn, &node_id2, &project_id, &s("node 2"), &s("icon 2"))?;
+        create_project_node(&mut conn, &node_id1, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
+        create_project_node(&mut conn, &node_id2, &project_id, &s("class"), &s("node 2"), &s("icon 2"))?;
 
         // find
         let rows = find_project_edges(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_project_edge(&mut conn, &object_id, &project_id, &node_id1, &node_id2, &s("arrow 1"), &s("1"))?;
+        create_project_edge(
+            &mut conn,
+            &object_id,
+            &project_id,
+            &s("class"),
+            &node_id1,
+            &node_id2,
+            &s("arrow 1"),
+            &s("1"),
+        )?;
 
         // find
         let rows = find_project_edges(&mut conn, &project_id)?;

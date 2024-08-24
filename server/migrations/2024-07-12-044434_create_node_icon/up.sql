@@ -17,5 +17,7 @@ values ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'default', 'C', 'Class', 'lightg
        ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'b06e9df5-7976-4c86-93a4-0da098048495', 'R', 'Repository', 'lightcyan'),
        ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'b1de2c12-e5f4-4c26-9d61-4684d9093dd5', 'E', 'Entity', 'lightgreen'),
        ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '9e82d42d-65f7-4c48-9901-9fcbdd4e3f74', 'E', 'Enum', 'lightpink'),
-       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '9568e792-ea60-4244-8d57-b6336b1e0ca1', 'ID', 'Identity', 'lightsalmon'),
-       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'ea054564-ab75-4839-88df-a92c981588a3', 'VO', 'ValueObject', 'lightpink');
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', '9568e792-ea60-4244-8d57-b6336b1e0ca1', 'ID', 'Identity',
+        'lightsalmon'),
+       ('7c6174a1-d573-443b-bfd5-e918bfeffd39', 'ea054564-ab75-4839-88df-a92c981588a3', 'VO', 'ValueObject',
+        'lightpink');

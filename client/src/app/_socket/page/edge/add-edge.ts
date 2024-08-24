@@ -13,6 +13,7 @@ const type = 'add-edge'
 const addEdgeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
+  objectType: z.string(),
   source: z.string(),
   target: z.string(),
 })
@@ -30,6 +31,7 @@ export function sendAddEdge(sender: Sender, state: ReadyState, edge: Edge<PageEd
     const request = {
       type,
       objectId: edge.id,
+      objectType: edge.type || 'unknown',
       source: edge.source,
       target: edge.target,
     }
@@ -47,6 +49,7 @@ export function handleAddEdge(response: unknown, store: PageStore) {
     console.log(`<-- ${JSON.stringify(response)}`)
     store.addEdge({
       id: response.objectId,
+      type: response.objectType,
       source: response.source,
       target: response.target,
       sourceHandle: 'center',

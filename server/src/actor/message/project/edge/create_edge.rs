@@ -16,6 +16,7 @@ pub struct CreateEdgeRequest {
     pub session_id: SessionId,
     pub project_id: ProjectId,
     pub object_id: ObjectId,
+    pub object_type: String,
     pub source: ObjectId,
     pub target: ObjectId,
     pub arrow_type: String,
@@ -28,6 +29,7 @@ impl CreateEdgeRequest {
             session_id: session_id.clone(),
             project_id: project_id.clone(),
             object_id: parse_string(&json, "objectId")?,
+            object_type: parse_string(&json, "objectType")?,
             source: parse_string(&json, "source")?,
             target: parse_string(&json, "target")?,
             arrow_type: parse_string(&json, "arrowType")?,
@@ -47,6 +49,7 @@ impl Handler<CreateEdgeRequest> for Server {
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.project_id,
+                &request.object_type,
                 &request.source,
                 &request.target,
                 &request.arrow_type,
@@ -56,6 +59,7 @@ impl Handler<CreateEdgeRequest> for Server {
 
             Ok(CreateEdgeResponse::new(
                 request.object_id,
+                request.object_type,
                 request.source,
                 request.target,
                 request.arrow_type,
@@ -72,6 +76,7 @@ impl Handler<CreateEdgeRequest> for Server {
 pub struct CreateEdgeResponse {
     r#type: String,
     object_id: ObjectId,
+    object_type: String,
     source: ObjectId,
     target: ObjectId,
     arrow_type: String,
@@ -79,8 +84,15 @@ pub struct CreateEdgeResponse {
 }
 
 impl CreateEdgeResponse {
-    fn new(object_id: ObjectId, source: ObjectId, target: ObjectId, arrow_type: String, label: String) -> Self {
-        Self { r#type: String::from("create-edge"), object_id, source, target, arrow_type, label }
+    fn new(
+        object_id: ObjectId,
+        object_type: String,
+        source: ObjectId,
+        target: ObjectId,
+        arrow_type: String,
+        label: String,
+    ) -> Self {
+        Self { r#type: String::from("create-edge"), object_id, object_type, source, target, arrow_type, label }
     }
 }
 

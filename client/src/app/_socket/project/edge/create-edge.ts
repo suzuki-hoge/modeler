@@ -13,6 +13,7 @@ const type = 'create-edge'
 const createEdgeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
+  objectType: z.string(),
   source: z.string(),
   target: z.string(),
   arrowType: z.union([z.literal('simple'), z.literal('generalization')]),
@@ -32,6 +33,7 @@ export function sendCreateEdge(sender: Sender, state: ReadyState, edge: Edge<Pro
     const request = {
       type,
       objectId: edge.id,
+      objectType: edge.type || 'unknown',
       source: edge.source,
       target: edge.target,
       arrowType: edge.data!.arrowType,

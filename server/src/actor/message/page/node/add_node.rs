@@ -16,6 +16,7 @@ pub struct AddNodeRequest {
     pub session_id: SessionId,
     pub page_id: PageId,
     pub object_id: ObjectId,
+    pub object_type: String,
     pub x: f64,
     pub y: f64,
 }
@@ -26,6 +27,7 @@ impl AddNodeRequest {
             session_id: session_id.clone(),
             page_id: page_id.clone(),
             object_id: parse_string(&json, "objectId")?,
+            object_type: parse_string(&json, "objectType")?,
             x: parse_f64(&json, "x")?,
             y: parse_f64(&json, "y")?,
         })
@@ -43,12 +45,13 @@ impl Handler<AddNodeRequest> for Server {
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.page_id,
+                &request.object_type,
                 request.x,
                 request.y,
             )
             .map_err(|e| e.show())?;
 
-            Ok(AddNodeResponse::new(request.object_id, request.x, request.y))
+            Ok(AddNodeResponse::new(request.object_id, request.object_type, request.x, request.y))
         };
 
         self.send_to_page(&request.page_id, accept(), &request.session_id)
@@ -60,13 +63,14 @@ impl Handler<AddNodeRequest> for Server {
 pub struct AddNodeResponse {
     r#type: String,
     object_id: ObjectId,
+    object_type: String,
     x: f64,
     y: f64,
 }
 
 impl AddNodeResponse {
-    fn new(object_id: ObjectId, x: f64, y: f64) -> Self {
-        Self { r#type: String::from("add-node"), object_id, x, y }
+    fn new(object_id: ObjectId, object_type: String, x: f64, y: f64) -> Self {
+        Self { r#type: String::from("add-node"), object_id, object_type, x, y }
     }
 }
 

@@ -16,12 +16,13 @@ use crate::db::Conn;
 struct Row {
     object_id: String,
     page_id: String,
+    object_type: String,
     source: ObjectId,
     target: ObjectId,
 }
 
 fn read(row: Row) -> PageEdge {
-    PageEdge { id: row.object_id, r#type: String::from("class"), source: row.source, target: row.target }
+    PageEdge { id: row.object_id, r#type: row.object_type, source: row.source, target: row.target }
 }
 
 pub fn find_page_edges(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageEdge>, DatabaseError> {
@@ -40,11 +41,17 @@ pub fn create_page_edge(
     conn: &mut Conn,
     object_id: &ObjectId,
     page_id: &PageId,
+    object_type: &str,
     source: &ObjectId,
     target: &ObjectId,
 ) -> Result<(), DatabaseError> {
-    let row =
-        Row { object_id: object_id.clone(), page_id: page_id.clone(), source: source.clone(), target: target.clone() };
+    let row = Row {
+        object_id: object_id.clone(),
+        page_id: page_id.clone(),
+        object_type: object_type.to_string(),
+        source: source.clone(),
+        target: target.clone(),
+    };
 
     insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
@@ -90,16 +97,25 @@ mod tests {
         // setup parent table
         create_project(&mut conn, &project_id, &s("project 1"))?;
         create_page(&mut conn, &page_id, &project_id, &s("project 1"))?;
-        create_project_node(&mut conn, &node_id1, &project_id, &s("node 1"), &s("icon 1"))?;
-        create_project_node(&mut conn, &node_id2, &project_id, &s("node 2"), &s("icon 2"))?;
-        create_project_edge(&mut conn, &object_id, &project_id, &node_id1, &node_id2, &s("simple"), &s("1"))?;
+        create_project_node(&mut conn, &node_id1, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
+        create_project_node(&mut conn, &node_id2, &project_id, &s("class"), &s("node 2"), &s("icon 2"))?;
+        create_project_edge(
+            &mut conn,
+            &object_id,
+            &project_id,
+            &s("class"),
+            &node_id1,
+            &node_id2,
+            &s("simple"),
+            &s("1"),
+        )?;
 
         // find
         let rows = find_page_edges(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_page_edge(&mut conn, &object_id, &page_id, &node_id1, &node_id2)?;
+        create_page_edge(&mut conn, &object_id, &page_id, &s("class"), &node_id1, &node_id2)?;
 
         // find
         let rows = find_page_edges(&mut conn, &page_id)?;

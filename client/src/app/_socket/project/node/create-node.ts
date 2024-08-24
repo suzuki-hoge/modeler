@@ -13,6 +13,7 @@ const type = 'create-node'
 const createNodeRequest = z.object({
   type: z.string(),
   objectId: z.string(),
+  objectType: z.string(),
   iconId: z.string(),
   name: z.string(),
 })
@@ -30,6 +31,7 @@ export function sendCreateNode(sender: Sender, state: ReadyState, node: Node<Pro
     const request = {
       type,
       objectId: node.id,
+      objectType: node.type || 'unknown',
       iconId: node.data.iconId,
       name: node.data.name,
     }
