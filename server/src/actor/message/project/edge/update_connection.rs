@@ -2,6 +2,7 @@ use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
 use serde_json::to_string as to_json_string;
 
+use crate::actor::message::information::error_information::ErrorInformationResponse;
 use crate::actor::message::{parse_string, Json};
 use crate::actor::server::Server;
 use crate::actor::session::Response;
@@ -59,7 +60,7 @@ impl Handler<UpdateConnectionRequest> for Server {
 
         match accept() {
             Ok(response) => self.send_to_project(&request.project_id, response, &request.session_id),
-            Err(message) => self.send_to_self(message, &request.session_id),
+            Err(message) => self.send_to_self(ErrorInformationResponse::new(message), &request.session_id),
         }
     }
 }

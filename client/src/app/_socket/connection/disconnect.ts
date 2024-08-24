@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import z from 'zod'
 
 // types
@@ -7,7 +8,7 @@ const type = 'disconnect'
 const disconnectResponse = z.object({
   type: z.string(),
   sessionId: z.string(),
-  user: z.string(),
+  userId: z.string(),
 })
 type DisconnectResponse = z.infer<typeof disconnectResponse>
 
@@ -18,6 +19,7 @@ type DisconnectResponse = z.infer<typeof disconnectResponse>
 export function handleDisconnect(response: unknown) {
   if (isDisconnectResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
+    toast.success(`Disconnect ${response.userId}.`)
   }
 }
 

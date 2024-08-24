@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import z from 'zod'
 
 // types
@@ -7,7 +8,7 @@ const type = 'connect'
 const connectResponse = z.object({
   type: z.string(),
   sessionId: z.string(),
-  user: z.string(),
+  userId: z.string(),
 })
 type ConnectResponse = z.infer<typeof connectResponse>
 
@@ -18,6 +19,7 @@ type ConnectResponse = z.infer<typeof connectResponse>
 export function handleConnect(response: unknown) {
   if (isConnectResponse(response)) {
     console.log(`<-- ${JSON.stringify(response)}`)
+    toast.success(`Connect ${response.userId}.`)
   }
 }
 

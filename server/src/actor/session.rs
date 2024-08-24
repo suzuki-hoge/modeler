@@ -201,9 +201,9 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                     match self.handle_json(json) {
                         Ok(_) => {}
                         Err(message) => {
-                            let response = ErrorInformationResponse::new(message);
-                            logger::error(&"john".to_string(), &response.r#type, &response);
-                            context.text(Response::from(response).json)
+                            let response: Response = ErrorInformationResponse::new(message).into();
+                            logger::error(&"john".to_string(), &response.r#type, &response.json);
+                            context.text(response.json)
                         }
                     }
                 }

@@ -39,11 +39,12 @@ impl Handler<ConnectRequest> for Server {
 
         let response = ConnectResponse::new(request.session_id.clone(), request.user_id);
 
-        self.send_to_page(&request.page_id, response, &request.session_id);
+        self.send_to_page(&request.page_id, response.clone(), &request.session_id);
+        self.send_to_self(response, &request.session_id);
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectResponse {
     r#type: String,

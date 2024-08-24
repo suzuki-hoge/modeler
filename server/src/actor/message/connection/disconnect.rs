@@ -2,6 +2,7 @@ use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
 use serde_json::to_string as to_json_string;
 
+use crate::actor::message::information::error_information::ErrorInformationResponse;
 use crate::actor::server::Server;
 use crate::actor::session::Response;
 use crate::actor::SessionId;
@@ -31,6 +32,7 @@ impl Handler<DisconnectRequest> for Server {
         let response = DisconnectResponse::new(request.session_id.clone(), user_id);
 
         self.send_to_page(&request.page_id, response, &request.session_id);
+        self.send_to_self(ErrorInformationResponse::new("Disconnected."), &request.session_id);
     }
 }
 

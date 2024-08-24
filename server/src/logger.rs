@@ -43,12 +43,12 @@ pub fn broadcast(user_id: &String, r#type: &String, to: &SessionId, json: &Strin
     out(user_id, Log::Broadcast { r#type: r#type.to_string(), to: to.to_string(), body: json.to_string() }, true);
 }
 
-pub fn information<Response: Serialize>(user_id: &String, r#type: &String, response: &Response) {
-    out(user_id, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, true);
+pub fn information<S: Into<String>>(user_id: &String, r#type: &String, message: S) {
+    out(user_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, true);
 }
 
-pub fn error<Response: Serialize>(user_id: &String, r#type: &str, response: &Response) {
-    out(user_id, Log::Information { r#type: r#type.to_string(), body: to_json_string(response).unwrap() }, false);
+pub fn error<S: Into<String>>(user_id: &String, r#type: &str, message: S) {
+    out(user_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, false);
 }
 
 fn out(user_id: &String, log: Log, success: bool) {

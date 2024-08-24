@@ -5,7 +5,6 @@ use std::io::Write;
 use actix::{Actor, Context, Recipient};
 use serde_json::{json, to_string as to_json_string};
 
-use crate::actor::message::information::error_information::ErrorInformationResponse;
 use crate::actor::session::Response;
 use crate::actor::SessionId;
 use crate::data::page::PageId;
@@ -74,10 +73,10 @@ impl Server {
         self.send_to_sessions(response.into(), self.page_sessions.get(page_id).unwrap(), skip);
     }
 
-    pub fn send_to_self<S: Into<String>>(&self, message: S, self_session_id: &SessionId) {
-        let response: Response = ErrorInformationResponse::new(message).into();
+    pub fn send_to_self<R: Into<Response>>(&self, response: R, self_session_id: &SessionId) {
+        let response: Response = response.into();
         let (session_address, _) = self.sessions.get(self_session_id).unwrap();
-        logger::error(&"john".to_string(), &response.r#type, &response.json);
+        logger::information(&"john".to_string(), &response.r#type, &response.json);
         session_address.do_send(response);
     }
 

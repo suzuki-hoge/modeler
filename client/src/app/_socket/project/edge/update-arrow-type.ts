@@ -1,4 +1,5 @@
 import { Edge } from '@xyflow/react'
+import toast from 'react-hot-toast'
 import { ReadyState } from 'react-use-websocket'
 import z from 'zod'
 
@@ -34,7 +35,7 @@ export function sendUpdateArrowType(sender: Sender, state: ReadyState, edge: Edg
     console.log(`--> ${JSON.stringify(request)}`)
     sender(request)
   } else {
-    console.log('already disconnected')
+    toast.error('Disconnected.')
   }
 }
 
