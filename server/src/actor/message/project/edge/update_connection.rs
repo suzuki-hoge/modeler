@@ -47,7 +47,7 @@ impl Handler<UpdateConnectionRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateConnectionResponse, String> {
-            project_edge_store::update_project_edge_connection(
+            project_edge_store::update_connection(
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.source,

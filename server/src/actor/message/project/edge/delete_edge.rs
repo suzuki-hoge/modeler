@@ -39,7 +39,7 @@ impl Handler<DeleteEdgeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<DeleteEdgeResponse, String> {
-            project_edge_store::delete_project_edge(&mut self.get_conn()?, &request.object_id).map_err(|e| e.show())?;
+            project_edge_store::delete(&mut self.get_conn()?, &request.object_id).map_err(|e| e.show())?;
 
             Ok(DeleteEdgeResponse::new(request.object_id))
         };

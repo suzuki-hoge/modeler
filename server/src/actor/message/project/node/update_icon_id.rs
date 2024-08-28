@@ -41,12 +41,8 @@ impl Handler<UpdateIconIdRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateIconIdResponse, String> {
-            project_node_store::update_project_node_icon_id(
-                &mut self.get_conn()?,
-                &request.object_id,
-                &request.icon_id,
-            )
-            .map_err(|e| e.show())?;
+            project_node_store::update_icon_id(&mut self.get_conn()?, &request.object_id, &request.icon_id)
+                .map_err(|e| e.show())?;
 
             Ok(UpdateIconIdResponse::new(request.object_id, request.icon_id))
         };

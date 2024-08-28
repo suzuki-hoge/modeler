@@ -1,47 +1,23 @@
+use diesel::insert_into;
 use diesel::prelude::*;
-use diesel::{delete, insert_into, update};
-use itertools::Itertools;
 
 use crate::data::node::PageNode;
 use crate::data::page::PageId;
-use crate::data::{ObjectId, Position};
-use crate::db::schema::page_node as schema;
-use crate::db::store::page::page_store;
+use crate::data::ObjectId;
+use crate::db::schema::page_node;
+use crate::db::store::page::model::PageNodeRow;
 use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable, Insertable, Debug)]
-#[diesel(table_name = schema)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
-struct Row {
-    object_id: String,
-    page_id: String,
-    object_type: String,
-    x: String,
-    y: String,
+pub fn find(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageNode>, DatabaseError> {
+    page_node::table
+        .filter(page_node::page_id.eq(page_id))
+        .load::<PageNodeRow>(conn)
+        .map(|row| row.into_iter().map(PageNode::from).collect())
+        .map_err(DatabaseError::other)
 }
 
-fn read(row: Row) -> PageNode {
-    PageNode {
-        id: row.object_id,
-        r#type: row.object_type,
-        position: Position { x: row.x.parse().unwrap(), y: row.y.parse().unwrap() },
-    }
-}
-
-pub fn find_page_nodes(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageNode>, DatabaseError> {
-    page_store::exists(conn, page_id)?;
-
-    let rows = schema::table
-        .filter(schema::page_id.eq(page_id))
-        .select(Row::as_select())
-        .load(conn)
-        .map_err(DatabaseError::other)?;
-
-    Ok(rows.into_iter().map(read).collect_vec())
-}
-
-pub fn create_page_node(
+pub fn create(
     conn: &mut Conn,
     object_id: &ObjectId,
     page_id: &PageId,
@@ -49,30 +25,22 @@ pub fn create_page_node(
     x: f64,
     y: f64,
 ) -> Result<(), DatabaseError> {
-    let row = Row {
-        object_id: object_id.clone(),
-        page_id: page_id.clone(),
-        object_type: object_type.to_string(),
-        x: x.to_string(),
-        y: y.to_string(),
-    };
+    let row = PageNodeRow::new(object_id, page_id, object_type, x, y);
 
-    insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(page_node::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
 
-pub fn update_page_node_position(
+pub fn update_position(
     conn: &mut Conn,
     object_id: &ObjectId,
     page_id: &PageId,
     x: f64,
     y: f64,
 ) -> Result<(), DatabaseError> {
-    let x = x.to_string();
-    let y = y.to_string();
-    let count = update(schema::table.find((object_id, page_id)))
-        .set((schema::x.eq(x), schema::y.eq(y)))
+    let count = diesel::update(page_node::table.find((object_id, page_id)))
+        .set((page_node::x.eq(x.to_string()), page_node::y.eq(y.to_string())))
         .execute(conn)
         .map_err(DatabaseError::other)?;
 
@@ -82,8 +50,8 @@ pub fn update_page_node_position(
     }
 }
 
-pub fn delete_page_node(conn: &mut Conn, object_id: &ObjectId, page_id: &PageId) -> Result<(), DatabaseError> {
-    delete(schema::table.find((object_id, page_id))).execute(conn).map_err(DatabaseError::other)?;
+pub fn delete(conn: &mut Conn, object_id: &ObjectId, page_id: &PageId) -> Result<(), DatabaseError> {
+    diesel::delete(page_node::table.find((object_id, page_id))).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
@@ -95,12 +63,8 @@ mod tests {
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
-    use crate::db::store::page::page_node_store::{
-        create_page_node, delete_page_node, find_page_nodes, update_page_node_position,
-    };
-    use crate::db::store::page::page_store::create_page;
-    use crate::db::store::project::project_node_store::create_project_node;
-    use crate::db::store::project::project_store::create_project;
+    use crate::db::store::page::{page_node_store, page_store};
+    use crate::db::store::project::{project_node_store, project_store};
     use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
@@ -118,36 +82,36 @@ mod tests {
         let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        create_project(&mut conn, &project_id, &s("project 1"))?;
-        create_page(&mut conn, &page_id, &project_id, &s("project 1"))?;
-        create_project_node(&mut conn, &object_id, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
+        project_store::insert(&mut conn, &project_id, &s("project 1"))?;
+        page_store::create(&mut conn, &page_id, &project_id, &s("page 1"))?;
+        project_node_store::insert(&mut conn, &object_id, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
 
         // find
-        let rows = find_page_nodes(&mut conn, &page_id)?;
+        let rows = page_node_store::find(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_page_node(&mut conn, &object_id, &page_id, &s("class"), 1.0, 2.0)?;
+        page_node_store::create(&mut conn, &object_id, &page_id, &s("class"), 1.0, 2.0)?;
 
         // find
-        let rows = find_page_nodes(&mut conn, &page_id)?;
+        let rows = page_node_store::find(&mut conn, &page_id)?;
         assert_eq!(1, rows.len());
         assert_eq!("1", &rows[0].position.x.to_string());
         assert_eq!("2", &rows[0].position.y.to_string());
 
         // update name
-        update_page_node_position(&mut conn, &object_id, &page_id, -1.2, -3.4)?;
+        page_node_store::update_position(&mut conn, &object_id, &page_id, -1.2, -3.4)?;
 
         // find
-        let rows = find_page_nodes(&mut conn, &page_id)?;
+        let rows = page_node_store::find(&mut conn, &page_id)?;
         assert_eq!("-1.2", &rows[0].position.x.to_string());
         assert_eq!("-3.4", &rows[0].position.y.to_string());
 
         // delete
-        delete_page_node(&mut conn, &object_id, &page_id)?;
+        page_node_store::delete(&mut conn, &object_id, &page_id)?;
 
         // find
-        let rows = find_page_nodes(&mut conn, &page_id)?;
+        let rows = page_node_store::find(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
 
         // clean up

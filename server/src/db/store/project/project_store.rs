@@ -1,45 +1,34 @@
 use diesel::dsl::count;
 use diesel::insert_into;
 use diesel::prelude::*;
-use itertools::Itertools;
 
 use crate::data::project::{Project, ProjectId};
-use crate::db::schema::project as schema;
+use crate::db::schema::project;
+use crate::db::store::project::model::ProjectRow;
 use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable, Insertable, Debug)]
-#[diesel(table_name = schema)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
-struct Row {
-    project_id: ProjectId,
-    name: String,
-}
-
-fn read(row: Row) -> Project {
-    Project { project_id: row.project_id, name: row.name }
-}
-
-pub fn find_all(conn: &mut Conn) -> Result<Vec<Project>, DatabaseError> {
-    let rows =
-        schema::table.select(Row::as_select()).order_by(schema::name.asc()).load(conn).map_err(DatabaseError::other)?;
-
-    Ok(rows.into_iter().map(read).collect_vec())
+pub fn find(conn: &mut Conn) -> Result<Vec<Project>, DatabaseError> {
+    project::table
+        .load::<ProjectRow>(conn)
+        .map(|row| row.into_iter().map(Project::from).collect())
+        .map_err(DatabaseError::other)
 }
 
 #[allow(dead_code)]
-pub fn create_project(conn: &mut Conn, project_id: &ProjectId, name: &str) -> Result<(), DatabaseError> {
-    let row = Row { project_id: project_id.clone(), name: name.to_string() };
+pub fn insert(conn: &mut Conn, project_id: &ProjectId, name: &str) -> Result<(), DatabaseError> {
+    let row = ProjectRow::new(project_id, name);
 
-    insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(project::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn exists(conn: &mut Conn, project_id: &ProjectId) -> Result<(), DatabaseError> {
-    let count: i64 = schema::table
-        .filter(schema::project_id.eq(project_id))
-        .select(count(schema::project_id))
+    let count: i64 = project::table
+        .filter(project::project_id.eq(project_id))
+        .select(count(project::project_id))
         .first(conn)
         .map_err(DatabaseError::other)?;
 

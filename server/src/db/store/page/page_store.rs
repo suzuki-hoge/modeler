@@ -1,49 +1,31 @@
 use diesel::dsl::count;
 use diesel::insert_into;
 use diesel::prelude::*;
-use itertools::Itertools;
 
 use crate::data::page::{Page, PageId};
 use crate::data::project::ProjectId;
-use crate::db::schema::page as schema;
-use crate::db::store::project::project_store;
+use crate::db::schema::page;
+use crate::db::store::page::model::PageRow;
 use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable, Insertable, Debug)]
-#[diesel(table_name = schema)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
-struct Row {
-    page_id: String,
-    project_id: String,
-    name: String,
+pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<Page>, DatabaseError> {
+    page::table
+        .filter(page::project_id.eq(project_id))
+        .load::<PageRow>(conn)
+        .map(|row| row.into_iter().map(Page::from).collect())
+        .map_err(DatabaseError::other)
 }
 
-fn read(row: Row) -> Page {
-    Page { page_id: row.page_id, project_id: row.project_id, name: row.name }
+pub fn find_one(conn: &mut Conn, page_id: &PageId) -> Result<Page, DatabaseError> {
+    page::table.find(page_id).first::<PageRow>(conn).map(Page::from).map_err(DatabaseError::other)
 }
 
-pub fn find_page(conn: &mut Conn, page_id: &PageId) -> Result<Page, DatabaseError> {
-    schema::table.find(page_id).first(conn).map(read).map_err(DatabaseError::other)
-}
-
-pub fn find_pages(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<Page>, DatabaseError> {
-    project_store::exists(conn, project_id)?;
-
-    let rows = schema::table
-        .filter(schema::project_id.eq(project_id))
-        .select(Row::as_select())
-        .order_by(schema::name.asc())
-        .load(conn)
-        .map_err(DatabaseError::other)?;
-
-    Ok(rows.into_iter().map(read).collect_vec())
-}
-
+#[allow(dead_code)]
 pub fn exists(conn: &mut Conn, page_id: &PageId) -> Result<(), DatabaseError> {
-    let count: i64 = schema::table
-        .filter(schema::page_id.eq(page_id))
-        .select(count(schema::project_id))
+    let count: i64 = page::table
+        .filter(page::page_id.eq(page_id))
+        .select(count(page::project_id))
         .first(conn)
         .map_err(DatabaseError::other)?;
 
@@ -55,10 +37,10 @@ pub fn exists(conn: &mut Conn, page_id: &PageId) -> Result<(), DatabaseError> {
 }
 
 #[allow(dead_code)]
-pub fn create_page(conn: &mut Conn, page_id: &PageId, project_id: &ProjectId, name: &str) -> Result<(), DatabaseError> {
-    let row = Row { page_id: page_id.clone(), project_id: project_id.clone(), name: name.to_string() };
+pub fn create(conn: &mut Conn, page_id: &PageId, project_id: &ProjectId, name: &str) -> Result<(), DatabaseError> {
+    let row = PageRow::new(page_id, project_id, name);
 
-    insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(page::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
@@ -70,8 +52,8 @@ mod tests {
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
-    use crate::db::store::page::page_store::{create_page, find_pages};
-    use crate::db::store::project::project_store::create_project;
+    use crate::db::store::page::page_store;
+    use crate::db::store::project::project_store;
     use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
@@ -88,17 +70,17 @@ mod tests {
         let project_id = Uuid::new_v4().to_string();
 
         // setup tables
-        create_project(&mut conn, &project_id, &s("project 1"))?;
+        project_store::insert(&mut conn, &project_id, &s("project 1"))?;
 
         // find
-        let rows = find_pages(&mut conn, &project_id)?;
+        let rows = page_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_page(&mut conn, &page_id, &project_id, &s("project 1"))?;
+        page_store::create(&mut conn, &page_id, &project_id, &s("project 1"))?;
 
         // find
-        let rows = find_pages(&mut conn, &project_id)?;
+        let rows = page_store::find(&mut conn, &project_id)?;
         assert_eq!(1, rows.len());
         assert_eq!("project 1", &rows[0].name);
 

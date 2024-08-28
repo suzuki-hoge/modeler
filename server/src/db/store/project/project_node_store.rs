@@ -1,58 +1,26 @@
+use diesel::insert_into;
 use diesel::mysql::Mysql;
 use diesel::prelude::*;
 use diesel::query_builder::QueryFragment;
-use diesel::{delete, insert_into, update};
-use itertools::Itertools;
-use serde_json::from_str as from_json_str;
 use serde_json::to_string as to_json_string;
 
-use crate::data::node::{NodeData, ProjectNode};
+use crate::data::node::ProjectNode;
 use crate::data::project::ProjectId;
 use crate::data::ObjectId;
-use crate::db::schema::project_node as schema;
-use crate::db::store::project::project_store;
+use crate::db::schema::project_node;
+use crate::db::store::project::model::ProjectNodeRow;
 use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-#[derive(Queryable, Selectable, Insertable, Debug)]
-#[diesel(table_name = schema)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
-struct Row {
-    object_id: ObjectId,
-    project_id: ProjectId,
-    object_type: String,
-    name: String,
-    icon_id: String,
-    properties: String,
-    methods: String,
+pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, DatabaseError> {
+    project_node::table
+        .filter(project_node::project_id.eq(project_id))
+        .load::<ProjectNodeRow>(conn)
+        .map(|row| row.into_iter().map(ProjectNode::from).collect())
+        .map_err(DatabaseError::other)
 }
 
-fn read(row: Row) -> ProjectNode {
-    ProjectNode {
-        id: row.object_id,
-        r#type: row.object_type,
-        data: NodeData {
-            name: row.name,
-            icon_id: row.icon_id,
-            properties: from_json_str(&row.properties).unwrap(),
-            methods: from_json_str(&row.methods).unwrap(),
-        },
-    }
-}
-
-pub fn find_project_nodes(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, DatabaseError> {
-    project_store::exists(conn, project_id)?;
-
-    let rows = schema::table
-        .filter(schema::project_id.eq(project_id))
-        .select(Row::as_select())
-        .load(conn)
-        .map_err(DatabaseError::other)?;
-
-    Ok(rows.into_iter().map(read).collect_vec())
-}
-
-pub fn create_project_node(
+pub fn insert(
     conn: &mut Conn,
     object_id: &ObjectId,
     project_id: &ProjectId,
@@ -60,54 +28,38 @@ pub fn create_project_node(
     name: &str,
     icon_id: &str,
 ) -> Result<(), DatabaseError> {
-    let empty: Vec<String> = vec![];
-    let row = Row {
-        object_id: object_id.clone(),
-        project_id: project_id.clone(),
-        object_type: object_type.to_string(),
-        name: name.to_string(),
-        icon_id: icon_id.to_string(),
-        properties: to_json_string(&empty).unwrap(),
-        methods: to_json_string(&empty).unwrap(),
-    };
+    let row = ProjectNodeRow::new(object_id, project_id, object_type, name, icon_id);
 
-    insert_into(schema::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(project_node::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
 
-pub fn update_project_node_name(conn: &mut Conn, object_id: &ObjectId, name: &str) -> Result<(), DatabaseError> {
-    update_project_node(conn, object_id, schema::name.eq(name.to_string()))
+pub fn update_name(conn: &mut Conn, object_id: &ObjectId, name: &str) -> Result<(), DatabaseError> {
+    update(conn, object_id, project_node::name.eq(name.to_string()))
 }
 
-pub fn update_project_node_icon_id(conn: &mut Conn, object_id: &ObjectId, icon_id: &str) -> Result<(), DatabaseError> {
-    update_project_node(conn, object_id, schema::icon_id.eq(icon_id.to_string()))
+pub fn update_icon_id(conn: &mut Conn, object_id: &ObjectId, icon_id: &str) -> Result<(), DatabaseError> {
+    update(conn, object_id, project_node::icon_id.eq(icon_id.to_string()))
 }
 
-pub fn update_project_node_properties(
-    conn: &mut Conn,
-    object_id: &ObjectId,
-    properties: &[String],
-) -> Result<(), DatabaseError> {
+pub fn update_properties(conn: &mut Conn, object_id: &ObjectId, properties: &[String]) -> Result<(), DatabaseError> {
     let value = to_json_string(&properties).unwrap();
-    update_project_node(conn, object_id, schema::properties.eq(value))
+    update(conn, object_id, project_node::properties.eq(value))
 }
 
-pub fn update_project_node_methods(
-    conn: &mut Conn,
-    object_id: &ObjectId,
-    methods: &[String],
-) -> Result<(), DatabaseError> {
+pub fn update_methods(conn: &mut Conn, object_id: &ObjectId, methods: &[String]) -> Result<(), DatabaseError> {
     let value = to_json_string(&methods).unwrap();
-    update_project_node(conn, object_id, schema::methods.eq(value))
+    update(conn, object_id, project_node::methods.eq(value))
 }
 
-fn update_project_node<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), DatabaseError>
+fn update<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), DatabaseError>
 where
-    V: AsChangeset<Target = schema::table> + 'static,
+    V: AsChangeset<Target = project_node::table> + 'static,
     <V as AsChangeset>::Changeset: QueryFragment<Mysql> + 'static,
 {
-    let count = update(schema::table.find(object_id)).set(value).execute(conn).map_err(DatabaseError::other)?;
+    let count =
+        diesel::update(project_node::table.find(object_id)).set(value).execute(conn).map_err(DatabaseError::other)?;
 
     match count {
         1 => Ok(()),
@@ -115,8 +67,8 @@ where
     }
 }
 
-pub fn delete_project_node(conn: &mut Conn, object_id: &ObjectId) -> Result<(), DatabaseError> {
-    delete(schema::table.find(object_id)).execute(conn).map_err(DatabaseError::other)?;
+pub fn delete(conn: &mut Conn, object_id: &ObjectId) -> Result<(), DatabaseError> {
+    diesel::delete(project_node::table.find(object_id)).execute(conn).map_err(DatabaseError::other)?;
 
     Ok(())
 }
@@ -129,11 +81,7 @@ mod tests {
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
-    use crate::db::store::project::project_node_store::{
-        create_project_node, delete_project_node, find_project_nodes, update_project_node_icon_id,
-        update_project_node_methods, update_project_node_name, update_project_node_properties,
-    };
-    use crate::db::store::project::project_store::create_project;
+    use crate::db::store::project::{project_node_store, project_store};
     use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
@@ -150,61 +98,61 @@ mod tests {
         let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        create_project(&mut conn, &project_id, &s("project 1"))?;
+        project_store::insert(&mut conn, &project_id, &s("project 1"))?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
         // create
-        create_project_node(&mut conn, &object_id, &project_id, &s("class"), &s("name1"), &s("icon1"))?;
+        project_node_store::insert(&mut conn, &object_id, &project_id, &s("class"), &s("name1"), &s("icon1"))?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(1, rows.len());
         assert_eq!("name1", &rows[0].data.name);
         assert_eq!("icon1", &rows[0].data.icon_id);
 
         // update name
-        update_project_node_name(&mut conn, &object_id, &s("name2"))?;
+        project_node_store::update_name(&mut conn, &object_id, &s("name2"))?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!("name2", &rows[0].data.name);
 
         // update name
-        update_project_node_icon_id(&mut conn, &object_id, &s("icon2"))?;
+        project_node_store::update_icon_id(&mut conn, &object_id, &s("icon2"))?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!("icon2", &rows[0].data.icon_id);
 
         // update properties
-        update_project_node_properties(&mut conn, &object_id, &[s("property 1"), s("property 2")])?;
+        project_node_store::update_properties(&mut conn, &object_id, &[s("property 1"), s("property 2")])?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(vec!["property 1", "property 2"], rows[0].data.properties.iter().collect_vec());
 
         // update methods
-        update_project_node_methods(&mut conn, &object_id, &[s("method 1"), s("method 2")])?;
+        project_node_store::update_methods(&mut conn, &object_id, &[s("method 1"), s("method 2")])?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(vec!["method 1", "method 2"], rows[0].data.methods.iter().collect_vec());
 
         // update methods
-        update_project_node_methods(&mut conn, &object_id, &[])?;
+        project_node_store::update_methods(&mut conn, &object_id, &[])?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows[0].data.methods.len());
 
         // delete
-        delete_project_node(&mut conn, &object_id)?;
+        project_node_store::delete(&mut conn, &object_id)?;
 
         // find
-        let rows = find_project_nodes(&mut conn, &project_id)?;
+        let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
         // clean up

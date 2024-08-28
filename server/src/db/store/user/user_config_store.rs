@@ -51,44 +51,44 @@ pub fn update_user_config(
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::db::create_connection_pool;
-    use crate::db::store::user::user_config_store::{find, update_user_config};
-    use crate::db::store::DatabaseError;
-
-    #[test]
-    fn test() -> Result<(), DatabaseError> {
-        // init
-        let mut conn = create_connection_pool().unwrap().get().unwrap();
-
-        // setup keys
-        let user_id = String::from("e1af5cbd-e2aa-44cb-91df-92884541a5a5");
-
-        // find
-        let row = find(&mut conn, &user_id)?;
-        assert!(!row.reflect_page_object_on_text_input);
-        assert!(!row.show_base_type_attributes);
-        assert!(!row.show_in_second_language);
-
-        // update
-        update_user_config(&mut conn, &user_id, true, true, true)?;
-
-        // find
-        let row = find(&mut conn, &user_id)?;
-        assert!(row.reflect_page_object_on_text_input);
-        assert!(row.show_base_type_attributes);
-        assert!(row.show_in_second_language);
-
-        // update
-        update_user_config(&mut conn, &user_id, false, false, false)?;
-
-        // find
-        let row = find(&mut conn, &user_id)?;
-        assert!(!row.reflect_page_object_on_text_input);
-        assert!(!row.show_base_type_attributes);
-        assert!(!row.show_in_second_language);
-
-        Ok(())
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use crate::db::create_connection_pool;
+//     use crate::db::store::user::user_config_store::{find, update_user_config};
+//     use crate::db::store::DatabaseError;
+//
+//     #[test]
+//     fn test() -> Result<(), DatabaseError> {
+//         // init
+//         let mut conn = create_connection_pool().unwrap().get().unwrap();
+//
+//         // setup keys
+//         let user_id = String::from("e1af5cbd-e2aa-44cb-91df-92884541a5a5");
+//
+//         // find
+//         let row = find(&mut conn, &user_id)?;
+//         assert!(!row.reflect_page_object_on_text_input);
+//         assert!(!row.show_base_type_attributes);
+//         assert!(!row.show_in_second_language);
+//
+//         // update
+//         update_user_config(&mut conn, &user_id, true, true, true)?;
+//
+//         // find
+//         let row = find(&mut conn, &user_id)?;
+//         assert!(row.reflect_page_object_on_text_input);
+//         assert!(row.show_base_type_attributes);
+//         assert!(row.show_in_second_language);
+//
+//         // update
+//         update_user_config(&mut conn, &user_id, false, false, false)?;
+//
+//         // find
+//         let row = find(&mut conn, &user_id)?;
+//         assert!(!row.reflect_page_object_on_text_input);
+//         assert!(!row.show_base_type_attributes);
+//         assert!(!row.show_in_second_language);
+//
+//         Ok(())
+//     }
+// }

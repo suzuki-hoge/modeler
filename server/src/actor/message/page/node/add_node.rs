@@ -45,7 +45,7 @@ impl Handler<AddNodeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<AddNodeResponse, String> {
-            page_node_store::create_page_node(
+            page_node_store::create(
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.page_id,

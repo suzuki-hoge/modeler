@@ -14,11 +14,11 @@ use crate::logger;
 pub async fn session(pool: Data<Pool>) -> HttpResponse {
     logger::get(&"john".to_string(), "/debug/session");
 
-    let projects = project_store::find_all(&mut pool.get().unwrap())
+    let projects = project_store::find(&mut pool.get().unwrap())
         .unwrap()
         .into_iter()
         .map(|project| {
-            let pages = page_store::find_pages(&mut pool.get().unwrap(), &project.project_id)
+            let pages = page_store::find(&mut pool.get().unwrap(), &project.project_id)
                 .unwrap()
                 .into_iter()
                 .map(|page| json!({"pageId": page.page_id, "name": page.name}))

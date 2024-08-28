@@ -11,7 +11,7 @@ use crate::logger;
 pub async fn get_projects(pool: Data<Pool>) -> HttpResponse {
     logger::get(&"john".to_string(), "/projects");
 
-    respond(project_store::find_all(&mut pool.get().unwrap()))
+    respond(project_store::find(&mut pool.get().unwrap()))
 }
 
 pub async fn get_pages(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -19,7 +19,7 @@ pub async fn get_pages(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     logger::get(&"john".to_string(), format!("/project/{project_id}/pages"));
 
-    respond(page_store::find_pages(&mut pool.get().unwrap(), &project_id))
+    respond(page_store::find(&mut pool.get().unwrap(), &project_id))
 }
 
 pub async fn get_icons(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -27,7 +27,7 @@ pub async fn get_icons(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     logger::get(&"john".to_string(), format!("/project/{project_id}/icons"));
 
-    respond(node_icon_store::find_node_icons(&mut pool.get().unwrap(), &project_id))
+    respond(node_icon_store::find(&mut pool.get().unwrap(), &project_id))
 }
 
 pub async fn get_nodes(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -35,7 +35,7 @@ pub async fn get_nodes(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     logger::get(&"john".to_string(), format!("/project/{project_id}/nodes"));
 
-    respond(project_node_store::find_project_nodes(&mut pool.get().unwrap(), &project_id))
+    respond(project_node_store::find(&mut pool.get().unwrap(), &project_id))
 }
 
 pub async fn get_edges(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse {
@@ -43,5 +43,5 @@ pub async fn get_edges(pool: Data<Pool>, path: Path<ProjectId>) -> HttpResponse 
 
     logger::get(&"john".to_string(), format!("/project/{project_id}/edges"));
 
-    respond(project_edge_store::find_project_edges(&mut pool.get().unwrap(), &project_id))
+    respond(project_edge_store::find(&mut pool.get().unwrap(), &project_id))
 }

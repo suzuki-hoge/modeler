@@ -5,7 +5,7 @@ use diesel::MysqlConnection;
 use dotenvy::dotenv;
 use r2d2::PooledConnection;
 
-pub mod schema;
+mod schema;
 pub mod store;
 
 pub type Pool = r2d2::Pool<ConnectionManager<MysqlConnection>>;

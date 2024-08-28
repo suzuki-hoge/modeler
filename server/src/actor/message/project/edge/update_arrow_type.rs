@@ -41,12 +41,8 @@ impl Handler<UpdateArrowTypeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateArrowTypeResponse, String> {
-            project_edge_store::update_project_edge_arrow_type(
-                &mut self.get_conn()?,
-                &request.object_id,
-                &request.arrow_type,
-            )
-            .map_err(|e| e.show())?;
+            project_edge_store::update_arrow_type(&mut self.get_conn()?, &request.object_id, &request.arrow_type)
+                .map_err(|e| e.show())?;
 
             Ok(UpdateArrowTypeResponse::new(request.object_id, request.arrow_type))
         };

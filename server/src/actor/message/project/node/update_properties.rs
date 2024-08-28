@@ -45,12 +45,8 @@ impl Handler<UpdatePropertiesRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdatePropertiesResponse, String> {
-            project_node_store::update_project_node_properties(
-                &mut self.get_conn()?,
-                &request.object_id,
-                &request.properties,
-            )
-            .map_err(|e| e.show())?;
+            project_node_store::update_properties(&mut self.get_conn()?, &request.object_id, &request.properties)
+                .map_err(|e| e.show())?;
 
             Ok(UpdatePropertiesResponse::new(request.object_id, request.properties))
         };

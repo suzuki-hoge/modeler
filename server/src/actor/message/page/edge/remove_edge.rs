@@ -39,7 +39,7 @@ impl Handler<RemoveEdgeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<RemoveEdgeResponse, String> {
-            page_edge_store::delete_page_edge(&mut self.get_conn()?, &request.object_id, &request.page_id)
+            page_edge_store::delete(&mut self.get_conn()?, &request.object_id, &request.page_id)
                 .map_err(|e| e.show())?;
 
             Ok(RemoveEdgeResponse::new(request.object_id))

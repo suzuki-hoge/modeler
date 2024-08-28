@@ -43,7 +43,7 @@ impl Handler<MoveNodeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<MoveNodeResponse, String> {
-            page_node_store::update_page_node_position(
+            page_node_store::update_position(
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.page_id,

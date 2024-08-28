@@ -12,7 +12,7 @@ pub async fn get_page(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
 
     logger::get(&"john".to_string(), format!("/page/{page_id}"));
 
-    respond(page_store::find_page(&mut pool.get().unwrap(), &page_id))
+    respond(page_store::find_one(&mut pool.get().unwrap(), &page_id))
 }
 
 pub async fn get_nodes(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
@@ -20,7 +20,7 @@ pub async fn get_nodes(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
 
     logger::get(&"john".to_string(), format!("/page/{page_id}/nodes"));
 
-    respond(page_node_store::find_page_nodes(&mut pool.get().unwrap(), &page_id))
+    respond(page_node_store::find(&mut pool.get().unwrap(), &page_id))
 }
 
 pub async fn get_edges(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
@@ -28,5 +28,5 @@ pub async fn get_edges(pool: Data<Pool>, path: Path<PageId>) -> HttpResponse {
 
     logger::get(&"john".to_string(), format!("/page/{page_id}/edges"));
 
-    respond(page_edge_store::find_page_edges(&mut pool.get().unwrap(), &page_id))
+    respond(page_edge_store::find(&mut pool.get().unwrap(), &page_id))
 }
