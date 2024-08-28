@@ -39,8 +39,7 @@ impl Handler<RemoveNodeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<RemoveNodeResponse, String> {
-            page_node_store::delete(&mut self.get_conn()?, &request.object_id, &request.page_id)
-                .map_err(|e| e.show())?;
+            page_node_store::delete(&mut self.get_conn()?, &request.object_id, &request.page_id)?;
 
             Ok(RemoveNodeResponse::new(request.object_id))
         };

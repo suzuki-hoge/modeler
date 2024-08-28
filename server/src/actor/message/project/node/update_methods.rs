@@ -41,8 +41,7 @@ impl Handler<UpdateMethodsRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateMethodsResponse, String> {
-            project_node_store::update_methods(&mut self.get_conn()?, &request.object_id, &request.methods)
-                .map_err(|e| e.show())?;
+            project_node_store::update_methods(&mut self.get_conn()?, &request.object_id, &request.methods)?;
 
             Ok(UpdateMethodsResponse::new(request.object_id, request.methods))
         };

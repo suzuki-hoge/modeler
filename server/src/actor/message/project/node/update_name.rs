@@ -41,8 +41,7 @@ impl Handler<UpdateNameRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateNameResponse, String> {
-            project_node_store::update_name(&mut self.get_conn()?, &request.object_id, &request.name)
-                .map_err(|e| e.show())?;
+            project_node_store::update_name(&mut self.get_conn()?, &request.object_id, &request.name)?;
 
             Ok(UpdateNameResponse::new(request.object_id, request.name))
         };

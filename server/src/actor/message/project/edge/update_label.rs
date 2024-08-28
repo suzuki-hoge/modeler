@@ -41,8 +41,7 @@ impl Handler<UpdateLabelRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<UpdateLabelResponse, String> {
-            project_edge_store::update_label(&mut self.get_conn()?, &request.object_id, &request.label)
-                .map_err(|e| e.show())?;
+            project_edge_store::update_label(&mut self.get_conn()?, &request.object_id, &request.label)?;
 
             Ok(UpdateLabelResponse::new(request.object_id, request.label))
         };

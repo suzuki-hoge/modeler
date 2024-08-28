@@ -52,8 +52,7 @@ impl Handler<CreateNodeRequest> for Server {
                 &request.object_type,
                 &request.name,
                 &request.icon_id,
-            )
-            .map_err(|e| e.show())?;
+            )?;
 
             Ok(CreateNodeResponse::new(request.object_id, request.object_type, request.name, request.icon_id))
         };

@@ -8,15 +8,14 @@ use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::schema::project_edge;
 use crate::db::store::project::model::ProjectEdgeRow;
-use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectEdge>, DatabaseError> {
+pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectEdge>, String> {
     project_edge::table
         .filter(project_edge::project_id.eq(project_id))
         .load::<ProjectEdgeRow>(conn)
         .map(|row| row.into_iter().map(ProjectEdge::from).collect())
-        .map_err(DatabaseError::other)
+        .map_err(|e| e.to_string())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -31,7 +30,7 @@ pub fn create(
     target_handle: &str,
     arrow_type: &str,
     label: &str,
-) -> Result<(), DatabaseError> {
+) -> Result<(), String> {
     let row = ProjectEdgeRow::new(
         object_id,
         project_id,
@@ -44,7 +43,7 @@ pub fn create(
         label,
     );
 
-    insert_into(project_edge::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(project_edge::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -54,54 +53,47 @@ pub fn update_connection(
     object_id: &ObjectId,
     source: &ObjectId,
     target: &ObjectId,
-) -> Result<(), DatabaseError> {
+) -> Result<(), String> {
     update(conn, object_id, (project_edge::source.eq(source.clone()), project_edge::target.eq(target.clone())))
 }
 
-pub fn update_arrow_type(conn: &mut Conn, object_id: &ObjectId, arrow_type: &str) -> Result<(), DatabaseError> {
+pub fn update_arrow_type(conn: &mut Conn, object_id: &ObjectId, arrow_type: &str) -> Result<(), String> {
     update(conn, object_id, project_edge::arrow_type.eq(arrow_type.to_string()))
 }
 
-pub fn update_label(conn: &mut Conn, object_id: &ObjectId, label: &str) -> Result<(), DatabaseError> {
+pub fn update_label(conn: &mut Conn, object_id: &ObjectId, label: &str) -> Result<(), String> {
     update(conn, object_id, project_edge::label.eq(label.to_string()))
 }
 
-fn update<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), DatabaseError>
+fn update<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), String>
 where
     V: AsChangeset<Target = project_edge::table> + 'static,
     <V as AsChangeset>::Changeset: QueryFragment<Mysql> + 'static,
 {
-    let count =
-        diesel::update(project_edge::table.find(object_id)).set(value).execute(conn).map_err(DatabaseError::other)?;
+    diesel::update(project_edge::table.find(object_id)).set(value).execute(conn).map_err(|e| e.to_string())?;
 
-    match count {
-        1 => Ok(()),
-        _ => Err(DatabaseError::unexpected_row_matched(count)),
-    }
+    Ok(())
 }
 
-pub fn delete(conn: &mut Conn, object_id: &ObjectId) -> Result<(), DatabaseError> {
-    diesel::delete(project_edge::table.find(object_id)).execute(conn).map_err(DatabaseError::other)?;
+pub fn delete(conn: &mut Conn, object_id: &ObjectId) -> Result<(), String> {
+    diesel::delete(project_edge::table.find(object_id)).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use diesel::sql_types::Text;
-    use diesel::{sql_query, RunQueryDsl};
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
     use crate::db::store::project::{project_edge_store, project_node_store, project_store};
-    use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
         String::from(value)
     }
 
     #[test]
-    fn test() -> Result<(), DatabaseError> {
+    fn test() -> Result<(), String> {
         // init
         let mut conn = create_connection_pool().unwrap().get().unwrap();
 
@@ -171,9 +163,6 @@ mod tests {
         // find
         let rows = project_edge_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
-
-        // clean up
-        sql_query("delete from project where project_id = ?").bind::<Text, _>(&project_id).execute(&mut conn).unwrap();
 
         Ok(())
     }

@@ -9,15 +9,14 @@ use crate::data::project::ProjectId;
 use crate::data::ObjectId;
 use crate::db::schema::project_node;
 use crate::db::store::project::model::ProjectNodeRow;
-use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, DatabaseError> {
+pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectNode>, String> {
     project_node::table
         .filter(project_node::project_id.eq(project_id))
         .load::<ProjectNodeRow>(conn)
         .map(|row| row.into_iter().map(ProjectNode::from).collect())
-        .map_err(DatabaseError::other)
+        .map_err(|e| e.to_string())
 }
 
 pub fn insert(
@@ -27,69 +26,62 @@ pub fn insert(
     object_type: &str,
     name: &str,
     icon_id: &str,
-) -> Result<(), DatabaseError> {
+) -> Result<(), String> {
     let row = ProjectNodeRow::new(object_id, project_id, object_type, name, icon_id);
 
-    insert_into(project_node::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(project_node::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-pub fn update_name(conn: &mut Conn, object_id: &ObjectId, name: &str) -> Result<(), DatabaseError> {
+pub fn update_name(conn: &mut Conn, object_id: &ObjectId, name: &str) -> Result<(), String> {
     update(conn, object_id, project_node::name.eq(name.to_string()))
 }
 
-pub fn update_icon_id(conn: &mut Conn, object_id: &ObjectId, icon_id: &str) -> Result<(), DatabaseError> {
+pub fn update_icon_id(conn: &mut Conn, object_id: &ObjectId, icon_id: &str) -> Result<(), String> {
     update(conn, object_id, project_node::icon_id.eq(icon_id.to_string()))
 }
 
-pub fn update_properties(conn: &mut Conn, object_id: &ObjectId, properties: &[String]) -> Result<(), DatabaseError> {
+pub fn update_properties(conn: &mut Conn, object_id: &ObjectId, properties: &[String]) -> Result<(), String> {
     let value = to_json_string(&properties).unwrap();
     update(conn, object_id, project_node::properties.eq(value))
 }
 
-pub fn update_methods(conn: &mut Conn, object_id: &ObjectId, methods: &[String]) -> Result<(), DatabaseError> {
+pub fn update_methods(conn: &mut Conn, object_id: &ObjectId, methods: &[String]) -> Result<(), String> {
     let value = to_json_string(&methods).unwrap();
     update(conn, object_id, project_node::methods.eq(value))
 }
 
-fn update<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), DatabaseError>
+fn update<V>(conn: &mut Conn, object_id: &ObjectId, value: V) -> Result<(), String>
 where
     V: AsChangeset<Target = project_node::table> + 'static,
     <V as AsChangeset>::Changeset: QueryFragment<Mysql> + 'static,
 {
-    let count =
-        diesel::update(project_node::table.find(object_id)).set(value).execute(conn).map_err(DatabaseError::other)?;
+    diesel::update(project_node::table.find(object_id)).set(value).execute(conn).map_err(|e| e.to_string())?;
 
-    match count {
-        1 => Ok(()),
-        _ => Err(DatabaseError::unexpected_row_matched(count)),
-    }
+    Ok(())
 }
 
-pub fn delete(conn: &mut Conn, object_id: &ObjectId) -> Result<(), DatabaseError> {
-    diesel::delete(project_node::table.find(object_id)).execute(conn).map_err(DatabaseError::other)?;
+pub fn delete(conn: &mut Conn, object_id: &ObjectId) -> Result<(), String> {
+    diesel::delete(project_node::table.find(object_id)).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use diesel::sql_types::Text;
-    use diesel::{sql_query, RunQueryDsl};
     use itertools::Itertools;
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
     use crate::db::store::project::{project_node_store, project_store};
-    use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
         String::from(value)
     }
 
     #[test]
-    fn test() -> Result<(), DatabaseError> {
+    fn test() -> Result<(), String> {
         // init
         let mut conn = create_connection_pool().unwrap().get().unwrap();
 
@@ -154,9 +146,6 @@ mod tests {
         // find
         let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
-
-        // clean up
-        sql_query("delete from project where project_id = ?").bind::<Text, _>(&project_id).execute(&mut conn).unwrap();
 
         Ok(())
     }

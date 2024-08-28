@@ -25,7 +25,7 @@ up:
 	@docker compose up --detach --build
 
 down:
-	@docker compose down
+	@docker compose down --volumes
 
 #
 # diesel

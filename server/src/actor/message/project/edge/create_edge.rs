@@ -64,8 +64,7 @@ impl Handler<CreateEdgeRequest> for Server {
                 &request.target_handle,
                 &request.arrow_type,
                 &request.label,
-            )
-            .map_err(|e| e.show())?;
+            )?;
 
             Ok(CreateEdgeResponse::new(
                 request.object_id,

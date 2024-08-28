@@ -49,8 +49,7 @@ impl Handler<MoveNodeRequest> for Server {
                 &request.page_id,
                 request.x,
                 request.y,
-            )
-            .map_err(|e| e.show())?;
+            )?;
 
             Ok(MoveNodeResponse::new(request.object_id.clone(), request.x, request.y))
         };

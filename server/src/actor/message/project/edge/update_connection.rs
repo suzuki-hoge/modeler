@@ -52,8 +52,7 @@ impl Handler<UpdateConnectionRequest> for Server {
                 &request.object_id,
                 &request.source,
                 &request.target,
-            )
-            .map_err(|e| e.show())?;
+            )?;
 
             Ok(UpdateConnectionResponse::new(request.object_id, request.source, request.target))
         };

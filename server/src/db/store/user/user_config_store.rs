@@ -3,7 +3,6 @@ use diesel::update;
 
 use crate::data::user::{UserConfig, UserId};
 use crate::db::schema::user_config as schema;
-use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
 #[derive(Queryable, Selectable, Insertable, Debug)]
@@ -25,8 +24,8 @@ fn read(row: Row) -> UserConfig {
     }
 }
 
-pub fn find(conn: &mut Conn, user_id: &UserId) -> Result<UserConfig, DatabaseError> {
-    schema::table.find(user_id).first(conn).map(read).map_err(DatabaseError::other)
+pub fn find(conn: &mut Conn, user_id: &UserId) -> Result<UserConfig, String> {
+    schema::table.find(user_id).first(conn).map(read).map_err(|e| e.to_string())
 }
 
 pub fn update_user_config(
@@ -35,20 +34,17 @@ pub fn update_user_config(
     reflect_page_object_on_text_input: bool,
     show_base_type_attributes: bool,
     show_in_second_language: bool,
-) -> Result<(), DatabaseError> {
-    let count = update(schema::table.find(user_id))
+) -> Result<(), String> {
+    update(schema::table.find(user_id))
         .set((
             schema::reflect_page_object_on_text_input.eq(reflect_page_object_on_text_input),
             schema::show_base_type_attributes.eq(show_base_type_attributes),
             schema::show_in_second_language.eq(show_in_second_language),
         ))
         .execute(conn)
-        .map_err(DatabaseError::other)?;
+        .map_err(|e| e.to_string())?;
 
-    match count {
-        1 => Ok(()),
-        _ => Err(DatabaseError::unexpected_row_matched(count)),
-    }
+    Ok(())
 }
 
 // #[cfg(test)]

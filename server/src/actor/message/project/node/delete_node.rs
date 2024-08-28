@@ -39,7 +39,7 @@ impl Handler<DeleteNodeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<DeleteNodeResponse, String> {
-            project_node_store::delete(&mut self.get_conn()?, &request.object_id).map_err(|e| e.show())?;
+            project_node_store::delete(&mut self.get_conn()?, &request.object_id)?;
 
             Ok(DeleteNodeResponse::new(request.object_id))
         };

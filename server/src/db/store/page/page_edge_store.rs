@@ -6,15 +6,14 @@ use crate::data::page::PageId;
 use crate::data::ObjectId;
 use crate::db::schema::page_edge;
 use crate::db::store::page::model::PageEdgeRow;
-use crate::db::store::DatabaseError;
 use crate::db::Conn;
 
-pub fn find(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageEdge>, DatabaseError> {
+pub fn find(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageEdge>, String> {
     page_edge::table
         .filter(page_edge::page_id.eq(page_id))
         .load::<PageEdgeRow>(conn)
         .map(|row| row.into_iter().map(PageEdge::from).collect())
-        .map_err(DatabaseError::other)
+        .map_err(|e| e.to_string())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -27,37 +26,34 @@ pub fn create(
     target: &ObjectId,
     source_handle: &str,
     target_handle: &str,
-) -> Result<(), DatabaseError> {
+) -> Result<(), String> {
     let row = PageEdgeRow::new(object_id, page_id, object_type, source, target, source_handle, target_handle);
 
-    insert_into(page_edge::table).values(&row).execute(conn).map_err(DatabaseError::other)?;
+    insert_into(page_edge::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-pub fn delete(conn: &mut Conn, object_id: &ObjectId, page_id: &PageId) -> Result<(), DatabaseError> {
-    diesel::delete(page_edge::table.find((object_id, page_id))).execute(conn).map_err(DatabaseError::other)?;
+pub fn delete(conn: &mut Conn, object_id: &ObjectId, page_id: &PageId) -> Result<(), String> {
+    diesel::delete(page_edge::table.find((object_id, page_id))).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use diesel::sql_types::Text;
-    use diesel::{sql_query, RunQueryDsl};
     use uuid::Uuid;
 
     use crate::db::create_connection_pool;
     use crate::db::store::page::{page_edge_store, page_store};
     use crate::db::store::project::{project_edge_store, project_node_store, project_store};
-    use crate::db::store::DatabaseError;
 
     fn s(value: &'static str) -> String {
         String::from(value)
     }
 
     #[test]
-    fn test() -> Result<(), DatabaseError> {
+    fn test() -> Result<(), String> {
         // init
         let mut conn = create_connection_pool().unwrap().get().unwrap();
 
@@ -114,9 +110,6 @@ mod tests {
         // find
         let rows = page_edge_store::find(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
-
-        // clean up
-        sql_query("delete from project where project_id = ?").bind::<Text, _>(&project_id).execute(&mut conn).unwrap();
 
         Ok(())
     }

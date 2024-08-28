@@ -52,8 +52,7 @@ impl Handler<AddNodeRequest> for Server {
                 &request.object_type,
                 request.x,
                 request.y,
-            )
-            .map_err(|e| e.show())?;
+            )?;
 
             Ok(AddNodeResponse::new(request.object_id, request.object_type, request.x, request.y))
         };

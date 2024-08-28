@@ -41,8 +41,7 @@ impl Handler<UpdateUserConfigRequest> for Server {
                 request.reflect_page_object_on_text_input,
                 request.show_base_type_attributes,
                 request.show_in_second_language,
-            )
-            .map_err(|e| e.show())?;
+            )?;
 
             Ok(())
         };
