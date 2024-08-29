@@ -1,12 +1,13 @@
-use crate::data::page::Page;
+use diesel::insert_into;
+use diesel::prelude::*;
+
+use crate::data::page::{Page, PageId};
 use crate::data::project::ProjectId;
 use crate::data::user::UserId;
 use crate::db::schema::{page, user_project};
 use crate::db::store::page::model::PageRow;
 use crate::db::store::user::model::UserProjectRow;
 use crate::db::Conn;
-use diesel::insert_into;
-use diesel::prelude::*;
 
 pub fn find_pages(conn: &mut Conn, user_id: &UserId) -> Result<Vec<Page>, String> {
     user_project::table
@@ -23,6 +24,25 @@ pub fn insert(conn: &mut Conn, user_id: &UserId, project_id: &ProjectId) -> Resu
     insert_into(user_project::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+pub fn is_user_in_project(conn: &mut Conn, user_id: &UserId, project_id: &ProjectId) -> Result<bool, String> {
+    user_project::table
+        .filter(user_project::user_id.eq(user_id))
+        .select(user_project::project_id)
+        .load::<ProjectId>(conn)
+        .map(|rows| rows.contains(project_id))
+        .map_err(|e| e.to_string())
+}
+
+pub fn is_user_in_page(conn: &mut Conn, user_id: &UserId, page_id: &PageId) -> Result<bool, String> {
+    user_project::table
+        .inner_join(page::table.on(page::project_id.eq(user_project::project_id)))
+        .filter(user_project::user_id.eq(user_id))
+        .select(page::page_id)
+        .load::<PageId>(conn)
+        .map(|rows| rows.contains(page_id))
+        .map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
@@ -68,6 +88,24 @@ mod tests {
         let rows = user_project_store::find_pages(&mut conn, &user_id)?;
         assert_eq!(0, rows.len());
 
+        // check in project
+        let is_in1 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id1)?;
+        assert!(!is_in1);
+        let is_in2 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id2)?;
+        assert!(!is_in2);
+        let is_in3 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id3)?;
+        assert!(!is_in3);
+
+        // check in page
+        let is_in1 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id1)?;
+        assert!(!is_in1);
+        let is_in2 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id2)?;
+        assert!(!is_in2);
+        let is_in3 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id3)?;
+        assert!(!is_in3);
+        let is_in4 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id4)?;
+        assert!(!is_in4);
+
         // insert
         user_project_store::insert(&mut conn, &user_id, &project_id1)?;
 
@@ -75,6 +113,24 @@ mod tests {
         let rows = user_project_store::find_pages(&mut conn, &user_id)?;
         assert_eq!(1, rows.len());
         assert_eq!(&page_id1, &rows[0].page_id);
+
+        // check in project
+        let is_in1 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id1)?;
+        assert!(is_in1);
+        let is_in2 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id2)?;
+        assert!(!is_in2);
+        let is_in3 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id3)?;
+        assert!(!is_in3);
+
+        // check in page
+        let is_in1 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id1)?;
+        assert!(is_in1);
+        let is_in2 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id2)?;
+        assert!(!is_in2);
+        let is_in3 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id3)?;
+        assert!(!is_in3);
+        let is_in4 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id4)?;
+        assert!(!is_in4);
 
         // insert
         user_project_store::insert(&mut conn, &user_id, &project_id3)?;
@@ -86,6 +142,24 @@ mod tests {
         assert_eq!(&page_id1, &rows[0].page_id);
         assert_eq!(&page_id3, &rows[1].page_id);
         assert_eq!(&page_id4, &rows[2].page_id);
+
+        // check in project
+        let is_in1 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id1)?;
+        assert!(is_in1);
+        let is_in2 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id2)?;
+        assert!(!is_in2);
+        let is_in3 = user_project_store::is_user_in_project(&mut conn, &user_id, &project_id3)?;
+        assert!(is_in3);
+
+        // check in page
+        let is_in1 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id1)?;
+        assert!(is_in1);
+        let is_in2 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id2)?;
+        assert!(!is_in2);
+        let is_in3 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id3)?;
+        assert!(is_in3);
+        let is_in4 = user_project_store::is_user_in_page(&mut conn, &user_id, &page_id4)?;
+        assert!(is_in4);
 
         Ok(())
     }

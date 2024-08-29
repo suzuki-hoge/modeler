@@ -1,4 +1,3 @@
-use diesel::dsl::count;
 use diesel::insert_into;
 use diesel::prelude::*;
 
@@ -18,21 +17,6 @@ pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<Page>, String
 
 pub fn find_one(conn: &mut Conn, page_id: &PageId) -> Result<Page, String> {
     page::table.find(page_id).first::<PageRow>(conn).map(Page::from).map_err(|e| e.to_string())
-}
-
-#[allow(dead_code)]
-pub fn exists(conn: &mut Conn, page_id: &PageId) -> Result<(), String> {
-    let count: i64 = page::table
-        .filter(page::page_id.eq(page_id))
-        .select(count(page::project_id))
-        .first(conn)
-        .map_err(|e| e.to_string())?;
-
-    if count == 0 {
-        Err("foo".to_string())
-    } else {
-        Ok(())
-    }
 }
 
 #[allow(dead_code)]

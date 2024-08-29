@@ -1,4 +1,3 @@
-use diesel::dsl::count;
 use diesel::insert_into;
 use diesel::prelude::*;
 
@@ -20,19 +19,4 @@ pub fn insert(conn: &mut Conn, project_id: &ProjectId, name: &str) -> Result<(),
     insert_into(project::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
-}
-
-#[allow(dead_code)]
-pub fn exists(conn: &mut Conn, project_id: &ProjectId) -> Result<(), String> {
-    let count: i64 = project::table
-        .filter(project::project_id.eq(project_id))
-        .select(count(project::project_id))
-        .first(conn)
-        .map_err(|e| e.to_string())?;
-
-    if count == 0 {
-        Err("fixme".to_string())
-    } else {
-        Ok(())
-    }
 }
