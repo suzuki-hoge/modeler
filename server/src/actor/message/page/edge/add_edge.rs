@@ -49,7 +49,7 @@ impl Handler<AddEdgeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<AddEdgeResponse, String> {
-            page_edge_store::create(
+            page_edge_store::insert(
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.page_id,

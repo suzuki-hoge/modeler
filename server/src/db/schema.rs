@@ -113,10 +113,6 @@ diesel::table! {
     user (user_id) {
         #[max_length = 36]
         user_id -> Varchar,
-        #[max_length = 36]
-        name -> Nullable<Varchar>,
-        #[max_length = 256]
-        icon -> Nullable<Varchar>,
     }
 }
 

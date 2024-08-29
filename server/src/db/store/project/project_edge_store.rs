@@ -19,7 +19,7 @@ pub fn find(conn: &mut Conn, project_id: &ProjectId) -> Result<Vec<ProjectEdge>,
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn create(
+pub fn insert(
     conn: &mut Conn,
     object_id: &ObjectId,
     project_id: &ProjectId,
@@ -42,7 +42,6 @@ pub fn create(
         arrow_type,
         label,
     );
-
     insert_into(project_edge::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
@@ -112,8 +111,8 @@ mod tests {
         let rows = project_edge_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
-        // create
-        project_edge_store::create(
+        // insert
+        project_edge_store::insert(
             &mut conn,
             &object_id,
             &project_id,

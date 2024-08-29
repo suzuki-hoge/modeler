@@ -1,7 +1,7 @@
 use crate::actor::message::{parse_bool, parse_string, Json};
 use crate::actor::server::Server;
 use crate::data::user::UserId;
-use crate::db::store::user::user_config_store;
+use crate::db::store::user::user_store;
 use crate::logger;
 use actix::{Context, Handler, Message as ActixMessage};
 use serde::Serialize;
@@ -35,7 +35,7 @@ impl Handler<UpdateUserConfigRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<(), String> {
-            user_config_store::update_user_config(
+            user_store::update(
                 &mut self.get_conn()?,
                 &request.user_id,
                 request.reflect_page_object_on_text_input,

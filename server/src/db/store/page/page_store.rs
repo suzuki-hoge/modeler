@@ -36,9 +36,8 @@ pub fn exists(conn: &mut Conn, page_id: &PageId) -> Result<(), String> {
 }
 
 #[allow(dead_code)]
-pub fn create(conn: &mut Conn, page_id: &PageId, project_id: &ProjectId, name: &str) -> Result<(), String> {
+pub fn insert(conn: &mut Conn, page_id: &PageId, project_id: &ProjectId, name: &str) -> Result<(), String> {
     let row = PageRow::new(page_id, project_id, name);
-
     insert_into(page::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
@@ -72,8 +71,8 @@ mod tests {
         let rows = page_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
-        // create
-        page_store::create(&mut conn, &page_id, &project_id, &s("project 1"))?;
+        // insert
+        page_store::insert(&mut conn, &page_id, &project_id, &s("project 1"))?;
 
         // find
         let rows = page_store::find(&mut conn, &project_id)?;

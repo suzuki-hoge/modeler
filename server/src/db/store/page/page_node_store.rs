@@ -16,7 +16,7 @@ pub fn find(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageNode>, String> 
         .map_err(|e| e.to_string())
 }
 
-pub fn create(
+pub fn insert(
     conn: &mut Conn,
     object_id: &ObjectId,
     page_id: &PageId,
@@ -25,7 +25,6 @@ pub fn create(
     y: f64,
 ) -> Result<(), String> {
     let row = PageNodeRow::new(object_id, page_id, object_type, x, y);
-
     insert_into(page_node::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
@@ -70,15 +69,15 @@ mod tests {
 
         // setup parent table
         project_store::insert(&mut conn, &project_id, &s("project 1"))?;
-        page_store::create(&mut conn, &page_id, &project_id, &s("page 1"))?;
+        page_store::insert(&mut conn, &page_id, &project_id, &s("page 1"))?;
         project_node_store::insert(&mut conn, &object_id, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
 
         // find
         let rows = page_node_store::find(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
 
-        // create
-        page_node_store::create(&mut conn, &object_id, &page_id, &s("class"), 1.0, 2.0)?;
+        // insert
+        page_node_store::insert(&mut conn, &object_id, &page_id, &s("class"), 1.0, 2.0)?;
 
         // find
         let rows = page_node_store::find(&mut conn, &page_id)?;

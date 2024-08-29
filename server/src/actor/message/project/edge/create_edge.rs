@@ -53,7 +53,7 @@ impl Handler<CreateEdgeRequest> for Server {
         logger::accept(&"john".to_string(), TYPE, &request);
 
         let accept = || -> Result<CreateEdgeResponse, String> {
-            project_edge_store::create(
+            project_edge_store::insert(
                 &mut self.get_conn()?,
                 &request.object_id,
                 &request.project_id,

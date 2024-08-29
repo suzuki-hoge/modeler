@@ -1,1 +1,2 @@
-pub mod user_config_store;
+pub mod model;
+pub mod user_store;

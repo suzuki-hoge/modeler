@@ -28,7 +28,6 @@ pub fn insert(
     icon_id: &str,
 ) -> Result<(), String> {
     let row = ProjectNodeRow::new(object_id, project_id, object_type, name, icon_id);
-
     insert_into(project_node::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
@@ -96,7 +95,7 @@ mod tests {
         let rows = project_node_store::find(&mut conn, &project_id)?;
         assert_eq!(0, rows.len());
 
-        // create
+        // insert
         project_node_store::insert(&mut conn, &object_id, &project_id, &s("class"), &s("name1"), &s("icon1"))?;
 
         // find

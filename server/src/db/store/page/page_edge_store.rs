@@ -17,7 +17,7 @@ pub fn find(conn: &mut Conn, page_id: &PageId) -> Result<Vec<PageEdge>, String> 
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn create(
+pub fn insert(
     conn: &mut Conn,
     object_id: &ObjectId,
     page_id: &PageId,
@@ -28,7 +28,6 @@ pub fn create(
     target_handle: &str,
 ) -> Result<(), String> {
     let row = PageEdgeRow::new(object_id, page_id, object_type, source, target, source_handle, target_handle);
-
     insert_into(page_edge::table).values(&row).execute(conn).map_err(|e| e.to_string())?;
 
     Ok(())
@@ -66,10 +65,10 @@ mod tests {
 
         // setup parent table
         project_store::insert(&mut conn, &project_id, &s("project 1"))?;
-        page_store::create(&mut conn, &page_id, &project_id, &s("page 1"))?;
+        page_store::insert(&mut conn, &page_id, &project_id, &s("page 1"))?;
         project_node_store::insert(&mut conn, &node_id1, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
         project_node_store::insert(&mut conn, &node_id2, &project_id, &s("class"), &s("node 2"), &s("icon 2"))?;
-        project_edge_store::create(
+        project_edge_store::insert(
             &mut conn,
             &object_id,
             &project_id,
@@ -86,8 +85,8 @@ mod tests {
         let rows = page_edge_store::find(&mut conn, &page_id)?;
         assert_eq!(0, rows.len());
 
-        // create
-        page_edge_store::create(
+        // insert
+        page_edge_store::insert(
             &mut conn,
             &object_id,
             &page_id,

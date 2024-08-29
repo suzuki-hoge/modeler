@@ -3,7 +3,7 @@ use actix_web::HttpResponse;
 
 use crate::controller::respond;
 use crate::data::user::UserId;
-use crate::db::store::user::user_config_store;
+use crate::db::store::user::user_store;
 use crate::db::Pool;
 use crate::logger;
 
@@ -12,5 +12,5 @@ pub async fn get_user_config(pool: Data<Pool>, path: Path<UserId>) -> HttpRespon
 
     logger::get(&"john".to_string(), format!("/user/{user_id}/config"));
 
-    respond(user_config_store::find(&mut pool.get().unwrap(), &user_id))
+    respond(user_store::find_one(&mut pool.get().unwrap(), &user_id))
 }
