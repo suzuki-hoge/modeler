@@ -19,7 +19,7 @@ where
     match processor() {
         Ok(value) => HttpResponse::Ok().json(value),
         Err(message) => {
-            logger::error(&user_id, "internal server error", &message);
+            logger::http_error(&user_id, "internal server error", &message);
             HttpResponse::InternalServerError().json(json! {{"message": &message}})
         }
     }
@@ -38,7 +38,7 @@ where
         Err(InvalidToken) => HttpResponse::InternalServerError().json(json! {{"message": "invalid token"}}),
         Err(Unauthorized) => HttpResponse::NotFound().json(json! {{"message": "not found"}}),
         Err(Some { user_id, message }) => {
-            logger::error(&user_id, "internal server error", &message);
+            logger::http_error(&user_id, "internal server error", &message);
             HttpResponse::InternalServerError().json(json! {{"message": &message}})
         }
     }

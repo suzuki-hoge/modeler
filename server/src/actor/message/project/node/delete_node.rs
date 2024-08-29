@@ -36,7 +36,7 @@ impl Handler<DeleteNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DeleteNodeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<DeleteNodeResponse, String> {
             project_node_store::delete(&mut self.get_conn()?, &request.object_id)?;

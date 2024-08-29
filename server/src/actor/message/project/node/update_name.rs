@@ -38,7 +38,7 @@ impl Handler<UpdateNameRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateNameRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<UpdateNameResponse, String> {
             project_node_store::update_name(&mut self.get_conn()?, &request.object_id, &request.name)?;

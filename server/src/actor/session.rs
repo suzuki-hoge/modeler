@@ -86,7 +86,9 @@ impl Session {
             // user
 
             // config
-            Some(update_user_config::TYPE) => self.server_address.do_send(UpdateUserConfigRequest::parse(json)?),
+            Some(update_user_config::TYPE) => {
+                self.server_address.do_send(UpdateUserConfigRequest::parse(&self.session_id, json)?)
+            }
 
             // project
 
@@ -202,7 +204,7 @@ impl StreamHandler<Result<WsMessage, ProtocolError>> for Session {
                         Ok(_) => {}
                         Err(message) => {
                             let response: Response = ErrorInformationResponse::new(message).into();
-                            logger::error(&"john".to_string(), &response.r#type, &response.json);
+                            logger::session_error(&self.session_id, &response.r#type, &response.json);
                             context.text(response.json)
                         }
                     }

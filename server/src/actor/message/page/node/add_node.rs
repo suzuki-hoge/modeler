@@ -42,7 +42,7 @@ impl Handler<AddNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: AddNodeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<AddNodeResponse, String> {
             page_node_store::insert(

@@ -25,7 +25,7 @@ impl Handler<DisconnectRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DisconnectRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let user_id = self.disconnect(request.session_id.clone(), request.page_id.clone(), request.project_id.clone());
 

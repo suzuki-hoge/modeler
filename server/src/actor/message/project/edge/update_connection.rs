@@ -44,7 +44,7 @@ impl Handler<UpdateConnectionRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateConnectionRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<UpdateConnectionResponse, String> {
             project_edge_store::update_connection(

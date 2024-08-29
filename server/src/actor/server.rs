@@ -73,21 +73,21 @@ impl Server {
         self.send_to_sessions(response.into(), self.page_sessions.get(page_id).unwrap(), skip);
     }
 
-    pub fn send_to_self<R: Into<Response>>(&self, response: R, self_session_id: &SessionId) {
-        let response: Response = response.into();
-        let (session_address, _) = self.sessions.get(self_session_id).unwrap();
-        logger::information(&"john".to_string(), &response.r#type, &response.json);
-        session_address.do_send(response);
-    }
-
     fn send_to_sessions(&self, response: Response, session_ids: &[SessionId], skip: &SessionId) {
         session_ids.iter().filter(|&session_id| session_id != skip).for_each(|session_id| {
             let (session_address, _) = self.sessions.get(session_id).unwrap();
-            logger::broadcast(&"john".to_string(), &response.r#type, session_id, &response.json);
+            logger::broadcast(skip, &response.r#type, session_id, &response.json);
             session_address.do_send(response.clone());
         });
 
         self.dump();
+    }
+
+    pub fn send_to_self<R: Into<Response>>(&self, response: R, self_session_id: &SessionId) {
+        let response: Response = response.into();
+        let (session_address, _) = self.sessions.get(self_session_id).unwrap();
+        logger::information(self_session_id, &response.r#type, &response.json);
+        session_address.do_send(response);
     }
 
     fn dump(&self) {

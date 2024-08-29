@@ -36,7 +36,7 @@ impl Handler<DeleteEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: DeleteEdgeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<DeleteEdgeResponse, String> {
             project_edge_store::delete(&mut self.get_conn()?, &request.object_id)?;

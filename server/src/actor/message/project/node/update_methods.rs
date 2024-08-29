@@ -38,7 +38,7 @@ impl Handler<UpdateMethodsRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateMethodsRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<UpdateMethodsResponse, String> {
             project_node_store::update_methods(&mut self.get_conn()?, &request.object_id, &request.methods)?;

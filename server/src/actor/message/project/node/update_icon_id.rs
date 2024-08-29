@@ -38,7 +38,7 @@ impl Handler<UpdateIconIdRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateIconIdRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<UpdateIconIdResponse, String> {
             project_node_store::update_icon_id(&mut self.get_conn()?, &request.object_id, &request.icon_id)?;

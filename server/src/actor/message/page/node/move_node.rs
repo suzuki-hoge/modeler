@@ -40,7 +40,7 @@ impl Handler<MoveNodeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: MoveNodeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<MoveNodeResponse, String> {
             page_node_store::update_position(

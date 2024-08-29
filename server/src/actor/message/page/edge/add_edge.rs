@@ -46,7 +46,7 @@ impl Handler<AddEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: AddEdgeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<AddEdgeResponse, String> {
             page_edge_store::insert(

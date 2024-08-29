@@ -50,7 +50,7 @@ impl Handler<CreateEdgeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: CreateEdgeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<CreateEdgeResponse, String> {
             project_edge_store::insert(

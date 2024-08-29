@@ -27,7 +27,7 @@ impl Handler<ConnectRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: ConnectRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         self.connect(
             request.session_id.clone(),

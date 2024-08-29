@@ -33,28 +33,42 @@ pub fn init() {
 }
 
 pub fn get<S: Into<String>>(user_id: &UserId, url: S) {
-    out(user_id, Log::Get { url: url.into() }, true);
+    out("user_id", user_id, Log::Get { url: url.into() }, true);
 }
 
-pub fn accept<Request: Serialize>(user_id: &UserId, r#type: &str, request: &Request) {
-    out(user_id, Log::Accept { r#type: r#type.to_string(), body: to_json_string(request).unwrap() }, true);
+pub fn accept<Request: Serialize>(session_id: &SessionId, r#type: &str, request: &Request) {
+    out(
+        "session_id",
+        session_id,
+        Log::Accept { r#type: r#type.to_string(), body: to_json_string(request).unwrap() },
+        true,
+    );
 }
 
-pub fn broadcast(user_id: &UserId, r#type: &String, to: &SessionId, json: &String) {
-    out(user_id, Log::Broadcast { r#type: r#type.to_string(), to: to.to_string(), body: json.to_string() }, true);
+pub fn broadcast(session_id: &SessionId, r#type: &String, to: &SessionId, json: &String) {
+    out(
+        "session_id",
+        session_id,
+        Log::Broadcast { r#type: r#type.to_string(), to: to.to_string(), body: json.to_string() },
+        true,
+    );
 }
 
-pub fn information<S: Into<String>>(user_id: &UserId, r#type: &String, message: S) {
-    out(user_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, true);
+pub fn information<S: Into<String>>(session_id: &SessionId, r#type: &String, message: S) {
+    out("session_id", session_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, true);
 }
 
-pub fn error<S: Into<String>>(user_id: &UserId, r#type: &str, message: S) {
-    out(user_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, false);
+pub fn http_error<S: Into<String>>(user_id: &UserId, r#type: &str, message: S) {
+    out("user_id", user_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, false);
 }
 
-fn out(user_id: &UserId, log: Log, success: bool) {
+pub fn session_error<S: Into<String>>(session_id: &SessionId, r#type: &str, message: S) {
+    out("session_id", session_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, false);
+}
+
+fn out(id_name: &str, id_value: &String, log: Log, success: bool) {
     let now = Utc::now().with_timezone(&FixedOffset::east_opt(9 * 3600).unwrap()).format("%Y/%m/%d %H:%M:%S");
-    let line = format!("time:{}\tuser_id:{}\t{}", now, user_id, log.ltsv());
+    let line = format!("time:{}\t{}:{}\t{}", now, id_name, id_value, log.ltsv());
 
     if true {
         local_stdout(&line, success);

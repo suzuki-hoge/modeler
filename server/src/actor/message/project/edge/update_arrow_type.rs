@@ -38,7 +38,7 @@ impl Handler<UpdateArrowTypeRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdateArrowTypeRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<UpdateArrowTypeResponse, String> {
             project_edge_store::update_arrow_type(&mut self.get_conn()?, &request.object_id, &request.arrow_type)?;

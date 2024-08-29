@@ -42,7 +42,7 @@ impl Handler<UpdatePropertiesRequest> for Server {
     type Result = ();
 
     fn handle(&mut self, request: UpdatePropertiesRequest, _: &mut Context<Self>) {
-        logger::accept(&"john".to_string(), TYPE, &request);
+        logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<UpdatePropertiesResponse, String> {
             project_node_store::update_properties(&mut self.get_conn()?, &request.object_id, &request.properties)?;
