@@ -1,7 +1,7 @@
-use diesel::{Insertable, Queryable, Selectable};
-
+use crate::data::project::ProjectId;
 use crate::data::user::{UserConfig, UserId};
-use crate::db::schema::{user, user_config};
+use crate::db::schema::{user, user_config, user_project};
+use diesel::{Insertable, Queryable, Selectable};
 
 #[derive(Queryable, Selectable, Insertable, Debug)]
 #[diesel(table_name = user)]
@@ -45,5 +45,19 @@ impl From<UserConfigRow> for UserConfig {
             show_base_type_attributes: row.show_base_type_attributes,
             show_in_second_language: row.show_in_second_language,
         }
+    }
+}
+
+#[derive(Queryable, Selectable, Insertable, Debug)]
+#[diesel(table_name = user_project)]
+#[diesel(check_for_backend(diesel::mysql::Mysql))]
+pub struct UserProjectRow {
+    user_id: UserId,
+    project_id: ProjectId,
+}
+
+impl UserProjectRow {
+    pub fn new(user_id: &UserId, project_id: &ProjectId) -> Self {
+        Self { user_id: user_id.clone(), project_id: project_id.clone() }
     }
 }

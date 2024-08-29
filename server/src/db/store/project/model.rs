@@ -89,6 +89,7 @@ pub struct ProjectEdgeRow {
     label: String,
 }
 
+#[allow(clippy::too_many_arguments)]
 impl ProjectEdgeRow {
     pub fn new(
         object_id: &ObjectId,
