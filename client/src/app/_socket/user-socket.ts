@@ -2,7 +2,7 @@ import { ReadyState } from 'react-use-websocket/src/lib/constants'
 import { SendJsonMessage } from 'react-use-websocket/src/lib/types'
 import { createWithEqualityFn } from 'zustand/traditional'
 
-import { UserConfig } from '@/app/_object/user/config/type'
+import { UserConfig } from '@/app/_object/user/type'
 import { sendUpdateUserConfig } from '@/app/_socket/user/config/update-user-config'
 
 type UserSocketWithState = {

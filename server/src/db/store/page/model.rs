@@ -13,9 +13,9 @@ use crate::db::schema::page_node;
 #[diesel(table_name = page)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 pub struct PageRow {
-    page_id: PageId,
-    project_id: ProjectId,
-    name: String,
+    pub page_id: PageId,
+    pub project_id: ProjectId,
+    pub name: String,
 }
 
 impl PageRow {
@@ -26,7 +26,7 @@ impl PageRow {
 
 impl From<PageRow> for Page {
     fn from(row: PageRow) -> Self {
-        Self { page_id: row.page_id, project_id: row.project_id, name: row.name }
+        Self { page_id: row.page_id, name: row.name }
     }
 }
 

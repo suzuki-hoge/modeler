@@ -30,6 +30,7 @@ async fn main() -> Result<(), String> {
             .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![AUTHORIZATION, ACCEPT])
             .allowed_header(CONTENT_TYPE)
+            .allowed_header("Modeler-User-Id")
             .max_age(3600);
 
         App::new()
@@ -37,8 +38,10 @@ async fn main() -> Result<(), String> {
             .app_data(Data::new(server.clone()))
             .app_data(Data::new(pool.clone()))
             .service(resource("/ws/{project_id}/{page_id}/{user_id}").to(start_session))
-            .route("/user/{user_id}/pages", web::get().to(user_controller::get_pages))
-            .route("/user/{user_id}/config", web::get().to(user_controller::get_user_config))
+            .route("/user/sign_up", web::post().to(user_controller::sign_up))
+            .route("/user/joined/{project_id}", web::get().to(user_controller::joined))
+            .route("/user/pages", web::get().to(user_controller::get_pages))
+            .route("/user/config", web::get().to(user_controller::get_user_config))
             .route("/project/{project_id}/pages", web::get().to(project_controller::get_pages))
             .route("/project/{project_id}/icons", web::get().to(project_controller::get_icons))
             .route("/project/{project_id}/nodes", web::get().to(project_controller::get_nodes))

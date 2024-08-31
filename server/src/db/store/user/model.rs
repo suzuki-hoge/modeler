@@ -1,7 +1,11 @@
+use diesel::{Insertable, Queryable, Selectable};
+
+use crate::data::page::ProjectPage;
 use crate::data::project::ProjectId;
 use crate::data::user::{UserConfig, UserId};
 use crate::db::schema::{user, user_config, user_project};
-use diesel::{Insertable, Queryable, Selectable};
+use crate::db::store::page::model::PageRow;
+use crate::db::store::project::model::ProjectRow;
 
 #[derive(Queryable, Selectable, Insertable, Debug)]
 #[diesel(table_name = user)]
@@ -59,5 +63,11 @@ pub struct UserProjectRow {
 impl UserProjectRow {
     pub fn new(user_id: &UserId, project_id: &ProjectId) -> Self {
         Self { user_id: user_id.clone(), project_id: project_id.clone() }
+    }
+}
+
+impl From<(ProjectRow, PageRow)> for ProjectPage {
+    fn from(row: (ProjectRow, PageRow)) -> Self {
+        Self { project_id: row.0.project_id, project_name: row.0.name, page_id: row.1.page_id, page_name: row.1.name }
     }
 }

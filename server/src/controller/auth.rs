@@ -30,7 +30,7 @@ where
     T: Serialize,
     S: Into<String>,
     F1: FnOnce(&UserId) -> actix_web::Result<bool, String>,
-    F2: FnOnce() -> actix_web::Result<T, String>,
+    F2: FnOnce(&UserId) -> actix_web::Result<T, String>,
 {
     match auth_inner(request, route, authenticator, processor) {
         Ok(value) => HttpResponse::Ok().json(value),
@@ -54,7 +54,7 @@ where
     T: Serialize,
     S: Into<String>,
     F1: FnOnce(&UserId) -> actix_web::Result<bool, String>,
-    F2: FnOnce() -> actix_web::Result<T, String>,
+    F2: FnOnce(&UserId) -> actix_web::Result<T, String>,
 {
     let user_id = request
         .headers()
@@ -67,7 +67,7 @@ where
 
     if is_authenticated {
         logger::get(&user_id, route);
-        processor().map_err(|message| Some { user_id: user_id.clone(), message })
+        processor(&user_id).map_err(|message| Some { user_id: user_id.clone(), message })
     } else {
         Err(Unauthorized)
     }

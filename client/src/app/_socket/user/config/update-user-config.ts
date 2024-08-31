@@ -2,7 +2,7 @@ import toast from 'react-hot-toast'
 import { ReadyState } from 'react-use-websocket'
 import z from 'zod'
 
-import { UserConfig } from '@/app/_object/user/config/type'
+import { UserConfig } from '@/app/_object/user/type'
 
 // types
 

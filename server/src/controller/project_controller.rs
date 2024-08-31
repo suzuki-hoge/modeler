@@ -15,7 +15,7 @@ pub async fn get_pages(request: HttpRequest, pool: Data<Pool>, path: Path<Projec
         request,
         format!("/project/{project_id}/pages"),
         |user_id| user_project_store::is_user_in_project(&mut pool.get().unwrap(), user_id, &project_id),
-        || page_store::find(&mut pool.get().unwrap(), &project_id),
+        |_| page_store::find(&mut pool.get().unwrap(), &project_id),
     )
 }
 
@@ -26,7 +26,7 @@ pub async fn get_icons(request: HttpRequest, pool: Data<Pool>, path: Path<Projec
         request,
         format!("/project/{project_id}/icons"),
         |user_id| user_project_store::is_user_in_project(&mut pool.get().unwrap(), user_id, &project_id),
-        || node_icon_store::find(&mut pool.get().unwrap(), &project_id),
+        |_| node_icon_store::find(&mut pool.get().unwrap(), &project_id),
     )
 }
 
@@ -37,7 +37,7 @@ pub async fn get_nodes(request: HttpRequest, pool: Data<Pool>, path: Path<Projec
         request,
         format!("/project/{project_id}/nodes"),
         |user_id| user_project_store::is_user_in_project(&mut pool.get().unwrap(), user_id, &project_id),
-        || project_node_store::find(&mut pool.get().unwrap(), &project_id),
+        |_| project_node_store::find(&mut pool.get().unwrap(), &project_id),
     )
 }
 
@@ -48,6 +48,6 @@ pub async fn get_edges(request: HttpRequest, pool: Data<Pool>, path: Path<Projec
         request,
         format!("/project/{project_id}/edges"),
         |user_id| user_project_store::is_user_in_project(&mut pool.get().unwrap(), user_id, &project_id),
-        || project_edge_store::find(&mut pool.get().unwrap(), &project_id),
+        |_| project_edge_store::find(&mut pool.get().unwrap(), &project_id),
     )
 }

@@ -1,3 +1,4 @@
+use diesel::dsl::count;
 use diesel::insert_into;
 use diesel::prelude::*;
 
@@ -6,18 +7,32 @@ use crate::db::schema::{user, user_config};
 use crate::db::store::user::model::{UserConfigRow, UserRow};
 use crate::db::Conn;
 
+pub fn exists(conn: &mut Conn, user_id: &UserId) -> Result<bool, String> {
+    let count = user::table
+        .filter(user::user_id.eq(user_id))
+        .select(count(user::user_id))
+        .first::<i64>(conn)
+        .map_err(|e| e.to_string())?;
+
+    Ok(count == 1)
+}
+
 pub fn find_one(conn: &mut Conn, user_id: &UserId) -> Result<UserConfig, String> {
     user_config::table.find(user_id).first::<UserConfigRow>(conn).map(UserConfig::from).map_err(|e| e.to_string())
 }
 
-pub fn insert(conn: &mut Conn, user_id: &UserId) -> Result<(), String> {
-    let user_row = UserRow::new(user_id);
-    insert_into(user::table).values(&user_row).execute(conn).map_err(|e| e.to_string())?;
+pub fn insert(conn: &mut Conn, user_id: &UserId) -> Result<bool, String> {
+    if exists(conn, user_id)? {
+        Ok(false)
+    } else {
+        let user_row = UserRow::new(user_id);
+        insert_into(user::table).values(&user_row).execute(conn).map_err(|e| e.to_string())?;
 
-    let user_config_row = UserConfigRow::new(user_id);
-    insert_into(user_config::table).values(&user_config_row).execute(conn).map_err(|e| e.to_string())?;
+        let user_config_row = UserConfigRow::new(user_id);
+        insert_into(user_config::table).values(&user_config_row).execute(conn).map_err(|e| e.to_string())?;
 
-    Ok(())
+        Ok(true)
+    }
 }
 
 pub fn update(
@@ -54,14 +69,19 @@ mod tests {
         // setup keys
         let user_id = Uuid::new_v4().to_string();
 
-        // insert
-        user_store::insert(&mut conn, &user_id)?;
+        // insert ( processed 9
+        let processed = user_store::insert(&mut conn, &user_id)?;
+        assert!(processed);
 
         // find
         let row = user_store::find_one(&mut conn, &user_id)?;
         assert!(!row.reflect_page_object_on_text_input);
         assert!(!row.show_base_type_attributes);
         assert!(!row.show_in_second_language);
+
+        // insert ( skip )
+        let processed = user_store::insert(&mut conn, &user_id)?;
+        assert!(!processed);
 
         // update
         user_store::update(&mut conn, &user_id, true, true, true)?;

@@ -1,21 +1,23 @@
 use diesel::insert_into;
 use diesel::prelude::*;
 
-use crate::data::page::{Page, PageId};
+use crate::data::page::{PageId, ProjectPage};
 use crate::data::project::ProjectId;
 use crate::data::user::UserId;
-use crate::db::schema::{page, user_project};
+use crate::db::schema::{page, project, user_project};
 use crate::db::store::page::model::PageRow;
+use crate::db::store::project::model::ProjectRow;
 use crate::db::store::user::model::UserProjectRow;
 use crate::db::Conn;
 
-pub fn find_pages(conn: &mut Conn, user_id: &UserId) -> Result<Vec<Page>, String> {
+pub fn find_project_pages(conn: &mut Conn, user_id: &UserId) -> Result<Vec<ProjectPage>, String> {
     user_project::table
         .filter(user_project::user_id.eq(user_id))
         .inner_join(page::table.on(user_project::project_id.eq(page::project_id)))
-        .select(PageRow::as_select())
-        .load::<PageRow>(conn)
-        .map(|row| row.into_iter().map(Page::from).collect())
+        .inner_join(project::table.on(page::project_id.eq(project::project_id)))
+        .select((ProjectRow::as_select(), PageRow::as_select()))
+        .load::<(ProjectRow, PageRow)>(conn)
+        .map(|row| row.into_iter().map(ProjectPage::from).collect())
         .map_err(|e| e.to_string())
 }
 
@@ -85,7 +87,7 @@ mod tests {
         page_store::insert(&mut conn, &page_id4, &project_id3, &s("page 4 in project 3"))?;
 
         // find
-        let rows = user_project_store::find_pages(&mut conn, &user_id)?;
+        let rows = user_project_store::find_project_pages(&mut conn, &user_id)?;
         assert_eq!(0, rows.len());
 
         // check in project
@@ -110,7 +112,7 @@ mod tests {
         user_project_store::insert(&mut conn, &user_id, &project_id1)?;
 
         // find
-        let rows = user_project_store::find_pages(&mut conn, &user_id)?;
+        let rows = user_project_store::find_project_pages(&mut conn, &user_id)?;
         assert_eq!(1, rows.len());
         assert_eq!(&page_id1, &rows[0].page_id);
 
@@ -136,8 +138,8 @@ mod tests {
         user_project_store::insert(&mut conn, &user_id, &project_id3)?;
 
         // find
-        let rows = user_project_store::find_pages(&mut conn, &user_id)?;
-        let rows = rows.iter().sorted_by_key(|row| &row.name).collect_vec();
+        let rows = user_project_store::find_project_pages(&mut conn, &user_id)?;
+        let rows = rows.iter().sorted_by_key(|row| &row.page_name).collect_vec();
         assert_eq!(3, rows.len());
         assert_eq!(&page_id1, &rows[0].page_id);
         assert_eq!(&page_id3, &rows[1].page_id);

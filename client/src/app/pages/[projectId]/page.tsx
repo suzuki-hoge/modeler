@@ -3,7 +3,7 @@ import '@xyflow/react/dist/style.css'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 
-import { fetchPages } from '@/app/_object/page/fetch'
+import { fetchProjectPages } from '@/app/_object/page/fetch'
 import { Page as PageType } from '@/app/_object/page/type'
 
 interface Props {
@@ -17,7 +17,7 @@ export default function Page(props: Props) {
 
   useEffect(
     () => {
-      void fetchPages(props.params.projectId).then(setPages)
+      void fetchProjectPages(props.params.projectId).then(setPages)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
