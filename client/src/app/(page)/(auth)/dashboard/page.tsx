@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 
 import { useAuthUser } from '@/app/_hook/auth'
 import { Page2, ProjectPage } from '@/app/_object/page/type'
+import { postCreateProject } from '@/app/_object/project/fetch'
 import { Project } from '@/app/_object/project/type'
 import { fetchProjectPages } from '@/app/_object/user/fetch'
 
@@ -19,6 +20,11 @@ export default function Content() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
+
+  const createNewProject = () =>
+    postCreateProject(user.sub!, 'プロジェクト１', 'ページ１').then(() =>
+      fetchProjectPages(user.sub!).then(setProjectPages),
+    )
 
   return (
     <div>
@@ -49,6 +55,7 @@ export default function Content() {
           </ul>
         </div>
       ))}
+      <button onClick={createNewProject}>Create New Project</button>
     </div>
   )
 }

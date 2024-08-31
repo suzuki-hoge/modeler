@@ -42,6 +42,7 @@ async fn main() -> Result<(), String> {
             .route("/user/joined/{project_id}", web::get().to(user_controller::joined))
             .route("/user/pages", web::get().to(user_controller::get_pages))
             .route("/user/config", web::get().to(user_controller::get_user_config))
+            .route("/project/create", web::post().to(project_controller::create))
             .route("/project/{project_id}/pages", web::get().to(project_controller::get_pages))
             .route("/project/{project_id}/icons", web::get().to(project_controller::get_icons))
             .route("/project/{project_id}/nodes", web::get().to(project_controller::get_nodes))
