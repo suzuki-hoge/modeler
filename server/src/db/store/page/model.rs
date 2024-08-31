@@ -2,7 +2,7 @@ use diesel::{Insertable, Queryable, Selectable};
 
 use crate::data::edge::PageEdge;
 use crate::data::node::PageNode;
-use crate::data::page::{Page, PageId};
+use crate::data::page::PageId;
 use crate::data::project::ProjectId;
 use crate::data::{ObjectId, Position};
 use crate::db::schema::page;
@@ -21,12 +21,6 @@ pub struct PageRow {
 impl PageRow {
     pub fn new(page_id: &PageId, project_id: &ProjectId, name: &str) -> Self {
         Self { page_id: page_id.clone(), project_id: project_id.clone(), name: name.to_string() }
-    }
-}
-
-impl From<PageRow> for Page {
-    fn from(row: PageRow) -> Self {
-        Self { page_id: row.page_id, name: row.name }
     }
 }
 

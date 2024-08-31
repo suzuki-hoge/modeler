@@ -38,7 +38,7 @@ impl Handler<UpdateUserConfigRequest> for Server {
         logger::accept(&request.session_id, TYPE, &request);
 
         let accept = || -> Result<(), String> {
-            user_store::update(
+            user_store::update_user_config(
                 &mut self.get_conn()?,
                 &request.user_id,
                 request.reflect_page_object_on_text_input,

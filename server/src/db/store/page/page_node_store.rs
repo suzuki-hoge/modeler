@@ -68,8 +68,8 @@ mod tests {
         let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        project_store::insert(&mut conn, &project_id, &s("project 1"))?;
-        page_store::insert(&mut conn, &page_id, &project_id, &s("page 1"))?;
+        project_store::create(&mut conn, &project_id, &s("project 1"))?;
+        page_store::create(&mut conn, &page_id, &project_id, &s("page 1"))?;
         project_node_store::insert(&mut conn, &object_id, &project_id, &s("class"), &s("node 1"), &s("icon 1"))?;
 
         // find

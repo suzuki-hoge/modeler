@@ -1,8 +1,7 @@
 use diesel::{Insertable, Queryable, Selectable};
 
-use crate::data::page::ProjectPage;
 use crate::data::project::ProjectId;
-use crate::data::user::{UserConfig, UserId};
+use crate::data::user::{UserConfig, UserId, UserProjectPage};
 use crate::db::schema::{user, user_config, user_project};
 use crate::db::store::page::model::PageRow;
 use crate::db::store::project::model::ProjectRow;
@@ -66,7 +65,7 @@ impl UserProjectRow {
     }
 }
 
-impl From<(ProjectRow, PageRow)> for ProjectPage {
+impl From<(ProjectRow, PageRow)> for UserProjectPage {
     fn from(row: (ProjectRow, PageRow)) -> Self {
         Self { project_id: row.0.project_id, project_name: row.0.name, page_id: row.1.page_id, page_name: row.1.name }
     }

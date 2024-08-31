@@ -17,11 +17,7 @@ pub fn exists(conn: &mut Conn, user_id: &UserId) -> Result<bool, String> {
     Ok(count == 1)
 }
 
-pub fn find_one(conn: &mut Conn, user_id: &UserId) -> Result<UserConfig, String> {
-    user_config::table.find(user_id).first::<UserConfigRow>(conn).map(UserConfig::from).map_err(|e| e.to_string())
-}
-
-pub fn insert(conn: &mut Conn, user_id: &UserId) -> Result<bool, String> {
+pub fn sign_up(conn: &mut Conn, user_id: &UserId) -> Result<bool, String> {
     if exists(conn, user_id)? {
         Ok(false)
     } else {
@@ -35,7 +31,11 @@ pub fn insert(conn: &mut Conn, user_id: &UserId) -> Result<bool, String> {
     }
 }
 
-pub fn update(
+pub fn find_user_config(conn: &mut Conn, user_id: &UserId) -> Result<UserConfig, String> {
+    user_config::table.find(user_id).first::<UserConfigRow>(conn).map(UserConfig::from).map_err(|e| e.to_string())
+}
+
+pub fn update_user_config(
     conn: &mut Conn,
     user_id: &UserId,
     reflect_page_object_on_text_input: bool,
@@ -70,33 +70,33 @@ mod tests {
         let user_id = Uuid::new_v4().to_string();
 
         // insert ( processed 9
-        let processed = user_store::insert(&mut conn, &user_id)?;
+        let processed = user_store::sign_up(&mut conn, &user_id)?;
         assert!(processed);
 
         // find
-        let row = user_store::find_one(&mut conn, &user_id)?;
+        let row = user_store::find_user_config(&mut conn, &user_id)?;
         assert!(!row.reflect_page_object_on_text_input);
         assert!(!row.show_base_type_attributes);
         assert!(!row.show_in_second_language);
 
         // insert ( skip )
-        let processed = user_store::insert(&mut conn, &user_id)?;
+        let processed = user_store::sign_up(&mut conn, &user_id)?;
         assert!(!processed);
 
         // update
-        user_store::update(&mut conn, &user_id, true, true, true)?;
+        user_store::update_user_config(&mut conn, &user_id, true, true, true)?;
 
         // find
-        let row = user_store::find_one(&mut conn, &user_id)?;
+        let row = user_store::find_user_config(&mut conn, &user_id)?;
         assert!(row.reflect_page_object_on_text_input);
         assert!(row.show_base_type_attributes);
         assert!(row.show_in_second_language);
 
         // update
-        user_store::update(&mut conn, &user_id, false, false, false)?;
+        user_store::update_user_config(&mut conn, &user_id, false, false, false)?;
 
         // find
-        let row = user_store::find_one(&mut conn, &user_id)?;
+        let row = user_store::find_user_config(&mut conn, &user_id)?;
         assert!(!row.reflect_page_object_on_text_input);
         assert!(!row.show_base_type_attributes);
         assert!(!row.show_in_second_language);

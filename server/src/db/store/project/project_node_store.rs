@@ -89,7 +89,7 @@ mod tests {
         let project_id = Uuid::new_v4().to_string();
 
         // setup parent table
-        project_store::insert(&mut conn, &project_id, &s("project 1"))?;
+        project_store::create(&mut conn, &project_id, &s("project 1"))?;
 
         // find
         let rows = project_node_store::find(&mut conn, &project_id)?;
