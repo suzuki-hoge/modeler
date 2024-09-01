@@ -11,7 +11,6 @@ pub async fn join(request: HttpRequest, pool: Data<Pool>, path: Path<ProjectId>)
 
     auth(
         request,
-        format!("/user/joined/{project_id}"),
         |user_id| user_store::exists(&mut pool.get().unwrap(), user_id),
         |user_id| user_project_store::create(&mut pool.get().unwrap(), user_id, &project_id),
     )

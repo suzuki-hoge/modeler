@@ -12,7 +12,6 @@ pub async fn get_nodes(request: HttpRequest, pool: Data<Pool>, path: Path<PageId
 
     auth(
         request,
-        format!("/page/{page_id}/nodes"),
         |user_id| user_project_page_store::is_user_in_page(&mut pool.get().unwrap(), user_id, &page_id),
         |_| page_node_store::find(&mut pool.get().unwrap(), &page_id),
     )
@@ -23,7 +22,6 @@ pub async fn get_edges(request: HttpRequest, pool: Data<Pool>, path: Path<PageId
 
     auth(
         request,
-        format!("/page/{page_id}/edges"),
         |user_id| user_project_page_store::is_user_in_page(&mut pool.get().unwrap(), user_id, &page_id),
         |_| page_edge_store::find(&mut pool.get().unwrap(), &page_id),
     )

@@ -12,7 +12,6 @@ use crate::db::Pool;
 pub async fn get_project_pages(request: HttpRequest, pool: Data<Pool>) -> HttpResponse {
     auth(
         request,
-        "/user/pages",
         |user_id| user_store::exists(&mut pool.get().unwrap(), user_id),
         |user_id| user_project_page_store::find_user_project_pages(&mut pool.get().unwrap(), user_id),
     )
@@ -34,7 +33,6 @@ pub async fn create_project_page(
 ) -> HttpResponse {
     auth(
         request,
-        "/project/create",
         |user_id| user_store::exists(&mut pool.get().unwrap(), user_id),
         |user_id| {
             user_project_page_store::create_user_project_page(
@@ -54,7 +52,6 @@ pub async fn is_joined(request: HttpRequest, pool: Data<Pool>, path: Path<Projec
 
     auth(
         request,
-        format!("/user/joined/{project_id}"),
         |user_id| user_project_page_store::is_user_in_project(&mut pool.get().unwrap(), user_id, &project_id),
         |_| Ok(json! {{"joined": true}}),
     )

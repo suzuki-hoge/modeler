@@ -12,7 +12,6 @@ pub async fn get_name(request: HttpRequest, pool: Data<Pool>, path: Path<PageId>
 
     auth(
         request,
-        format!("/page/{page_id}"),
         |user_id| user_project_page_store::is_user_in_page(&mut pool.get().unwrap(), user_id, &page_id),
         |_| page_store::find_name(&mut pool.get().unwrap(), &page_id),
     )

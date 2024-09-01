@@ -10,7 +10,9 @@ use crate::actor::SessionId;
 use crate::data::user::UserId;
 
 enum Log {
-    Get { url: String },
+    HttpStart { url: String },
+    HttpError { body: String },
+    HttpEnd { status: u16 },
     Accept { r#type: String, body: String },
     Broadcast { r#type: String, to: String, body: String },
     Information { r#type: String, body: String },
@@ -18,7 +20,9 @@ enum Log {
 impl Log {
     fn ltsv(self) -> String {
         match self {
-            Log::Get { url } => format!("type:get\turl:{}", url),
+            Log::HttpStart { url } => format!("type:http-start\turl:{}", url),
+            Log::HttpError { body } => format!("type:http-error\tbody:{}", body),
+            Log::HttpEnd { status } => format!("type:http-end\tstatus:{}", status),
             Log::Accept { r#type, body } => format!("type:accept\tdetail:{}\tbody:{}", r#type, body),
             Log::Broadcast { r#type, to, body } => {
                 format!("type:broadcast\tdetail:{}\tto:{}\tbody:{}", r#type, to, body)
@@ -32,8 +36,16 @@ pub fn init() {
     let _ = remove_file("/tmp/modeler-server.log");
 }
 
-pub fn get<S: Into<String>>(user_id: &UserId, url: S) {
-    out("user_id", user_id, Log::Get { url: url.into() }, true);
+pub fn http_start<S: Into<String>>(user_id: &UserId, url: S) {
+    out("user_id", user_id, Log::HttpStart { url: url.into() }, true);
+}
+
+pub fn http_error<S: Into<String>>(user_id: &UserId, message: S) {
+    out("user_id", user_id, Log::HttpError { body: message.into() }, false);
+}
+
+pub fn http_end(user_id: &UserId, status: u16) {
+    out("user_id", user_id, Log::HttpEnd { status }, true);
 }
 
 pub fn accept<Request: Serialize>(session_id: &SessionId, r#type: &str, request: &Request) {
@@ -56,10 +68,6 @@ pub fn broadcast(session_id: &SessionId, r#type: &String, to: &SessionId, json: 
 
 pub fn information<S: Into<String>>(session_id: &SessionId, r#type: &String, message: S) {
     out("session_id", session_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, true);
-}
-
-pub fn http_error<S: Into<String>>(user_id: &UserId, r#type: &str, message: S) {
-    out("user_id", user_id, Log::Information { r#type: r#type.to_string(), body: message.into() }, false);
 }
 
 pub fn session_error<S: Into<String>>(session_id: &SessionId, r#type: &str, message: S) {

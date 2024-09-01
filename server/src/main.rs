@@ -1,9 +1,3 @@
-use crate::actor::{start_server, start_session};
-use crate::controller::{
-    page_controller, page_object_controller, project_controller, project_object_controller, user_controller,
-    user_project_controller, user_project_page_controller,
-};
-use crate::db::create_connection_pool;
 use actix_cors::Cors;
 use actix_web::http::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use actix_web::{
@@ -12,6 +6,14 @@ use actix_web::{
     App, HttpServer,
 };
 use web::{get, post};
+
+use crate::actor::{start_server, start_session};
+use crate::controller::log::log_middleware;
+use crate::controller::{
+    page_controller, page_object_controller, project_controller, project_object_controller, user_controller,
+    user_project_controller, user_project_page_controller,
+};
+use crate::db::create_connection_pool;
 
 mod actor;
 mod controller;
@@ -40,6 +42,7 @@ async fn main() -> Result<(), String> {
             .wrap(cors)
             .app_data(Data::new(server.clone()))
             .app_data(Data::new(pool.clone()))
+            .wrap_fn(log_middleware)
             // socket
             .service(resource("/ws/{project_id}/{page_id}/{user_id}").to(start_session))
             // user controller

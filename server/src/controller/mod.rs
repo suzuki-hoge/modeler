@@ -1,4 +1,5 @@
 mod auth;
+pub mod log;
 pub mod page_controller;
 pub mod page_object_controller;
 pub mod project_controller;
