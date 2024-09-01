@@ -4,7 +4,7 @@ import {
   innerToParts,
   innerToRef,
   RefString,
-} from '@/app/_component/input/completable-input/RefString'
+} from '@/app/_flow/component/input/completable-input/RefString'
 import { NodeHeader } from '@/app/_flow/object/node/type'
 
 const headers: NodeHeader[] = [

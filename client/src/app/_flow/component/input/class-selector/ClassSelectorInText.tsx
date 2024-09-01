@@ -3,13 +3,13 @@
 import { Node, XYPosition } from '@xyflow/react'
 import { shallow } from 'zustand/shallow'
 
-import { ClassSelector } from '@/app/_component/input/class-selector/ClassSelector'
+import { ClassSelector } from '@/app/_flow/component/input/class-selector/ClassSelector'
 import {
   changeTextInReflectModeOnCreate,
   changeTextInReflectModeOnSelect,
   changeTextOnCreate,
   changeTextOnSelect,
-} from '@/app/_component/input/class-selector/function'
+} from '@/app/_flow/component/input/class-selector/function'
 import { NodeHeader, ProjectNodeData } from '@/app/_flow/object/node/type'
 import { pageSocketSelector, usePageSocket } from '@/app/_flow/socket/page-socket'
 import { projectSocketSelector, useProjectSocket } from '@/app/_flow/socket/project-socket'

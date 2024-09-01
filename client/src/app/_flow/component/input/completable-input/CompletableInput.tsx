@@ -3,7 +3,8 @@ import { XYPosition } from '@xyflow/react'
 import React, { ChangeEvent, Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react'
 import { shallow } from 'zustand/shallow'
 
-import { ClassSelectorInText } from '@/app/_component/input/class-selector/ClassSelectorInText'
+import { Popup, PopupState, usePopup } from '@/app/_component/selector/Popup'
+import { ClassSelectorInText } from '@/app/_flow/component/input/class-selector/ClassSelectorInText'
 import {
   changedByInput,
   changedBySelect,
@@ -11,8 +12,7 @@ import {
   innerToParts,
   innerToRef,
   RefString,
-} from '@/app/_component/input/completable-input/RefString'
-import { Popup, PopupState, usePopup } from '@/app/_component/selector/Popup'
+} from '@/app/_flow/component/input/completable-input/RefString'
 import { NodeHeader } from '@/app/_flow/object/node/type'
 import { useProjectStore } from '@/app/_flow/store/project-store'
 

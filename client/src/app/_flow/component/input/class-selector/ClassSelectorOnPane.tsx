@@ -3,13 +3,13 @@ import { XYPosition } from '@xyflow/react'
 import { MutableRefObject } from 'react'
 import { shallow } from 'zustand/shallow'
 
-import { ClassSelector } from '@/app/_component/input/class-selector/ClassSelector'
+import { ClassSelector } from '@/app/_flow/component/input/class-selector/ClassSelector'
 import {
   clickPaneOnCreate,
   clickPaneOnSelect,
   dragPaneOnCreate,
   dragPaneOnSelect,
-} from '@/app/_component/input/class-selector/function'
+} from '@/app/_flow/component/input/class-selector/function'
 import { DragSource } from '@/app/_flow/hook/edge'
 import { pageSocketSelector, usePageSocket } from '@/app/_flow/socket/page-socket'
 import { projectSocketSelector, useProjectSocket } from '@/app/_flow/socket/project-socket'

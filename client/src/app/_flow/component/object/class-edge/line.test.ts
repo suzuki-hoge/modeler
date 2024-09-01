@@ -1,4 +1,4 @@
-import { findCollision, getSideEdges, isSameVector, Line, Point } from '@/app/_component/chart/class-edge/line'
+import { findCollision, getSideEdges, isSameVector, Line, Point } from '@/app/_flow/component/object/class-edge/line'
 
 test('getSideEdges', () => {
   const exp: Line[] = [

@@ -2,9 +2,9 @@ import { BaseEdge, ConnectionLineType, DefaultEdgeOptions, Edge, EdgeProps, Edge
 import { CSSProperties, memo, useCallback, useMemo } from 'react'
 import { shallow } from 'zustand/shallow'
 
-import { EdgeLabel } from '@/app/_component/chart/class-edge/EdgeLabel'
-import { EdgePalette } from '@/app/_component/chart/class-edge/EdgePalette'
-import { getInnerProps } from '@/app/_component/chart/class-edge/line'
+import { EdgeLabel } from '@/app/_flow/component/object/class-edge/EdgeLabel'
+import { EdgePalette } from '@/app/_flow/component/object/class-edge/EdgePalette'
+import { getInnerProps } from '@/app/_flow/component/object/class-edge/line'
 import { updateProjectEdge } from '@/app/_flow/object/edge/function'
 import { ArrowType, PageEdgeData } from '@/app/_flow/object/edge/type'
 import { projectSocketSelector, useProjectSocket } from '@/app/_flow/socket/project-socket'

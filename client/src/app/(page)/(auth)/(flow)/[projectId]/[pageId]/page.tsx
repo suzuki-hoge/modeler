@@ -7,17 +7,17 @@ import { Toaster } from 'react-hot-toast'
 import useWebSocket from 'react-use-websocket'
 import { shallow } from 'zustand/shallow'
 
+import { ConfigPanel } from '@/app/_flow/component/config-panel/ConfigPanel'
+import { ClassSelectorOnPane } from '@/app/_flow/component/input/class-selector/ClassSelectorOnPane'
 import {
   connectionLineStyle,
   connectionLineType,
   defaultEdgeOptions,
   edgeTypes,
-} from '@/app/_component/chart/class-edge/ClassEdge'
-import { nodeTypes } from '@/app/_component/chart/class-node/ClassNode'
-import { ConnectionLine } from '@/app/_component/chart/connection-line/ConnectionLine'
-import Arrows from '@/app/_component/chart/marker/Arrows'
-import { ConfigPanel } from '@/app/_component/config-panel/ConfigPanel'
-import { ClassSelectorOnPane } from '@/app/_component/input/class-selector/ClassSelectorOnPane'
+} from '@/app/_flow/component/object/class-edge/ClassEdge'
+import { nodeTypes } from '@/app/_flow/component/object/class-node/ClassNode'
+import { ConnectionLine } from '@/app/_flow/component/object/connection-line/ConnectionLine'
+import Arrows from '@/app/_flow/component/object/marker/Arrows'
 import { useOnConnect, useOnEdgesChange } from '@/app/_flow/hook/edge'
 import { useOnNodeDrag, useOnNodesChange } from '@/app/_flow/hook/node'
 import { useOnPaneClick, useSelectorState } from '@/app/_flow/hook/pane'
