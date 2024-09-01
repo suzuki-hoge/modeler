@@ -5,7 +5,7 @@ import { GeneralizationArrowIcon } from '@/app/_component/icon/generalization-ar
 import { RotateIcon } from '@/app/_component/icon/rotate-icon/RotateIcon'
 import { SimpleArrowIcon } from '@/app/_component/icon/simple-arrow-icon/SimpleArrowIcon'
 import { CreatableSelector } from '@/app/_component/selector/CreatableSelector'
-import { ArrowType } from '@/app/_object/edge/type'
+import { ArrowType } from '@/app/_flow/object/edge/type'
 
 import styles from './edge-palette.module.scss'
 

@@ -5,8 +5,8 @@ import { shallow } from 'zustand/shallow'
 
 import { GearIcon } from '@/app/_component/icon/gear-icon/GearIcon'
 import { Switch } from '@/app/_component/input/switch/Switch'
-import { userSocketSelector, useUserSocket } from '@/app/_socket/user-socket'
-import { userStoreSelector, useUserStore } from '@/app/_store/user-store'
+import { userSocketSelector, useUserSocket } from '@/app/_flow/socket/user-socket'
+import { userStoreSelector, useUserStore } from '@/app/_flow/store/user-store'
 
 import styles from './config-panel.module.scss'
 

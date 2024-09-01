@@ -3,7 +3,7 @@ import { Auth0Provider } from '@auth0/auth0-react'
 import { User } from '@auth0/auth0-spa-js'
 import React, { ReactElement, useEffect, useState } from 'react'
 
-import { useAuth } from '@/app/_hook/auth'
+import { useAuth } from '@/app/(page)/(auth)/auth'
 
 interface Props {
   children: ReactElement<{ user: User } & Record<string, unknown>>

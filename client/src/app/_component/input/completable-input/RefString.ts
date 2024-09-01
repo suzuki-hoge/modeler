@@ -1,7 +1,7 @@
 import * as Diff from 'diff'
 import { Change } from 'diff'
 
-import { NodeHeader } from '@/app/_object/node/type'
+import { NodeHeader } from '@/app/_flow/object/node/type'
 
 const re_ref = /(ref#[^#]+#)/g
 const re_id = /ref#([^#]+)#/

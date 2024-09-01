@@ -4,9 +4,9 @@ import { shallow } from 'zustand/shallow'
 
 import { IconText } from '@/app/_component/icon/icon-text/IconText'
 import { CreatableSelector } from '@/app/_component/selector/CreatableSelector'
-import { getIcon } from '@/app/_object/node/function'
-import { NodeHeader } from '@/app/_object/node/type'
-import { useProjectStore } from '@/app/_store/project-store'
+import { getIcon } from '@/app/_flow/object/node/function'
+import { NodeHeader } from '@/app/_flow/object/node/type'
+import { useProjectStore } from '@/app/_flow/store/project-store'
 
 interface Props {
   x: string

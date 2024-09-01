@@ -10,11 +10,11 @@ import {
   dragPaneOnCreate,
   dragPaneOnSelect,
 } from '@/app/_component/input/class-selector/function'
-import { DragSource } from '@/app/_hook/edge'
-import { pageSocketSelector, usePageSocket } from '@/app/_socket/page-socket'
-import { projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
-import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
-import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
+import { DragSource } from '@/app/_flow/hook/edge'
+import { pageSocketSelector, usePageSocket } from '@/app/_flow/socket/page-socket'
+import { projectSocketSelector, useProjectSocket } from '@/app/_flow/socket/project-socket'
+import { pageStoreSelector, usePageStore } from '@/app/_flow/store/page-store'
+import { projectStoreSelector, useProjectStore } from '@/app/_flow/store/project-store'
 
 interface Props {
   x: string

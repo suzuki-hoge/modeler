@@ -13,13 +13,13 @@
 
 import { XYPosition, Node } from '@xyflow/react'
 
-import { allocateEdgeId, createProjectEdge, extractPageEdge } from '@/app/_object/edge/function'
-import { allocateNodeId, createProjectNode, expandToPageNode, extractPageNode } from '@/app/_object/node/function'
-import { NodeHeader, ProjectNodeData } from '@/app/_object/node/type'
-import { PageSocket } from '@/app/_socket/page-socket'
-import { ProjectSocket } from '@/app/_socket/project-socket'
-import { PageStore } from '@/app/_store/page-store'
-import { ProjectStore } from '@/app/_store/project-store'
+import { allocateEdgeId, createProjectEdge, extractPageEdge } from '@/app/_flow/object/edge/function'
+import { allocateNodeId, createProjectNode, expandToPageNode, extractPageNode } from '@/app/_flow/object/node/function'
+import { NodeHeader, ProjectNodeData } from '@/app/_flow/object/node/type'
+import { PageSocket } from '@/app/_flow/socket/page-socket'
+import { ProjectSocket } from '@/app/_flow/socket/project-socket'
+import { PageStore } from '@/app/_flow/store/page-store'
+import { ProjectStore } from '@/app/_flow/store/project-store'
 
 /*
 |                                        | project node | project edge           | page node  | page edge              |

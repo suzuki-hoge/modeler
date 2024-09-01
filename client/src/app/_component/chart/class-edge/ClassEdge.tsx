@@ -5,11 +5,11 @@ import { shallow } from 'zustand/shallow'
 import { EdgeLabel } from '@/app/_component/chart/class-edge/EdgeLabel'
 import { EdgePalette } from '@/app/_component/chart/class-edge/EdgePalette'
 import { getInnerProps } from '@/app/_component/chart/class-edge/line'
-import { updateProjectEdge } from '@/app/_object/edge/function'
-import { ArrowType, PageEdgeData } from '@/app/_object/edge/type'
-import { projectSocketSelector, useProjectSocket } from '@/app/_socket/project-socket'
-import { pageStoreSelector, usePageStore } from '@/app/_store/page-store'
-import { projectStoreSelector, useProjectStore } from '@/app/_store/project-store'
+import { updateProjectEdge } from '@/app/_flow/object/edge/function'
+import { ArrowType, PageEdgeData } from '@/app/_flow/object/edge/type'
+import { projectSocketSelector, useProjectSocket } from '@/app/_flow/socket/project-socket'
+import { pageStoreSelector, usePageStore } from '@/app/_flow/store/page-store'
+import { projectStoreSelector, useProjectStore } from '@/app/_flow/store/project-store'
 
 export const ClassEdge = (props: EdgeProps<Edge<PageEdgeData>>) => {
   const projectStore = useProjectStore(projectStoreSelector, shallow)

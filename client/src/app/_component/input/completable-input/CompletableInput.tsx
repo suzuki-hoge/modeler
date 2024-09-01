@@ -13,8 +13,8 @@ import {
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
 import { Popup, PopupState, usePopup } from '@/app/_component/selector/Popup'
-import { NodeHeader } from '@/app/_object/node/type'
-import { useProjectStore } from '@/app/_store/project-store'
+import { NodeHeader } from '@/app/_flow/object/node/type'
+import { useProjectStore } from '@/app/_flow/store/project-store'
 
 import styles from './completable-input.module.scss'
 

@@ -5,8 +5,8 @@ import { CharIcon } from '@/app/_component/icon/char-icon/CharIcon'
 import { IconText } from '@/app/_component/icon/icon-text/IconText'
 import { Popup, usePopup } from '@/app/_component/selector/Popup'
 import { Selector } from '@/app/_component/selector/Selector'
-import { getIcon } from '@/app/_object/node/function'
-import { NodeIcon } from '@/app/_object/node/type'
+import { getIcon } from '@/app/_flow/object/node/function'
+import { NodeIcon } from '@/app/_flow/object/node/type'
 
 import styles from './class-icon.module.scss'
 

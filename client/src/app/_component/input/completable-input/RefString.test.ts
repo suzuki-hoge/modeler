@@ -5,7 +5,7 @@ import {
   innerToRef,
   RefString,
 } from '@/app/_component/input/completable-input/RefString'
-import { NodeHeader } from '@/app/_object/node/type'
+import { NodeHeader } from '@/app/_flow/object/node/type'
 
 const headers: NodeHeader[] = [
   { id: '123', iconId: 'abc', name: 'Foo' },
